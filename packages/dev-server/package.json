@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/dev-server",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0",
   "description": "Local site host for the editor: a Vite plugin, the folder-as-storage file API, per-site Tailwind builds, self-hosted fonts and a chrome-free page preview.",
   "keywords": [
     "html",

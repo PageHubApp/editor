@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/editor",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0",
   "description": "Embeddable visual editor for HTML + Liquid that edits source in place.",
   "keywords": [
     "html",

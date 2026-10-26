@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/site-runtime",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0",
   "description": "The small browser script for published sites: the few behaviours native HTML can't do (cart, autoplay, animate, copy, dismiss, scrollspy, polyfills). Not the editor's sandboxed template runtime.",
   "keywords": [
     "html",

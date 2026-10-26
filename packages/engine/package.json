@@ -1,6 +1,6 @@
 {
   "name": "@pagehub/engine",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0",
   "description": "Parse, edit, lint and render HTML + Liquid source with minimal, formatting-preserving edits.",
   "keywords": [
     "html",
