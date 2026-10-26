@@ -1,0 +1,6 @@
+{
+  "$comment": "The project's name lives here and only here. Rename with: node scripts/rename-brand.mjs --name <slug> --display \"<Display Name>\" --scope @<scope>",
+  "name": "pagehub-editor",
+  "displayName": "PageHub Editor",
+  "npmScope": "@pagehub"
+}

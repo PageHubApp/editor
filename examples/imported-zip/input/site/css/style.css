@@ -1,0 +1,9 @@
+body { margin: 0; font-family: Helvetica, Arial, sans-serif; color: #1d2a3a; background: #f7fafc; line-height: 1.55; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #1d4e89; }
+.top a { color: #fff; text-decoration: none; margin-left: 1rem; }
+.logo { font-weight: 700; font-size: 1.2rem; margin-left: 0 !important; }
+main { max-width: 42rem; margin: 0 auto; padding: 2rem 1.5rem; }
+.hero { padding: 2rem 0; }
+.btn { display: inline-block; padding: .6rem 1.1rem; background: #1d4e89; color: #fff; border-radius: .3rem; text-decoration: none; }
+li span { float: right; color: #55657a; }
+.bottom { padding: 1.5rem; text-align: center; background: #e4edf6; font-size: .9rem; }

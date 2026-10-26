@@ -1,0 +1,18 @@
+PageHub editor
+Copyright (c) 2026-present PageHub
+
+This product is licensed under the MIT License (see LICENSE).
+
+It includes the following third-party material.
+
+Pattern Monster (MIT)
+  Background pattern data in packages/engine/src/kits/tailwind/patterns/patternData.ts.
+  Its LICENSE.md and NOTICE.md stay next to the data.
+
+Google Fonts (catalogue names only)
+  The editor lists font family names from the Google Fonts catalogue. No font files are
+  bundled; fonts load from Google at view time under each family's own licence.
+
+PageHub SDK (MIT)
+  User interface code in packages/editor was ported from the PageHub SDK,
+  Copyright (c) 2024-present PageHub.

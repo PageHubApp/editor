@@ -1,0 +1,139 @@
+{
+  "site": {
+    "name": "Sprout & Stem",
+    "currency": "USD",
+    "email": "hello@sproutandstem.example"
+  },
+  "products": [
+    {
+      "id": 1,
+      "handle": "boston-fern",
+      "title": "Boston fern",
+      "category": "ferns",
+      "price": 2800,
+      "image": "boston-fern",
+      "description": "Soft arching fronds that love a humid bathroom. Pet safe.",
+      "available": true
+    },
+    {
+      "id": 2,
+      "handle": "maidenhair-fern",
+      "title": "Maidenhair fern",
+      "category": "ferns",
+      "price": 3400,
+      "image": "maidenhair-fern",
+      "description": "Delicate and a little dramatic. Keep the soil evenly damp.",
+      "available": false,
+      "compare_at_price": 3800
+    },
+    {
+      "id": 3,
+      "handle": "bird-nest-fern",
+      "title": "Bird's nest fern",
+      "category": "ferns",
+      "price": 3000,
+      "image": "bird-nest-fern",
+      "description": "Wavy bright green fronds, more forgiving than most ferns.",
+      "available": true
+    },
+    {
+      "id": 4,
+      "handle": "jade-plant",
+      "title": "Jade plant",
+      "category": "succulents",
+      "price": 2200,
+      "image": "jade-plant",
+      "description": "A tough little tree that stores water in its leaves.",
+      "available": true
+    },
+    {
+      "id": 5,
+      "handle": "echeveria",
+      "title": "Echeveria rosette",
+      "category": "succulents",
+      "price": 1600,
+      "image": "echeveria",
+      "description": "A tidy rosette in dusty blue. Give it the sunniest sill.",
+      "available": true
+    },
+    {
+      "id": 6,
+      "handle": "string-of-pearls",
+      "title": "String of pearls",
+      "category": "trailing",
+      "price": 2600,
+      "image": "string-of-pearls",
+      "description": "Beads on a string that spill over the edge of a shelf.",
+      "available": true
+    },
+    {
+      "id": 7,
+      "handle": "pothos",
+      "title": "Golden pothos",
+      "category": "trailing",
+      "price": 1800,
+      "image": "pothos",
+      "description": "The easiest trailing plant there is. Thrives on neglect.",
+      "available": true
+    },
+    {
+      "id": 8,
+      "handle": "heartleaf-philodendron",
+      "title": "Heartleaf philodendron",
+      "category": "trailing",
+      "price": 2000,
+      "image": "heartleaf-philodendron",
+      "description": "Heart shaped leaves on long, easy vines.",
+      "available": true,
+      "compare_at_price": 2400
+    },
+    {
+      "id": 9,
+      "handle": "monstera",
+      "title": "Monstera deliciosa",
+      "category": "tall",
+      "price": 5400,
+      "image": "monstera",
+      "description": "Big split leaves that make a room look finished.",
+      "available": true
+    },
+    {
+      "id": 10,
+      "handle": "snake-plant",
+      "title": "Snake plant",
+      "category": "tall",
+      "price": 3600,
+      "image": "snake-plant",
+      "description": "Upright, architectural and nearly impossible to kill.",
+      "available": true
+    }
+  ],
+  "collections": [
+    {
+      "handle": "featured",
+      "title": "Featured plants",
+      "product_handles": [
+        "monstera",
+        "boston-fern",
+        "string-of-pearls",
+        "jade-plant"
+      ]
+    },
+    {
+      "handle": "all",
+      "title": "All plants",
+      "product_handles": [
+        "boston-fern",
+        "maidenhair-fern",
+        "bird-nest-fern",
+        "jade-plant",
+        "echeveria",
+        "string-of-pearls",
+        "pothos",
+        "heartleaf-philodendron",
+        "monstera",
+        "snake-plant"
+      ]
+    }
+  ]
+}

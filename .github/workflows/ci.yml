@@ -1,0 +1,63 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm brand:check
+      - run: pnpm check:names
+      - run: pnpm check:size
+      - run: pnpm check:examples
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm check:api
+      - run: pnpm check:publish
+      - run: pnpm check:sites -- examples/plain-html/site examples/liquid-store/site
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Production dependencies use permissive licenses
+        run: npx --yes license-checker-rseidelsohn --production --onlyAllow "MIT;ISC;BSD-2-Clause;BSD-3-Clause;Apache-2.0;0BSD;CC0-1.0;BlueOak-1.0.0;Python-2.0;MIT-0;Unlicense" --excludePrivatePackages
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  dco:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Every commit carries a Signed-off-by line
+        run: |
+          missing=$(git log --format='%H %(trailers:key=Signed-off-by,valueonly,separator=%x2C)' \
+            ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | awk 'NF<2 {print $1}')
+          if [ -n "$missing" ]; then echo "Commits without Signed-off-by:"; echo "$missing"; exit 1; fi

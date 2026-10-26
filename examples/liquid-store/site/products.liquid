@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All plants | {{ site.name }}</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+{% render 'header', site: site %}
+<main class="band">
+  <h1>All plants</h1>
+  <form class="filters" method="get" action="/products" data-autosubmit>
+    <label>Type
+      <select name="category">
+        <option value="">Everything</option>
+        {% assign categories = "ferns,succulents,trailing,tall" | split: "," %}
+        {% for c in categories %}
+          {% if request.query.category == c %}
+            <option value="{{ c }}" selected>{{ c | capitalize }}</option>
+          {% else %}
+            <option value="{{ c }}">{{ c | capitalize }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </label>
+  </form>
+  {% if request.query.category and request.query.category != "" %}
+    {% assign shown = products | where: "category", request.query.category %}
+  {% else %}
+    {% assign shown = products %}
+  {% endif %}
+  {% paginate shown by 6 %}
+    <ul class="grid">
+      {% for product in shown %}
+        <li>{% render 'product-card', product: product %}</li>
+      {% endfor %}
+    </ul>
+    <nav class="pagination" aria-label="Pages">
+      {% if paginate.previous %}<a href="{{ paginate.previous.url }}">Previous</a>{% endif %}
+      <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+      {% if paginate.next %}<a href="{{ paginate.next.url }}">Next</a>{% endif %}
+    </nav>
+  {% endpaginate %}
+</main>
+{% render 'footer', site: site %}
+</body>
+</html>

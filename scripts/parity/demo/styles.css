@@ -1,0 +1,4 @@
+/* The parity demo: the editor's own stylesheet, plus the demo's sources. */
+@import "../../../packages/editor/styles.css";
+@source "./main.tsx";
+@source "./fixture.ts";

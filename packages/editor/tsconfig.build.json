@@ -1,0 +1,6 @@
+{
+  "//": "Declaration emit for the published build (scripts/build-package.mjs). Type-checks src only; tests are covered by tsconfig.json.",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "rootDir": "src", "outDir": "dist", "declaration": true, "emitDeclarationOnly": true, "noEmit": false, "jsx": "react-jsx" },
+  "include": ["src"]
+}

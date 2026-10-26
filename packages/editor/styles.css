@@ -1,0 +1,355 @@
+/**
+ * @pagehub/editor/styles.css: the editor chrome's stylesheet (Tailwind v4 + DaisyUI, compiled by the
+ * host's Tailwind: `@import "@pagehub/editor/styles.css"` from a Tailwind entry, or point the CLI at it).
+ *
+ * Scoped to `[data-ph-editor-scope]` (the wrapper `<Editor>` puts around all chrome and its portalled overlays)
+ * and `.ph-select-content` (Headless UI portals the dropdown panel to <body>). There is no global preflight, so
+ * embedding it in a dashboard never restyles the host page. A host that wants Tailwind's global base for its own
+ * markup imports `tailwindcss/preflight.css` itself.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+/* Every utility, and every DaisyUI component (Tailwind emits plugin components as utilities), is generated inside the
+ * scope: `.hidden` becomes `:is([data-ph-editor-scope], .ph-select-content) .hidden`, so loading the sheet in a host
+ * page can never override that page's own `hidden` / `lg:flex` / ... (this is what a config `important: "<selector>"`
+ * does, written out so it holds for whichever Tailwind compiles the file).
+ * `source(none)`: only the editor's own `src` is scanned (the `@source` below), wherever the compile runs from; a
+ * host's PostCSS would otherwise scan the whole host project into this sheet. */
+@layer utilities {
+  :is([data-ph-editor-scope], .ph-select-content) {
+    @tailwind utilities source(none);
+  }
+}
+@plugin "daisyui" {
+  /* No `--default`: it would define the light theme on `:root` and override the host page's own tokens (a dark dashboard
+   * turned white wherever this sheet loaded). Both themes apply only under `[data-theme]`, which <Editor> sets on its scope. */
+  themes: light, dark;
+  /* DaisyUI's page-level base (global reset, root colour, scrollbar, scroll lock) would restyle a host page; the scoped preflight below replaces the reset. */
+  exclude: reset, rootcolor, rootscrollgutter, rootscrolllock, scrollbar;
+}
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@source "./src";
+
+/* ─── Scoped preflight ──────────────────────────────────────────────────────
+ * Tailwind's preflight, applied only inside the editor (`:where` keeps every rule at zero specificity, so
+ * utilities and DaisyUI components win as they do with the global one). Mirrors tailwindcss/preflight.css.
+ */
+@layer base {
+  :where([data-ph-editor-scope], .ph-select-content) {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji");
+    -webkit-tap-highlight-color: transparent;
+
+    & *,
+    & ::after,
+    & ::before,
+    & ::backdrop,
+    & ::file-selector-button {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border: 0 solid;
+    }
+    & hr {
+      height: 0;
+      color: inherit;
+      border-top-width: 1px;
+    }
+    & abbr:where([title]) {
+      text-decoration: underline dotted;
+    }
+    & :is(h1, h2, h3, h4, h5, h6) {
+      font-size: inherit;
+      font-weight: inherit;
+    }
+    & a {
+      color: inherit;
+      text-decoration: inherit;
+    }
+    & :is(b, strong) {
+      font-weight: bolder;
+    }
+    & :is(code, kbd, samp, pre) {
+      font-family: var(--default-mono-font-family, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+      font-size: 1em;
+    }
+    & small {
+      font-size: 80%;
+    }
+    & :is(sub, sup) {
+      font-size: 75%;
+      line-height: 0;
+      position: relative;
+      vertical-align: baseline;
+    }
+    & sub {
+      bottom: -0.25em;
+    }
+    & sup {
+      top: -0.5em;
+    }
+    & table {
+      text-indent: 0;
+      border-color: inherit;
+      border-collapse: collapse;
+    }
+    & :-moz-focusring {
+      outline: auto;
+    }
+    & progress {
+      vertical-align: baseline;
+    }
+    & summary {
+      display: list-item;
+    }
+    & :is(ol, ul, menu) {
+      list-style: none;
+    }
+    & :is(img, svg, video, canvas, audio, iframe, embed, object) {
+      display: block;
+      vertical-align: middle;
+    }
+    & :is(img, video) {
+      max-width: 100%;
+      height: auto;
+    }
+    & :is(button, input, select, optgroup, textarea),
+    & ::file-selector-button {
+      font: inherit;
+      font-feature-settings: inherit;
+      font-variation-settings: inherit;
+      letter-spacing: inherit;
+      color: inherit;
+      border-radius: 0;
+      background-color: transparent;
+      opacity: 1;
+    }
+    & :where(select:is([multiple], [size])) optgroup {
+      font-weight: bolder;
+    }
+    & :where(select:is([multiple], [size])) optgroup option {
+      padding-inline-start: 20px;
+    }
+    & ::file-selector-button {
+      margin-inline-end: 4px;
+    }
+    & ::placeholder {
+      opacity: 1;
+    }
+    @supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+      & ::placeholder {
+        color: color-mix(in oklab, currentcolor 50%, transparent);
+      }
+    }
+    & textarea {
+      resize: vertical;
+    }
+    & ::-webkit-search-decoration {
+      -webkit-appearance: none;
+    }
+    & ::-webkit-date-and-time-value {
+      min-height: 1lh;
+      text-align: inherit;
+    }
+    & ::-webkit-datetime-edit {
+      display: inline-flex;
+    }
+    & ::-webkit-datetime-edit-fields-wrapper {
+      padding: 0;
+    }
+    & :-moz-ui-invalid {
+      box-shadow: none;
+    }
+    & :is(button, input:where([type="button"], [type="reset"], [type="submit"])),
+    & ::file-selector-button {
+      appearance: button;
+    }
+    & ::-webkit-inner-spin-button,
+    & ::-webkit-outer-spin-button {
+      height: auto;
+    }
+    & [hidden]:where(:not([hidden="until-found"])) {
+      display: none !important;
+    }
+  }
+}
+
+/* ─── Editor chrome tokens ──────────────────────────────────────────────────
+ * The editor's own UI (inspector, toolbars, panels, popovers) must read a FIXED
+ * chrome palette, NOT the daisyUI site palette the canvas renders with. daisyUI's
+ * `neutral` is near-black, so chrome segmented tracks, sliders and toggles painted
+ * their track dark; the editor chrome uses a light-grey neutral track.
+ *
+ * The daisyUI base tokens (neutral / base-*) are redefined ONLY under
+ * `[data-ph-editor-scope]` — the wrapper `<Editor>` puts around all chrome and its
+ * portalled overlays. The canvas iframe mirrors this stylesheet but has no such
+ * element, so the site it renders keeps the daisyUI (and site-theme) palette
+ * untouched. The sidebar / ring tokens daisyUI does not provide are defined too,
+ * so `bg-sidebar-*`, `border-sidebar-*`, `text-sidebar-*` and `ring-ring` resolve
+ * (the SDK editor chrome tokens).
+ */
+@theme inline {
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-ring: var(--ring);
+}
+
+/* Chrome tokens live on the scope, never on `:root` / `.dark`: they would override the host page's own. The explicit
+ * `data-theme` on the scope decides light or dark (never the OS: <Editor> falls back to the OS only to fill it in). */
+[data-ph-editor-scope],
+.ph-select-content {
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --ring: hsl(217.2 91.2% 59.8%);
+  /* Re-resolved here: a host's `:root { --color-ring: var(--ring) }` substitutes the HOST's --ring
+   * (pagehub.dev's is near-black), and the inherited value would win over this scope's accent. */
+  --color-ring: var(--ring);
+}
+
+[data-ph-editor-scope][data-theme="dark"],
+.ph-select-content[data-theme="dark"] {
+  --sidebar-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(0 0% 24%);
+  --sidebar-accent-foreground: hsl(0 0% 98%);
+  --sidebar-border: hsl(0 0% 32%);
+  --ring: hsl(0 0% 83.1%);
+}
+
+/* Fixed chrome surfaces — light. Scoped to chrome only; the canvas site keeps daisyUI.
+ * `.ph-select-content` (the ToolbarDropdown Listbox panel) is listed too: Headless UI portals
+ * it to <body>, OUTSIDE this scope, so it has to carry the chrome palette itself. */
+[data-ph-editor-scope],
+.ph-select-content {
+  --color-base-100: hsl(0 0% 100%);
+  --color-base-200: hsl(0 0% 98%);
+  --color-base-300: hsl(0 0% 90%);
+  --color-base-content: hsl(0 0% 6%);
+  --color-neutral: hsl(0 0% 96%);
+  --color-neutral-content: hsl(0 0% 45%);
+}
+
+[data-ph-editor-scope][data-theme="dark"],
+.ph-select-content[data-theme="dark"] {
+  --color-base-100: hsl(0 0% 12%);
+  --color-base-200: hsl(0 0% 18%);
+  --color-base-300: hsl(0 0% 32%);
+  --color-base-content: hsl(0 0% 93%);
+  --color-neutral: hsl(0 0% 20%);
+  --color-neutral-content: hsl(0 0% 68%);
+}
+
+/* ─── Styled select dropdown — ToolbarDropdown's Headless UI Listbox panel ────
+ * The panel portals to <body> carrying only `ph-select-content`, so these class
+ * names (undefined until now → an unstyled, native-looking list) supply its surface
+ * and dense rows. Adapted to the standalone chrome tokens. */
+.ph-select-content {
+  @apply border-base-300 bg-base-100 text-base-content rounded-lg border p-1 shadow-lg;
+  /* At least the trigger's width (Headless UI sets --button-width), grown to the widest option: labels never wrap. */
+  min-width: max(8rem, var(--button-width, 0px));
+  white-space: nowrap;
+  font-size: 13px;
+  line-height: 1.4;
+  outline: none;
+}
+/* Item rows live inside the Listbox panel (.ph-select-content) or any list shell that
+ * wraps rows in .ph-select-item-host (e.g. the breadcrumb ancestry menu) — same dense row. */
+.ph-select-content .ph-select-item,
+.ph-select-item-host .ph-select-item {
+  @apply flex w-full cursor-pointer items-center gap-1 rounded-md px-2 py-1.5 text-left transition-colors select-none;
+  font-size: 13px;
+}
+.ph-select-content .ph-select-item:hover,
+.ph-select-content .ph-select-item[data-focus],
+.ph-select-item-host .ph-select-item:hover,
+.ph-select-item-host .ph-select-item[data-focus] {
+  background-color: var(--color-base-200);
+}
+.ph-select-content .ph-select-item[data-selected] {
+  font-weight: 500;
+}
+.ph-select-content .ph-select-group {
+  font-size: 11px;
+}
+
+/* ─── Floating panel surface (ph-panel) ──────────────────────────────────────
+ * The UniversalInput type-selector + Tailwind-autocomplete dropdowns, the FontPicker
+ * list and the PageSelector menu all carry `ph-panel` for their surface; undefined until
+ * now they rendered as a borderless white box. */
+.ph-panel {
+  @apply border-base-300 bg-base-100 rounded-lg border shadow-xl;
+}
+
+/* ─── Bordered value-field shell (input-wrapper) + inner field (input-plain) ──
+ * The `Chip frame="bordered"` shell and every plain field inside it (UniversalInput
+ * value, ExpressionField, shorthand sides) carry these; undefined until now, so
+ * bordered value rows rendered as a bare label + floating unit chip with no box. */
+[data-ph-editor-scope] .input-wrapper {
+  @apply border-base-300 bg-base-200 flex w-full items-center rounded-lg border px-1 py-0 transition-[border-color,background-color] duration-150 ease-out;
+}
+[data-ph-editor-scope] .input-wrapper:hover {
+  @apply border-primary;
+}
+[data-ph-editor-scope] .input-wrapper:focus-within {
+  @apply border-ring;
+}
+[data-ph-editor-scope] .input-plain {
+  @apply placeholder:text-neutral-content h-8 w-full min-w-0 bg-transparent px-2 py-0.5 text-xs outline-none focus:outline-none;
+}
+[data-ph-editor-scope] textarea.input-plain {
+  @apply h-auto py-1.5;
+}
+
+/* The one focus style for every editor field: a single accent ring. DaisyUI's `.input` draws a 2px
+ * base-content outline (near-black) and the browser adds its own double ring to bare inputs, so
+ * every field in the chrome — including portalled popovers — is reset to one accent outline here,
+ * once, instead of per input. `.input-plain` lives inside a shell that shows the ring itself. */
+:is([data-ph-editor-scope], .ph-panel, .ph-select-content, [data-ph-popover]) :is(input:not([type="checkbox"], [type="radio"], [type="range"], .input-plain), textarea:not(.input-plain), select, .input, .select, .textarea):is(:focus, :focus-visible, :focus-within) {
+  outline: 1px solid var(--ring, hsl(217.2 91.2% 59.8%));
+  outline-offset: 0;
+  box-shadow: none;
+  border-color: var(--ring, hsl(217.2 91.2% 59.8%));
+}
+
+/* DaisyUI `.range` fills with `currentColor` (= base-content, near-black in the chrome), which reads
+ * as a harsh black bar. Use a muted grey fill so the theme sliders look designed, not default. */
+[data-ph-editor-scope] .range { color: color-mix(in oklab, var(--color-base-content) 62%, transparent); }
+
+/* Range-slider thumb — the `.slider` track class (ToolbarItem, pattern/gradient geometry)
+ * needs these thumb rules, or sliders show a default OS thumb. */
+[data-ph-editor-scope] .slider::-webkit-slider-thumb {
+  @apply bg-primary h-4 w-4 cursor-pointer appearance-none rounded-full shadow-sm;
+}
+[data-ph-editor-scope] .slider::-moz-range-thumb {
+  @apply bg-primary h-4 w-4 cursor-pointer rounded-full border-0 shadow-sm;
+}
+
+/* Interactive chrome elements get the pointer cursor (browser default for <button> is the arrow). */
+[data-ph-editor-scope] :is(button, [role="tab"], [role="menuitem"], [role="menuitemradio"], [role="option"], [role="radio"], [role="switch"], summary, label[for], [data-row-popover] [role="button"]):not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
+/* The one editor scrollbar — slim, auto-hide feel. The `AutoHideScrollbar` primitive draws a real
+ * JS thumb (shows on scroll/hover, fades at rest) and marks its scroller `data-custom-scroll`; the
+ * rules below are the no-JS fallback for every chrome scroller that hasn't been converted (menus,
+ * popovers, dropdowns): thin (6px), a faint thumb at rest that firms up when the scroller is
+ * hovered, darker on direct thumb hover. */
+[data-ph-editor-scope] [data-custom-scroll] { scrollbar-width: none; }
+[data-ph-editor-scope] [data-custom-scroll]::-webkit-scrollbar { width: 0; height: 0; display: none; }
+[data-ph-editor-scope] ::-webkit-scrollbar { width: 6px; height: 6px; }
+[data-ph-editor-scope] ::-webkit-scrollbar-track { background: transparent; }
+[data-ph-editor-scope] ::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-base-300) 55%, transparent);
+  border-radius: 8px;
+  transition: background-color 150ms ease;
+}
+[data-ph-editor-scope] :hover::-webkit-scrollbar-thumb { background-color: var(--color-base-300); }
+[data-ph-editor-scope] ::-webkit-scrollbar-thumb:hover { background-color: var(--color-neutral-content); }
+@supports not selector(::-webkit-scrollbar) {
+  [data-ph-editor-scope], [data-ph-editor-scope] * { scrollbar-width: thin; scrollbar-color: var(--color-base-300) transparent; }
+}

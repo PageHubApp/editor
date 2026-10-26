@@ -1,0 +1,19 @@
+---
+layout: base.liquid
+title: Garden journal
+permalink: /blog/
+---
+<main class="wrap">
+  <h1>Garden journal</h1>
+  <ul class="posts">
+    {% for post in collections.post reversed %}
+      <li>
+        <article>
+          <h2><a href="{{ post.url | url }}">{{ post.data.title }}</a></h2>
+          <time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: "%B %-d, %Y" }}</time>
+          <p>{{ post.data.summary }}</p>
+        </article>
+      </li>
+    {% endfor %}
+  </ul>
+</main>

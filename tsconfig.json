@@ -1,0 +1,6 @@
+{
+  "//": "Read by tsx when `pnpm test` runs from the repo root: compiles the editor package's JSX with the automatic runtime. Packages type-check with their own tsconfig.",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": { "jsx": "react-jsx", "noEmit": true },
+  "include": ["packages/editor/src", "packages/editor/test"]
+}

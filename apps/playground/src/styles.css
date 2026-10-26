@@ -1,0 +1,2 @@
+/* The editor's own stylesheet, from source (every rule scoped to the editor). The app's header, outside that scope, is styled by app.css. */
+@import "@pagehub/editor/styles.tailwind.css";

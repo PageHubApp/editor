@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.name }} | Houseplants, hand-potted</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+{% render 'header', site: site %}
+<main>
+  {% section 'hero', headline: "Plants for every windowsill", subhead: "Hand-potted houseplants, shipped with care.", photo: "hero", button: "Shop plants", button_link: "/products" %}
+
+  <section class="band">
+    <h2>Featured plants</h2>
+    <p data-editable="text">Our four most-loved plants this month, all in stock and ready to ship.</p>
+    <ul class="grid">
+      {% for product in collections.featured.products limit: 4 %}
+        <li>{% render 'product-card', product: product %}</li>
+      {% endfor %}
+    </ul>
+    <p><a class="button secondary" href="/products">See every plant</a></p>
+  </section>
+
+  <section class="band band--tint">
+    <h2>New to plants?</h2>
+    <p>Start with a pothos or a snake plant. Both forgive a missed watering, and both clean the air a little.</p>
+  </section>
+</main>
+{% render 'footer', site: site %}
+</body>
+</html>

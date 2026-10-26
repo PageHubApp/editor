@@ -1,0 +1,88 @@
+/* Kit classes the Tailwind kit emits that Tailwind itself can't generate: ph-marquee*, ph-loop-*,
+   ph-mod-*. Patterns are not here: patternCss() (engine) emits a rule only for the patterns a page uses.
+   Shipped beside animate.css (dist/kit.css) and linked by published pages.
+   Looping keyframes and hover looks are ported from the PageHub styles (MIT, see
+   NOTICE). Every rule here must have its token covered by test/kitCss.test.ts. */
+
+/* ── marquee (the track holds its children twice; it travels half its width) ── */
+.ph-marquee { animation: ph-marquee var(--marquee-speed, 40s) linear infinite; }
+.ph-marquee-reverse { animation-direction: reverse; }
+
+/* ── loops ── */
+.ph-loop-spin { animation: ph-spin 2s linear infinite; }
+.ph-loop-pulse { animation: ph-pulse 2s ease-in-out infinite; }
+.ph-loop-wiggle { animation: ph-wiggle 1s ease-in-out infinite; }
+.ph-loop-chain-spotlight-1 { animation: ph-chain-spotlight-1 9s linear infinite; }
+.ph-loop-chain-spotlight-2 { animation: ph-chain-spotlight-2 9s linear infinite; }
+.ph-loop-chain-spotlight-3 { animation: ph-chain-spotlight-3 9s linear infinite; }
+.ph-loop-chain-label-1 { animation: ph-chain-label-1 9s linear infinite; }
+.ph-loop-chain-label-2 { animation: ph-chain-label-2 9s linear infinite; }
+.ph-loop-grid-spotlight-1 { animation: ph-grid-spotlight-1 12s linear infinite; }
+.ph-loop-grid-spotlight-2 { animation: ph-grid-spotlight-2 12s linear infinite; }
+.ph-loop-grid-spotlight-3 { animation: ph-grid-spotlight-3 12s linear infinite; }
+.ph-loop-grid-spotlight-4 { animation: ph-grid-spotlight-4 12s linear infinite; }
+
+@keyframes ph-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes ph-spin { to { transform: rotate(360deg); } }
+@keyframes ph-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+@keyframes ph-wiggle { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 75% { transform: rotate(5deg); } }
+
+/* Spotlights rest at 0% and 100% so the loop has no pop at the seam. */
+@keyframes ph-chain-spotlight-1 {
+  0%, 4%, 27%, 100% { border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent); transform: scale(1); }
+  6%, 24% { border-color: var(--primary); transform: scale(1.042); }
+}
+@keyframes ph-chain-spotlight-2 {
+  0%, 28%, 52%, 100% { border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent); transform: scale(1); }
+  30%, 49% { border-color: var(--primary); transform: scale(1.042); }
+}
+@keyframes ph-chain-spotlight-3 {
+  0%, 55%, 77%, 100% { border-color: color-mix(in oklch, var(--b3, var(--base-300)) 78%, transparent); transform: scale(1); }
+  58%, 74% { border-color: var(--primary); transform: scale(1.042); }
+}
+@keyframes ph-chain-label-1 {
+  0%, 28%, 55%, 100% { color: var(--primary); border-color: color-mix(in oklch, var(--primary) 50%, transparent); background-color: color-mix(in oklab, var(--primary) 8%, var(--base-100)); transform: scale(1); }
+  30%, 52% { color: var(--base-content); border-color: color-mix(in oklch, var(--base-content) 42%, transparent); background-color: color-mix(in oklab, var(--base-content) 7%, var(--base-100)); transform: scale(1.03); }
+}
+@keyframes ph-chain-label-2 {
+  0%, 55%, 80%, 100% { color: var(--primary); border-color: color-mix(in oklch, var(--primary) 50%, transparent); background-color: color-mix(in oklab, var(--primary) 8%, var(--base-100)); transform: scale(1); }
+  58%, 77% { color: var(--base-content); border-color: color-mix(in oklch, var(--base-content) 42%, transparent); background-color: color-mix(in oklab, var(--base-content) 7%, var(--base-100)); transform: scale(1.03); }
+}
+@keyframes ph-grid-spotlight-1 {
+  0%, 3%, 23%, 100% { box-shadow: inset 0 0 0 0 transparent; background-color: var(--base-100); }
+  5%, 20% { box-shadow: inset 0 0 0 2px var(--primary); background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100)); }
+}
+@keyframes ph-grid-spotlight-2 {
+  0%, 22%, 48%, 100% { box-shadow: inset 0 0 0 0 transparent; background-color: var(--base-100); }
+  25%, 45% { box-shadow: inset 0 0 0 2px var(--primary); background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100)); }
+}
+@keyframes ph-grid-spotlight-3 {
+  0%, 47%, 73%, 100% { box-shadow: inset 0 0 0 0 transparent; background-color: var(--base-100); }
+  50%, 70% { box-shadow: inset 0 0 0 2px var(--primary); background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100)); }
+}
+@keyframes ph-grid-spotlight-4 {
+  0%, 72%, 98%, 100% { box-shadow: inset 0 0 0 0 transparent; background-color: var(--base-100); }
+  75%, 95% { box-shadow: inset 0 0 0 2px var(--primary); background-color: color-mix(in oklab, var(--primary) 5%, var(--base-100)); }
+}
+
+/* ── modifier presets: hover looks and state looks ── */
+.ph-mod-grow, .ph-mod-lift, .ph-mod-press { transition: transform 0.25s ease-out; }
+.ph-mod-glow { transition: box-shadow 0.3s ease-out; }
+.ph-mod-grow:hover { transform: scale(1.1); }
+.ph-mod-grow:active { transform: scale(0.9); }
+.ph-mod-lift:hover { transform: translateY(-6px); }
+.ph-mod-lift:active { transform: translateY(0); }
+.ph-mod-glow:hover { box-shadow: 0 0 20px rgba(255, 255, 255, 0.15); }
+.ph-mod-press { transition-duration: 0.2s; }
+.ph-mod-press:hover { transform: scale(1.02); }
+.ph-mod-press:active { transform: scale(0.95); }
+.ph-mod-tab-active { border-color: var(--primary); color: var(--primary); }
+.ph-mod-dot-active { background-color: var(--primary); transform: scale(1.25); }
+.ph-mod-disabled { opacity: 0.5; pointer-events: none; }
+.ph-mod-chip-selected { outline: 2px solid var(--base-content); outline-offset: 2px; }
+.ph-mod-chip-unavailable { opacity: 0.4; pointer-events: none; text-decoration: line-through; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ph-marquee, [class*="ph-loop-"] { animation: none; }
+  [class*="ph-mod-"] { transition: none; }
+}

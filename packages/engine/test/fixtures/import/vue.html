@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Snippets {{ not liquid }}</title>
+</head>
+<body>
+  <div id="app" v-if="ok" :title="msg">
+    <h1>{{ message }}</h1>
+    <a href="/go/{{ id }}" title="Open {{ name }}">go</a>
+    <p ng-bind="{{ user.name }}">Hello {{ user.name }}, you have {% if x %} items {% endif %}.</p>
+    <pre><code>{% for item in list %}{{ item | upcase }}{% endfor %}</code></pre>
+    <script type="text/x-template" id="tpl"><div>{{ a }} {% raw %}</div></script>
+    <p>Nothing {% endraw %} to see {{ here }}</p>
+    <!-- {{ comment }} -->
+  </div>
+</body>
+</html>

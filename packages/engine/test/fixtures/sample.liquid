@@ -1,0 +1,108 @@
+{% render 'header', site: site %}
+<!-- Main landing page: hand formatted, do not reflow -->
+<main id="main"   class="bg-base-100 text-base-content">
+
+  <nav class="topnav">
+      {% if customer %}
+        <a href="/account" class="link">Hi, {{ customer.first_name }}</a>
+        <a href="/logout">Sign out</a>
+      {% else %}
+        <a href="/login" class="link link-primary">Sign in</a>
+      {% endif %}
+  </nav>
+
+<section class="hero relative py-space-2xl px-container-x"
+         data-section="hero">
+    <div class="max-w-page mx-auto">
+      <h1 class="font-heading text-3xl sm:text-4xl md:text-6xl">Fresh paint,
+        done right.</h1>
+      <p class="mt-space-sm text-base-content/70">
+          Serving {{ site.city | default: "your city" }} since {{ site.founded }}.
+      </p>
+          <button type="button" class="btn btn-primary" commandfor="quote-modal" command="show-modal">
+            Get a quote
+          </button>
+    </div>
+</section>
+
+  <section class="services py-space-xl">
+    <h2 class="text-2xl">Our services</h2>
+    <div id="service-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md mt-space-xl">
+      {% for service in collections.services limit: 6 %}
+        <article class="card bg-base-200 rounded-box overflow-hidden">
+          <img src="{{ service.image | image_url: width: 800 }}"
+               alt="{{ service.title | escape }}" loading="lazy" width="800" height="600">
+          <div class="p-space-md">
+              <h3 class="text-xl">{{ service.title }}</h3>
+              <p>{{ service.summary }}</p>
+            <span class="price">From {{ service.price | money }}</span>
+          </div>
+        </article>
+      {% else %}
+        <p class="empty">No services yet. Check back soon.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+    <section class="featured py-space-lg">
+      <h2>Featured</h2>
+      <div id="featured-grid" class="grid grid-cols-2 gap-space-sm">
+          <article class="card featured-card">
+            <h3>Deck staining</h3>
+            <p>{{ product.title }} &mdash; {{ product.price | money }}</p>
+          </article>
+      </div>
+    </section>
+
+<section class="blog py-space-lg">
+  {% paginate blog.articles by 5 %}
+    <ul class="posts">
+      {% for article in blog.articles %}
+        <li><a href="{{ article.url }}">{{ article.title }}</a>
+            <small>{{ article.published_at | date: "%b %d, %Y" }}</small></li>
+      {% endfor %}
+    </ul>
+    {% if paginate.pages > 1 %}
+      <nav class="pagination" aria-label="Pages">
+        {% if paginate.previous %}<a href="{{ paginate.previous.url }}">Prev</a>{% endif %}
+        <span>Page {{ paginate.current_page }} of {{ paginate.pages }}</span>
+        {% if paginate.next %}<a href="{{ paginate.next.url }}">Next</a>{% endif %}
+      </nav>
+    {% endif %}
+  {% endpaginate %}
+</section>
+
+<section class="contact py-space-lg">
+  <h2>Contact us</h2>
+  {% form 'leads', class: "grid gap-space-sm" %}
+    <label for="lead-name">Name</label>
+    <input id="lead-name" name="name" type="text" required>
+    <label for="lead-email">Email</label>
+    <input id="lead-email" name="email" type="email"   required>
+    <textarea name="message" rows="4"></textarea>
+    <button type="submit" class="btn btn-primary">
+      Send {{ 'tb/TbSend' | icon }}
+    </button>
+  {% endform %}
+</section>
+
+<dialog id="quote-modal" class="modal">
+  <div class="modal-box">
+    <h2>Request a quote</h2>
+      <p>We reply within one business day.</p>
+    <form method="dialog">
+      <button class="btn" commandfor="quote-modal" command="close">Close</button>
+    </form>
+  </div>
+</dialog>
+
+</main>
+
+<footer class="footer px-container-x py-space-md">
+  <p>&copy; {{ 'now' | date: "%Y" }} {{ site.name }}. All rights reserved.</p>
+  <ul class="links">
+    <li><a href="/privacy">Privacy</a></li>
+    <li><a href="/terms">Terms</a>
+    </li>
+  </ul>
+</footer>

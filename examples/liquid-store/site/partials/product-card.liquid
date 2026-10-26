@@ -1,0 +1,14 @@
+<article class="product-card">
+  <a href="/products/{{ product.handle }}">
+    <img src="{{ product.image | image_url: width: 600 }}" alt="{{ product.title }}" width="600" height="600" loading="lazy">
+    <h3>{{ product.title }}</h3>
+  </a>
+  <p class="price">
+    {% if product.compare_at_price %}<s>{{ product.compare_at_price | money }}</s> {% endif %}{{ product.price | money }}
+  </p>
+  {% if product.available %}
+    <button class="button" type="button" data-cart="add" data-cart-id="{{ product.handle }}" data-cart-qty="1">Add to cart</button>
+  {% else %}
+    <button class="button" type="button" disabled>Sold out</button>
+  {% endif %}
+</article>

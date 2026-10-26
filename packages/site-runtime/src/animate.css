@@ -1,0 +1,53 @@
+/* Entrance presets for data-animate. Keyframes ported from the PageHub animation
+   presets (MIT, see NOTICE). Content stays visible without JS: it is hidden only
+   once the runtime sets html[data-runtime], and shown again by data-animated. */
+html[data-runtime] [data-animate]:not([data-animated]) { opacity: 0; }
+/* Entrance presets read --anim-{duration,easing,delay,iteration} with each preset's own defaults as
+   fallbacks, so an element-level override (the Animation control writes `[--anim-duration:…]` etc.)
+   wins regardless of where it sits in the published source order. The sub-properties can't be reset
+   by this `animation:` shorthand because they resolve inside the one declaration — a plain longhand
+   `animation-duration` utility, by contrast, loses to this shorthand whenever Tailwind emits it in
+   `@layer utilities` (layered < unlayered) or simply earlier in the final CSS. */
+.animate-css-fade-in { animation: css-fade-in var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-fade-up { animation: css-fade-up var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-fade-down { animation: css-fade-down var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-fade-left { animation: css-fade-left var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-fade-right { animation: css-fade-right var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-scale-up { animation: css-scale-up var(--anim-duration, 0.5s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-blur-in { animation: css-blur-in var(--anim-duration, 0.7s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-slide-up { animation: css-slide-up var(--anim-duration, 0.5s) var(--anim-easing, cubic-bezier(0.25, 0.46, 0.45, 0.94)) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-flip-in { animation: css-flip-in var(--anim-duration, 0.6s) var(--anim-easing, ease-out) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-spring { animation: css-spring var(--anim-duration, 0.5s) var(--anim-easing, cubic-bezier(0.175, 0.885, 0.32, 1.275)) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-bounce-in { animation: css-bounce-in var(--anim-duration, 0.6s) var(--anim-easing, cubic-bezier(0.175, 0.885, 0.32, 1.275)) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-thud-in { animation: css-thud-in var(--anim-duration, 0.55s) var(--anim-easing, cubic-bezier(0.22, 1, 0.36, 1)) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+.animate-css-tile-flip { animation: css-tile-flip var(--anim-duration, 0.48s) var(--anim-easing, cubic-bezier(0.22, 1, 0.36, 1)) var(--anim-delay, 0s) var(--anim-iteration, 1) both; }
+@media (prefers-reduced-motion: reduce) { [class*="animate-css-"] { animation: none !important; } [data-animate] { opacity: 1 !important; } }
+@keyframes css-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes css-fade-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes css-fade-down { from { opacity: 0; transform: translateY(-40px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes css-fade-left { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes css-fade-right { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes css-scale-up { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes css-blur-in { from { opacity: 0; filter: blur(12px); } to { opacity: 1; filter: blur(0); } }
+@keyframes css-slide-up { from { transform: translateY(60px); } to { transform: translateY(0); } }
+@keyframes css-flip-in { from { opacity: 0; transform: perspective(400px) rotateY(90deg); } to { opacity: 1; transform: perspective(400px) rotateY(0); } }
+@keyframes css-spring { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+@keyframes css-bounce-in { 0% { opacity: 0; transform: scale(0.3); } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes css-thud-in { 0% { opacity: 0; transform: scale(0.95); } 58% { opacity: 1; transform: scale(1.04); } 78% { transform: scale(0.97); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes css-tile-flip {
+  0% { opacity: 0; transform: perspective(160px) rotateX(-52deg) scale(0.92); background-color: var(--tile-flip-from, #f3f4f6); color: var(--tile-flip-color-from, #111827); }
+  36% { opacity: 1; transform: perspective(160px) rotateX(0) scale(1); }
+  54% { transform: perspective(160px) rotateX(78deg) scale(1); }
+  55% { background-color: var(--tile-flip-to, #787c7e); color: var(--tile-flip-color-to, #fff); transform: perspective(160px) rotateX(78deg) scale(1); }
+  100% { transform: perspective(160px) rotateX(0) scale(1); background-color: var(--tile-flip-to, #787c7e); color: var(--tile-flip-color-to, #fff); }
+}
+.animate-css-fade-out { animation: css-fade-out 0.5s ease-in both; }
+.animate-css-fade-out-up { animation: css-fade-out-up 0.5s ease-in both; }
+.animate-css-fade-out-down { animation: css-fade-out-down 0.5s ease-in both; }
+.animate-css-scale-down { animation: css-scale-down 0.4s ease-in both; }
+@keyframes css-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes css-fade-out-up { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-40px); } }
+@keyframes css-fade-out-down { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(40px); } }
+@keyframes css-scale-down { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.85); } }
+/* data-scrollbar-autohide: the scrollbar is transparent until the runtime sets data-scrolling. */
+[data-scrollbar-autohide]:not([data-scrolling]) { scrollbar-color: transparent transparent; }

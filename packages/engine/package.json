@@ -1,0 +1,91 @@
+{
+  "name": "@pagehub/engine",
+  "version": "0.1.0-alpha.0",
+  "description": "Parse, edit, lint and render HTML + Liquid source with minimal, formatting-preserving edits.",
+  "keywords": [
+    "html",
+    "liquid",
+    "editor",
+    "visual-editor",
+    "parser",
+    "tailwind"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/PageHubApp/editor/tree/main/packages/engine#readme",
+  "bugs": {
+    "url": "https://github.com/PageHubApp/editor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PageHubApp/editor.git",
+    "directory": "packages/engine"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "pagehub-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./render": {
+      "pagehub-source": "./src/render.ts",
+      "types": "./dist/render.d.ts",
+      "import": "./dist/render.js"
+    },
+    "./kits": {
+      "pagehub-source": "./src/kits.ts",
+      "types": "./dist/kits.d.ts",
+      "import": "./dist/kits.js"
+    },
+    "./host": {
+      "pagehub-source": "./src/host.ts",
+      "types": "./dist/host.d.ts",
+      "import": "./dist/host.js"
+    },
+    "./canvas": {
+      "pagehub-source": "./src/canvas.ts",
+      "types": "./dist/canvas.d.ts",
+      "import": "./dist/canvas.js"
+    },
+    "./fs": {
+      "pagehub-source": "./src/storage/fs.ts",
+      "types": "./dist/storage/fs.d.ts",
+      "import": "./dist/storage/fs.js"
+    },
+    "./worker": {
+      "pagehub-source": "./src/runtime/worker.ts",
+      "types": "./dist/runtime/worker.d.ts",
+      "import": "./dist/runtime/worker.js"
+    },
+    "./testing": {
+      "pagehub-source": "./src/testing/index.ts",
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@shopify/liquid-html-parser": "2.10.2",
+    "liquidjs": "10.30.0",
+    "magic-string": "1.4.3",
+    "parse5": "8.0.1",
+    "@pagehub/site-runtime": "workspace:*"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-package.mjs",
+    "test": "tsx --conditions=pagehub-source --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

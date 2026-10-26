@@ -1,0 +1,25 @@
+{
+  "name": "@pagehub/examples",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable example sites. Each has a headless example.test.ts.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "tsx --conditions=pagehub-source --test \"*/example.test.ts\"",
+    "serve": "tsx --conditions=pagehub-source _shared/serve.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@pagehub/editor": "workspace:*",
+    "@pagehub/engine": "workspace:*",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15"
+  }
+}

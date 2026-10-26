@@ -1,0 +1,27 @@
+---
+layout: base.liquid
+title: Home
+permalink: /
+---
+<section class="hero">
+  <h1>Grow something together</h1>
+  <p>{{ site.tagline }} Join a waiting list for a plot, or just come and say hello on a Saturday morning.</p>
+  <a class="button" href="{{ '/about/' | url }}">How plots work</a>
+</section>
+
+<main class="wrap">
+  <h2>Latest from the journal</h2>
+  {% assign latest = collections.post | reverse %}
+  <ul class="posts">
+    {% for post in latest limit: 3 %}
+      <li>
+        <article>
+          <h3><a href="{{ post.url | url }}">{{ post.data.title }}</a></h3>
+          <time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: "%B %-d, %Y" }}</time>
+          <p>{{ post.data.summary }}</p>
+        </article>
+      </li>
+    {% endfor %}
+  </ul>
+  <p><a href="{{ '/blog/' | url }}">Read the whole journal</a></p>
+</main>

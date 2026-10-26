@@ -1,0 +1,19 @@
+:root { --moss: #3d6b3f; --bark: #4a3b2c; --cream: #faf6ee; --earth: #e9dfcb; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Georgia, serif; color: var(--bark); background: var(--cream); line-height: 1.65; }
+a { color: var(--moss); }
+.site-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: var(--earth); }
+.brand { font-weight: 700; font-size: 1.2rem; text-decoration: none; color: var(--bark); }
+.nav { display: flex; gap: 1.2rem; font-family: system-ui, sans-serif; }
+.nav a { text-decoration: none; color: var(--bark); }
+.hero { padding: 4rem 1.5rem; text-align: center; background: linear-gradient(var(--earth), var(--cream)); }
+.hero h1 { font-size: clamp(2rem, 6vw, 3.2rem); margin: 0 0 .5rem; }
+.hero p { max-width: 36rem; margin: 0 auto 1.5rem; }
+.button { display: inline-block; padding: .65rem 1.3rem; background: var(--moss); color: #fff; border-radius: .4rem; text-decoration: none; font-family: system-ui, sans-serif; font-weight: 600; }
+.wrap { max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.5rem; }
+.posts { list-style: none; padding: 0; margin: 1.5rem 0; display: grid; gap: 1.5rem; }
+.posts h2, .posts h3 { margin: 0; }
+.posts time, .post time { font: .85rem system-ui, sans-serif; color: #7a6a58; }
+.crumbs { font: .9rem system-ui, sans-serif; }
+.site-footer { padding: 2rem 1.5rem; text-align: center; background: var(--bark); color: var(--earth); font-family: system-ui, sans-serif; font-size: .9rem; }
+.site-footer a { color: #fff; }

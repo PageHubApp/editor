@@ -1,0 +1,72 @@
+{
+  "name": "@pagehub/cli",
+  "version": "0.1.0-alpha.0",
+  "description": "pagehub: open a local site folder in the editor, check and lint it, and pull / push a hosted PageHub site as a folder so coding agents can edit it.",
+  "keywords": [
+    "html",
+    "liquid",
+    "editor",
+    "cli",
+    "lint"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/PageHubApp/editor/tree/main/packages/cli#readme",
+  "bugs": {
+    "url": "https://github.com/PageHubApp/editor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PageHubApp/editor.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "bin": {
+    "pagehub": "./dist/bin.js",
+    "pagehub-editor": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "pagehub-source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./check": {
+      "pagehub-source": "./src/check.ts",
+      "types": "./dist/check.d.ts",
+      "import": "./dist/check.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@pagehub/dev-server": "workspace:*",
+    "@pagehub/engine": "workspace:*",
+    "@pagehub/site-runtime": "workspace:*"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  },
+  "scripts": {
+    "build": "node ../../scripts/build-package.mjs",
+    "test": "tsx --conditions=pagehub-source --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

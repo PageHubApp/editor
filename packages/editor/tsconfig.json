@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true,
+    "customConditions": [
+      "pagehub-source"
+    ]
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}

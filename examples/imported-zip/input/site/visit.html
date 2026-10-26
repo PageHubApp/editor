@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bluebird Cafe - Visit</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="index.html">Bluebird Cafe</a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="menu.html">Menu</a>
+    <a href="visit.html">Visit</a>
+  </nav>
+</header>
+<main>
+<h1>Find us</h1>
+<p>8 Wren Street, between the bakery and the bike shop.
+<p>Open every day, 7 to 3. Dogs are welcome on the patio.
+<form action="/book" method="post">
+  <label>Your name <input name="name"></label>
+  <label>Party size <input name="size" type="number" value="2"></label>
+  <button type="submit" onclick="return confirm('Book a table?')">Book a table</button>
+</form>
+</main>
+<footer class="bottom">
+  <p>Bluebird Cafe, 8 Wren Street. Open daily 7 to 3.</p>
+</footer>
+</body>
+</html>

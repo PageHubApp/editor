@@ -1,0 +1,1068 @@
+{
+ "$comment": "Visual-regression state matrix. `old` = screenshot arguments for the reference editor (run against a throwaway test site, never from this repo); `steps` = the new editor's equivalent, run by scripts/parity/shoot-new.mjs. `panel` = the selector whose bounding box both shots are cropped to. `waiver` = a reason the state is not held to the threshold. `pending` = a reason the new editor can't render the state yet (skipped and listed on every run).",
+ "widths": [
+  390,
+  1280
+ ],
+ "themes": [
+  "light",
+  "dark"
+ ],
+ "height": 800,
+ "threshold": 0.1,
+ "maxDiffRatio": 0.005,
+ "states": [
+  {
+   "id": "empty-canvas",
+   "area": "2 canvas: empty state",
+   "panel": "[data-slot=EmptyState]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "<empty page>"
+    ]
+   },
+   "steps": [],
+   "empty": true
+  },
+  {
+   "id": "selected-container",
+   "area": "2 selection: container",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[data-node-name=Container]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    }
+   ]
+  },
+  {
+   "id": "selected-text",
+   "area": "2 selection: text",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    }
+   ]
+  },
+  {
+   "id": "selected-image",
+   "area": "2 selection: image",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "img"
+    ]
+   },
+   "steps": [
+    {
+     "select": "img"
+    }
+   ]
+  },
+  {
+   "id": "selected-button",
+   "area": "2 selection: button",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "button"
+    ]
+   },
+   "steps": [
+    {
+     "select": "button.btn-primary"
+    }
+   ]
+  },
+  {
+   "id": "selected-link",
+   "area": "2 selection: link",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "a"
+    ]
+   },
+   "steps": [
+    {
+     "select": "a[href='/about']"
+    }
+   ]
+  },
+  {
+   "id": "selected-form",
+   "area": "2 selection: form",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "form"
+    ]
+   },
+   "steps": [
+    {
+     "select": "form"
+    }
+   ]
+  },
+  {
+   "id": "selected-formelement",
+   "area": "2 selection: formelement",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "input"
+    ]
+   },
+   "steps": [
+    {
+     "select": "input#email"
+    }
+   ]
+  },
+  {
+   "id": "hover",
+   "area": "2 hover",
+   "panel": "[data-slot=CanvasOverlays]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--hover",
+     "h1"
+    ]
+   },
+   "steps": [
+    {
+     "hover": "h1",
+     "frame": "iframe"
+    }
+   ],
+   "waiver": "The overlay region includes the canvas content, which two different renderers draw; compare the hover ring by eye until the overlay can be isolated."
+  },
+  {
+   "id": "node-tools",
+   "area": "2 node tools",
+   "panel": "[data-slot=NodeTools]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    }
+   ],
+   "waiver": "Region includes canvas content (different renderers); the tool buttons are compared by eye."
+  },
+  {
+   "id": "inspector-text",
+   "area": "3.2 inspector: Text tab",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[role=tab][data-tooltip-content='Text']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Text']"
+    }
+   ]
+  },
+  {
+   "id": "inspector-layout",
+   "area": "3.2 inspector: Layout tab",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[role=tab][data-tooltip-content='Layout']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Layout']"
+    }
+   ]
+  },
+  {
+   "id": "inspector-design",
+   "area": "3.2 inspector: Design tab",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[role=tab][data-tooltip-content='Design']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Design']"
+    }
+   ]
+  },
+  {
+   "id": "inspector-interactions",
+   "area": "3.2 inspector: Interactions tab",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[role=tab][data-tooltip-content='Interactions']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Interactions']"
+    }
+   ]
+  },
+  {
+   "id": "inspector-advanced",
+   "area": "3.2 inspector: Advanced tab",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[role=tab][data-tooltip-content='Advanced']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Advanced']"
+    }
+   ]
+  },
+  {
+   "id": "inspector-search",
+   "area": "3.2 inspector: search",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "[aria-label=Search settings]",
+     "--type",
+     "padding"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [data-tooltip-content^='Search settings']"
+    },
+    {
+     "type": "[data-slot=Inspector] input[aria-label='Search settings'], [data-slot=Inspector] input[type=search], [data-slot=Inspector] input",
+     "text": "padding"
+    }
+   ]
+  },
+  {
+   "id": "inspector-expand-all",
+   "area": "3.2 inspector: all sections open",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[aria-label=Expand all]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "click": "[data-slot=Inspector] [data-tooltip-content='Expand all']"
+    }
+   ]
+  },
+  {
+   "id": "dark-scope",
+   "area": "3.3 dark variant scope on",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[aria-label*='Dark variant']"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "click": "[data-slot=Inspector] [data-tooltip-content^='Edit dark']"
+    }
+   ]
+  },
+  {
+   "id": "view-desktop",
+   "area": "2.8 / 3.3 breakpoint view: desktop",
+   "panel": "[data-slot=Sidebar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-view-chip=desktop]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "canvas.view",
+     "args": {
+      "view": "desktop"
+     }
+    }
+   ]
+  },
+  {
+   "id": "view-lg",
+   "area": "2.8 / 3.3 breakpoint view: lg",
+   "panel": "[data-slot=Sidebar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-view-chip=lg]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "canvas.view",
+     "args": {
+      "view": "lg"
+     }
+    }
+   ]
+  },
+  {
+   "id": "view-md",
+   "area": "2.8 / 3.3 breakpoint view: md",
+   "panel": "[data-slot=Sidebar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-view-chip=md]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "canvas.view",
+     "args": {
+      "view": "md"
+     }
+    }
+   ]
+  },
+  {
+   "id": "view-sm",
+   "area": "2.8 / 3.3 breakpoint view: sm",
+   "panel": "[data-slot=Sidebar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-view-chip=sm]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "canvas.view",
+     "args": {
+      "view": "sm"
+     }
+    }
+   ]
+  },
+  {
+   "id": "view-mobile",
+   "area": "2.8 / 3.3 breakpoint view: mobile",
+   "panel": "[data-slot=Sidebar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-view-chip=mobile]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "canvas.view",
+     "args": {
+      "view": "mobile"
+     }
+    }
+   ]
+  },
+  {
+   "id": "breakpoint-switcher",
+   "area": "3.3 breakpoint switcher open",
+   "panel": "[data-ph-popover]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=Breakpoints and zoom]"
+    ]
+   },
+   "steps": [
+    {
+     "eval": "document.querySelector('[data-bp-trigger]').click()"
+    }
+   ]
+  },
+  {
+   "id": "breakpoint-chip-open",
+   "area": "3.3 breakpoint chip popover",
+   "panel": "[data-ph-chip-popover]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[data-bp-chip]"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Layout']"
+    },
+    {
+     "click": "[data-ph-bp-chip]"
+    }
+   ]
+  },
+  {
+   "id": "layers-expanded",
+   "area": "3.1 layers: expanded",
+   "panel": "[data-slot=LayersPanel]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=Expand]"
+    ]
+   },
+   "steps": [
+    {
+     "click": "[data-slot=LayersPanel] button[aria-label=Expand]"
+    }
+   ]
+  },
+  {
+   "id": "layers-renaming",
+   "area": "3.1 layers: renaming",
+   "panel": "[data-slot=LayersPanel]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "<layer row>"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "[data-slot=LayersPanel] >> text=Section"
+    },
+    {
+     "waitFor": "[aria-label='Layer name']"
+    }
+   ]
+  },
+  {
+   "id": "layers-dragging",
+   "area": "3.1 layers: dragging",
+   "panel": "[data-slot=LayersPanel]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--drag",
+     "<layer row>"
+    ]
+   },
+   "steps": [
+    {
+     "drag": {
+      "from": "[data-slot=LayersPanel] >> text=Container",
+      "to": "[data-slot=LayersPanel] >> text=Section"
+     }
+    }
+   ]
+  },
+  {
+   "id": "add-panel-components",
+   "area": "3.5 add panel: Components tab",
+   "panel": "[data-slot=AddPanel]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=Insert]"
+    ]
+   },
+   "steps": [
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='Insert']"
+    }
+   ]
+  },
+  {
+   "id": "add-panel-blocks",
+   "area": "3.5 add panel: Blocks tab",
+   "panel": "[data-slot=AddPanel]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=Insert]",
+     "--click",
+     "text=Blocks"
+    ]
+   },
+   "steps": [
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='Insert']"
+    },
+    {
+     "click": "[data-slot=AddPanel] button:has-text(\"Blocks\")"
+    }
+   ]
+  },
+  {
+   "id": "color-picker",
+   "area": "3.4 colour picker",
+   "panel": "[data-slot=ColorPicker]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "<colour swatch>"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Design']"
+    },
+    {
+     "click": "[data-slot=Inspector] button[aria-label='Hex colour']"
+    }
+   ],
+   "pending": "the demo inspector mounts no colour row, so no control opens this picker yet (needs an Add property row that mounts it)"
+  },
+  {
+   "id": "font-picker",
+   "area": "3.4 font picker",
+   "panel": "[data-slot=FontPicker]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--click",
+     "<font control>"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Design']"
+    },
+    {
+     "click": "[data-slot=Inspector] button[aria-label='Search fonts']"
+    }
+   ],
+   "pending": "the demo inspector mounts no font row, so no control opens this picker yet (needs an Add property row that mounts it)"
+  },
+  {
+   "id": "icon-picker",
+   "area": "3.4 icon picker",
+   "panel": "[data-slot=IconPicker]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "<icon control>"
+    ]
+   },
+   "steps": [
+    {
+     "select": "h1"
+    },
+    {
+     "click": "[data-slot=Inspector] button[aria-label=Icons]"
+    }
+   ],
+   "pending": "the demo inspector mounts no icon row, so no control opens this picker yet (needs an Add property row that mounts it)"
+  },
+  {
+   "id": "media-manager",
+   "area": "3.4 media manager",
+   "panel": "[data-slot=MediaManager]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "<More options>",
+     "--click",
+     "text=Media manager"
+    ]
+   },
+   "steps": [
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='More options']"
+    },
+    {
+     "click": "button[role=menuitem]:has-text(\"Media manager\")"
+    }
+   ]
+  },
+  {
+   "id": "command-palette",
+   "area": "1.2 command palette with a query",
+   "panel": "[data-slot=CommandPalette] > *",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--press",
+     "mod+k",
+     "--type",
+     "sect"
+    ]
+   },
+   "steps": [
+    {
+     "press": "ControlOrMeta+k"
+    },
+    {
+     "type": "[aria-label='Search commands']",
+     "text": "sect"
+    }
+   ]
+  },
+  {
+   "id": "context-menu",
+   "area": "2.9 canvas context menu",
+   "panel": "div:has(> button[role=menuitem])",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--right-click"
+    ]
+   },
+   "steps": [
+    {
+     "click": "h1",
+     "frame": "iframe",
+     "button": "right"
+    }
+   ]
+  },
+  {
+   "id": "more-menu",
+   "area": "3.6 top bar: More menu",
+   "panel": "div:has(> button[role=menuitem])",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=More options]"
+    ]
+   },
+   "steps": [
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='More options']"
+    }
+   ]
+  },
+  {
+   "id": "inline-text-toolbar",
+   "area": "2.5 inline text toolbar",
+   "panel": "[data-slot=InlineTextToolbar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "h1"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "h1",
+     "frame": "iframe"
+    },
+    {
+     "waitFor": "[data-slot=InlineTextToolbar] *"
+    }
+   ],
+   "waiver": "Region may include the edited text in the canvas; compare the toolbar by eye."
+  },
+  {
+   "id": "inline-text-font",
+   "area": "2.5 inline text: font panel",
+   "panel": "[data-slot=InlineTextToolbar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "h1",
+     "--click",
+     "<font button>"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "h1",
+     "frame": "iframe"
+    },
+    {
+     "run": "richtext.panel",
+     "args": {
+      "panel": "font"
+     }
+    }
+   ]
+  },
+  {
+   "id": "inline-text-link",
+   "area": "2.5 inline text: link panel",
+   "panel": "[data-slot=InlineTextToolbar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "h1",
+     "--click",
+     "<link button>"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "h1",
+     "frame": "iframe"
+    },
+    {
+     "run": "richtext.panel",
+     "args": {
+      "panel": "link"
+     }
+    }
+   ]
+  },
+  {
+   "id": "inline-text-more",
+   "area": "2.5 inline text: more panel",
+   "panel": "[data-slot=InlineTextToolbar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "h1",
+     "--click",
+     "<more button>"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "h1",
+     "frame": "iframe"
+    },
+    {
+     "run": "richtext.panel",
+     "args": {
+      "panel": "more"
+     }
+    }
+   ]
+  },
+  {
+   "id": "inline-text-token",
+   "area": "2.5 inline text: token panel",
+   "panel": "[data-slot=InlineTextToolbar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--dblclick",
+     "h1",
+     "--click",
+     "<token button>"
+    ]
+   },
+   "steps": [
+    {
+     "dblclick": "h1",
+     "frame": "iframe"
+    },
+    {
+     "run": "richtext.panel",
+     "args": {
+      "panel": "token"
+     }
+    }
+   ]
+  },
+  {
+   "id": "save-dirty",
+   "area": "1.6 save: unsaved change",
+   "panel": "[data-slot=TopBar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "h1",
+     "--type",
+     "<edit>"
+    ]
+   },
+   "steps": [
+    {
+     "eval": "window.__ph.dirty()"
+    }
+   ]
+  },
+  {
+   "id": "save-saving",
+   "area": "1.6 save: saving",
+   "panel": "[data-slot=TopBar]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "[aria-label=Save]"
+    ]
+   },
+   "steps": [
+    {
+     "eval": "window.__ph.mode='slow'; window.__ph.dirty()"
+    },
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='Save']"
+    }
+   ]
+  },
+  {
+   "id": "save-error",
+   "area": "1.6 save banner: error",
+   "panel": "[role=alert]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--mock",
+     "save=500"
+    ]
+   },
+   "steps": [
+    {
+     "eval": "window.__ph.mode='fail'; window.__ph.dirty()"
+    },
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='Save']"
+    },
+    {
+     "waitFor": "[role=alert]"
+    }
+   ]
+  },
+  {
+   "id": "save-conflict",
+   "area": "1.6 save banner: conflict",
+   "panel": "[role=alert]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--mock",
+     "save=409"
+    ]
+   },
+   "steps": [
+    {
+     "eval": "window.__ph.dirty(); window.__ph.external()"
+    },
+    {
+     "click": "[data-slot=TopBar] [data-tooltip-content='Save']"
+    },
+    {
+     "waitFor": "[role=alert]"
+    }
+   ]
+  },
+  {
+   "id": "toolbar-item-rows",
+   "area": "3.4 ToolbarItem select / text / radio rows",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Layout']"
+    }
+   ]
+  },
+  {
+   "id": "chip-states",
+   "area": "3.3 BreakpointChip hidden / hollow / amber / primary / badge",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section",
+     "--click",
+     "[role=tab]:has-text(Layout)"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "ui.set",
+     "args": {
+      "density": "always"
+     }
+    },
+    {
+     "click": "[data-slot=Inspector] [role=tab][data-tooltip-content='Layout']"
+    }
+   ]
+  },
+  {
+   "id": "section-override-dot",
+   "area": "3.3 SectionOverrideDot on",
+   "panel": "[data-slot=Inspector]",
+   "old": {
+    "path": "/dashboard/sites/<test-site-id>/design",
+    "args": [
+     "--click",
+     "section"
+    ]
+   },
+   "steps": [
+    {
+     "select": "section#hero"
+    },
+    {
+     "run": "ui.set",
+     "args": {
+      "view": "md"
+     }
+    }
+   ]
+  }
+ ]
+}

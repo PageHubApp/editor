@@ -1,0 +1,81 @@
+{
+  "name": "@pagehub/site-runtime",
+  "version": "0.1.0-alpha.0",
+  "description": "The small browser script for published sites: the few behaviours native HTML can't do (cart, autoplay, animate, copy, dismiss, scrollspy, polyfills). Not the editor's sandboxed template runtime.",
+  "keywords": [
+    "html",
+    "runtime",
+    "static-site",
+    "cart"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/PageHubApp/editor/tree/main/packages/site-runtime#readme",
+  "bugs": {
+    "url": "https://github.com/PageHubApp/editor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PageHubApp/editor.git",
+    "directory": "packages/site-runtime"
+  },
+  "type": "module",
+  "sideEffects": [
+    "./src/runtime.ts",
+    "./dist/runtime.js"
+  ],
+  "exports": {
+    ".": {
+      "pagehub-source": "./src/index.ts",
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/lib/index.js"
+    },
+    "./head/dismiss": {
+      "pagehub-source": "./src/head/dismiss.ts",
+      "types": "./dist/lib/head/dismiss.d.ts",
+      "import": "./dist/lib/head/dismiss.js"
+    },
+    "./head/theme": {
+      "pagehub-source": "./src/head/theme.ts",
+      "types": "./dist/lib/head/theme.d.ts",
+      "import": "./dist/lib/head/theme.js"
+    },
+    "./bundle": {
+      "types": "./src/bundle.d.mts",
+      "default": "./src/bundle.mjs"
+    },
+    "./assets/*": "./dist/*"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "invokers-polyfill": "1.0.4"
+  },
+  "peerDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "happy-dom": "21.0.3",
+    "@happy-dom/global-registrator": "21.0.3"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs && node ../../scripts/build-package.mjs --out dist/lib --also chunks",
+    "test": "tsx --conditions=pagehub-source --test \"test/**/*.test.ts\"",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

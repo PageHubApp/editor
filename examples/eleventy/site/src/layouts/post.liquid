@@ -1,0 +1,9 @@
+---
+layout: base.liquid
+---
+<main class="wrap post">
+  <p class="crumbs"><a href="{{ '/blog/' | url }}">Garden journal</a></p>
+  <h1>{{ title }}</h1>
+  <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: "%B %-d, %Y" }}</time>
+  {{ content }}
+</main>

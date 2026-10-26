@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Your cart | {{ site.name }}</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+{% render 'header', site: site %}
+<main class="band">
+  <h1>Your cart</h1>
+  <p>You have <span data-cart-count>0</span> items in your cart.</p>
+  <p>Shipping and tax are worked out at checkout.</p>
+  <button class="button" type="button" data-cart="checkout">Check out</button>
+  <p><a href="/products">Keep shopping</a></p>
+</main>
+{% render 'footer', site: site %}
+</body>
+</html>

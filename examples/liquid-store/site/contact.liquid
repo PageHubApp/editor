@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact | {{ site.name }}</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+{% render 'header', site: site %}
+<main class="band">
+  <h1>Ask us anything</h1>
+  <p data-editable="text">Plant not looking happy? Send a photo and a few words and a human will write back within a day.</p>
+  {% form 'contact', class: "contact" %}
+    {% if form.posted_successfully? %}
+      <p class="notice">Thanks, we got your message.</p>
+    {% else %}
+      {% for error in form.errors %}<p class="error">{{ error.message }}</p>{% endfor %}
+      <label>Name <input name="name" type="text" value="{{ form.values.name }}" required></label>
+      <label>Email <input name="email" type="email" value="{{ form.values.email }}" required></label>
+      <label>Message <textarea name="message" rows="5" required>{{ form.values.message }}</textarea></label>
+      <button class="button" type="submit">Send</button>
+    {% endif %}
+  {% endform %}
+</main>
+{% render 'footer', site: site %}
+</body>
+</html>

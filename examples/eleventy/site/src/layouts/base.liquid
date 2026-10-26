@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} | {{ site.name }}</title>
+  <link rel="stylesheet" href="{{ '/assets/styles.css' | url }}">
+</head>
+<body>
+{% render 'header', site: site, page: page %}
+{{ content }}
+{% render 'footer', site: site %}
+</body>
+</html>

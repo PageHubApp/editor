@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": { "noEmit": true, "jsx": "react-jsx", "allowImportingTsExtensions": true, "customConditions": ["pagehub-source"], "types": ["node", "vite/client"] },
+  "include": ["_shared", "*/example.test.ts"]
+}

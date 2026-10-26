@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+.out/
+*.log
+.DS_Store
+
+# parity screenshots and the demo bundle
+scripts/parity/.out/
+
+# ignore node_modules symlinks (not just the dir)
+/node_modules
+packages/*/node_modules
+
+# Parity sweep output (names customer sites)
+parity-report.*
+
+# the playground's own sites folder (SITES_ROOT overrides it)
+apps/playground/sites/
+
+# local dev env (SITES_ROOT)
+.env.local

@@ -1,0 +1,20 @@
+<section class="hero" data-edit-name="Hero">
+  <img class="hero__photo" src="{{ section.settings.photo | image_url: width: 1600 }}" alt="">
+  <div class="hero__copy">
+    <h1>{{ section.settings.headline }}</h1>
+    <p>{{ section.settings.subhead }}</p>
+    <a class="button" href="{{ section.settings.button_link }}">{{ section.settings.button }}</a>
+  </div>
+</section>
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "type": "text", "id": "headline", "label": "Headline", "default": "Plants for every windowsill" },
+    { "type": "textarea", "id": "subhead", "label": "Subheading", "default": "Hand-potted houseplants, shipped with care." },
+    { "type": "image_picker", "id": "photo", "label": "Photo", "default": "hero" },
+    { "type": "text", "id": "button", "label": "Button text", "default": "Shop plants" },
+    { "type": "url", "id": "button_link", "label": "Button link", "default": "/products" }
+  ]
+}
+{% endschema %}

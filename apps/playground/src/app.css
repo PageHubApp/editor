@@ -1,0 +1,9 @@
+/* The playground app itself, as an ordinary host page: Tailwind's global base and unscoped utilities for the header and
+ * loading shell that sit outside the editor. The editor's stylesheet scopes every utility to `[data-ph-editor-scope]`, so
+ * it cannot style them. `themes: false`: the palette comes from the editor sheet's light/dark themes on `<html data-theme>`. */
+@import "tailwindcss" source(none);
+@plugin "daisyui" {
+  themes: false;
+}
+@source "./main.tsx";
+@source "./sample/sample.ts";

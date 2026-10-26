@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": [
+      "node"
+    ],
+    "customConditions": [
+      "pagehub-source"
+    ]
+  },
+  "include": [
+    "src",
+    "test"
+  ]
+}

@@ -1,0 +1,24 @@
+/*
+ * Default Tailwind entry for compiling an opened site's CSS for the editor canvas. A site that has its own
+ * `tailwind.css` next to its pages uses that instead (design tokens, plugins, themes).
+ */
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* ─── Show-hide overlays / drawers (runtime layout, any site) ──────
+ * A show-hide / open-modal target is a native [popover] opened by `command="show-popover"`; the
+ * ph-overlay / ph-drawer classes supply the shown-state layout. Strip the UA popover box so the
+ * target's own utilities decide the layout; a closed popover keeps the UA `display:none`. */
+/* A popover or dialog target starts with the authored `hidden` class; the `show` chunk drops it while the target is open (as live's
+ * class toggle does), so `hidden` is never overridden with CSS and `lg:hidden` and friends keep winning. These layout rules sit in
+ * `components` for the same reason: unlayered CSS would beat every Tailwind utility. */
+@layer components {
+  .ph-overlay:not(.hidden):not([popover]),
+  .ph-overlay:popover-open { display: flex; align-items: center; justify-content: center; }
+  .ph-drawer:not(.hidden):not([popover]),
+  .ph-drawer:popover-open { display: flex; flex-direction: column; }
+}
+@layer base {
+  [popover] { inset: auto; width: auto; height: auto; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: visible; color: inherit; background: transparent; }
+}
+body:not([data-ph-canvas]):has(.ph-overlay:not(.hidden):not([popover]), .ph-overlay:popover-open) { overflow: hidden; }

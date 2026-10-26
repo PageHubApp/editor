@@ -1,0 +1,23 @@
+{
+  "sections": {
+    "hero_1": {
+      "type": "hero",
+      "settings": {
+        "heading": "Fresh brews",
+        "photo": "shopify://shop_images/hero.jpg",
+        "overlay": 40,
+        "show_badge": false,
+        "bogus": "x"
+      }
+    },
+    "featured": {
+      "type": "featured-collection",
+      "settings": { "title": "Best \"sellers\" aren't ours", "collection": "all", "columns": 4 },
+      "blocks": { "b1": { "type": "card", "settings": { "label": "x" } } },
+      "block_order": ["b1"]
+    },
+    "old": { "type": "hero", "disabled": true, "settings": { "heading": "Old" } },
+    "note": { "type": "rich-text", "settings": { "text": "Hello" } }
+  },
+  "order": ["hero_1", "featured", "old", "note", "ghost"]
+}
