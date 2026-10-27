@@ -29,6 +29,38 @@ function zoneOffsetMs(zone: string, instant: number): number {
 }
 
 /**
+ * The zone's offset at `instant` in minutes WEST of UTC (liquidjs's convention: Los Angeles in winter is 480).
+ * liquidjs works a named zone's offset out by reading locale strings back in the SERVER's zone, which is an hour off
+ * on the server's own daylight-saving change days; handing it this number avoids that.
+ */
+export function minutesWestAt(zone: string, instant: Date): number {
+  return -zoneOffsetMs(zone, instant.getTime()) / 60000;
+}
+
+/**
+ * A Date whose SERVER-local fields are `instant`'s wall-clock time in `zone`. liquidjs formats through the server's
+ * local fields after shifting by the difference of two offsets, which is an hour off when the server changes clocks
+ * between the two; a Date that already reads right locally, passed with the server's own offset, needs no shift.
+ */
+export function serverLocalWallClock(zone: string, instant: Date): Date {
+  const w = new Date(instant.getTime() + zoneOffsetMs(zone, instant.getTime()));
+  return new Date(w.getUTCFullYear(), w.getUTCMonth(), w.getUTCDate(), w.getUTCHours(), w.getUTCMinutes(), w.getUTCSeconds(), w.getUTCMilliseconds());
+}
+
+/** The instant `value` denotes, read the way liquidjs reads it, or null when it is not a date. */
+export function instantOf(value: unknown, timezone: number | string | undefined): Date | null {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  if (value === "now" || value === "today") return new Date();
+  if (typeof value === "number") return new Date(value * 1000);
+  if (typeof value !== "string" || value.trim() === "") return null;
+  if (/^\d+$/.test(value)) return new Date(Number(value) * 1000);
+  const wall = wallClockInstant(value, timezone);
+  if (wall) return Number.isNaN(wall.getTime()) ? null : wall;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/**
  * The instant a wall-clock string denotes in `timezone` (an IANA name, or minutes WEST of UTC as liquidjs takes it),
  * or null when `value` is not a wall-clock string. An impossible date (`2026-13-45`) is an Invalid Date.
  */

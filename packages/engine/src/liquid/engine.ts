@@ -20,7 +20,7 @@ import { Liquid, type FilterImplOptions } from "liquidjs";
 import type { TagClass } from "../runtime/defineTag";
 import { escapeHtml } from "../runtime/escape";
 import { PaginateTag } from "./tags/paginate";
-import { wallClockInstant } from "./wallClock";
+import { instantOf, minutesWestAt, serverLocalWallClock, wallClockInstant } from "./wallClock";
 
 export interface RenderLimits {
   /** Max template source length per parse, in characters. */
@@ -66,8 +66,17 @@ export function createEngine(options: EngineOptions = {}): Liquid {
   const coreDate = engine.filters.date as unknown as (this: unknown, v: unknown, ...rest: unknown[]) => unknown;
   engine.registerFilter("date", function (this: unknown, v: unknown, ...rest: unknown[]) {
     // A string with no offset is a wall-clock time in the site's zone, never the server's (wallClock.ts).
-    const wall = wallClockInstant(v, options.timezoneOffset ?? 0);
+    const zone = options.timezoneOffset ?? 0;
+    const wall = wallClockInstant(v, zone);
     if (wall && Number.isNaN(wall.getTime())) return v; // `2027-02-30`: not a date, left as written like any other unparsable value
+    // A named site zone works around two liquidjs daylight-saving slips (wallClock.ts). A zone the template names itself is its own.
+    const instant = typeof zone === "string" && rest[1] === undefined ? instantOf(v, zone) : null;
+    if (instant) {
+      // A format that prints the offset needs the true one; every other format reads the wall-clock fields.
+      if (/%[:^-]?[zZ]/.test(String(rest[0] ?? ""))) return coreDate.call(this, instant, rest[0], minutesWestAt(zone as string, instant));
+      const local = serverLocalWallClock(zone as string, instant);
+      return coreDate.call(this, local, rest[0], local.getTimezoneOffset());
+    }
     return coreDate.call(this, wall ?? v, ...rest);
   } as unknown as FilterImplOptions);
   for (const name of REMOVED_TAGS) delete (engine.tags as Record<string, TagClass>)[name];

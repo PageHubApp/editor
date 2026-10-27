@@ -43,6 +43,17 @@ test("a string with an offset is an instant, shifted into the site's zone", () =
   assert.equal(out["America/Los_Angeles"]!["2027-01-16T10:00:00+02:00"]!.split("|")[0], "2027-01-16 12:00 AM");
 });
 
+test("the server's own daylight-saving change days print the right day and hour", () => {
+  // Nov 1 and Mar 8, 2026 are the US clock changes: liquidjs alone printed `2026-10-31 11:00 PM` on a Pacific server.
+  for (const server of ["America/Los_Angeles", "America/New_York", "UTC"]) {
+    const la = probe(server)["America/Los_Angeles"]!;
+    assert.equal(la["2026-11-01"]!.split("|")[0], "2026-11-01 12:00 AM", server);
+    assert.equal(la["2026-03-08"]!.split("|")[0], "2026-03-08 12:00 AM", server);
+    assert.equal(la["2026-11-01T08:30Z"]!.split("|")[0], "2026-11-01 01:30 AM", `${server}: the second 1:30, in standard time`);
+    assert.equal(la["2026-03-08T10:30Z"]!.split("|")[0], "2026-03-08 03:30 AM", `${server}: after the spring jump`);
+  }
+});
+
 test("an impossible date is left as written, not rolled into the next month", () => {
   const z = probe("UTC")["UTC"]!["2027-02-30T10:00"]!;
   assert.ok(z.startsWith("2027-02-30T10:00|"), z);
