@@ -8,7 +8,7 @@
 pnpm add @pagehub/editor @pagehub/engine react react-dom
 ```
 
-React 19 is a peer dependency.
+React 19 is a peer dependency. Runnable examples (plain HTML, Vite + React, Next.js) are in [PageHubApp/demos](https://github.com/PageHubApp/demos).
 
 ## Styles
 
