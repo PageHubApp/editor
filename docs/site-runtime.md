@@ -56,6 +56,14 @@ A form can build its line from its own fields: `data-cart-id-template` fills `{n
 </form>
 ```
 
+**Pay in the page.** Put an element with `data-cart-pay` inside a `<dialog>` and checkout shows Stripe's payment form there instead of sending the buyer to Stripe's page, on sites whose Stripe is connected through PageHub (others keep Stripe's page). The dialog opens on its own; closing it drops the form, and a paid order lands on the success page as usual. The checkout code and Stripe.js load only when a buyer checks out.
+
+```html
+<dialog id="pay" closedby="any" class="modal">
+  <div class="modal-box max-w-xl"><div data-cart-pay></div></div>
+</dialog>
+```
+
 `open` toggles the `cart:open` state key. The drawer panel and its backdrop are ordinary elements with `data-state-show="cart:open"` and `hidden`; a link with `data-cart="open"` on a page without one just follows its href. Adding to the cart opens it.
 
 ```html

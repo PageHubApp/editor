@@ -330,6 +330,38 @@ describe("cart", () => {
     assert.equal(assign.mock.calls[0]!.arguments[0], "https://stripe.test/b");
   });
 
+  it("with a [data-cart-pay] spot, a site that pays in the page shows Stripe's form there instead of leaving", async () => {
+    resetDom(
+      '<form data-cart="add" data-cart-then="checkout" data-cart-id-template="pd:abc/calendar={checkIn}..{checkOut}">' +
+        '<input name="checkIn" value="2026-11-02"><input name="checkOut" value="2026-11-04"><button>book</button></form>' +
+        "<dialog><div data-cart-pay></div></dialog>"
+    );
+    const assign = mock.fn();
+    Object.defineProperty(window, "location", { value: { assign, origin: "https://stay.test", pathname: "/stay/dune", href: "https://stay.test/stay/dune", search: "" }, configurable: true });
+    const dialog = document.querySelector("dialog")!;
+    const showModal = mock.fn(() => dialog.setAttribute("open", ""));
+    (dialog as any).showModal = showModal;
+    const made: any[] = [];
+    const mount = mock.fn();
+    (window as any).Stripe = (key: string, opts: any) => ({
+      createEmbeddedCheckoutPage: async (o: any) => (made.push([key, opts, await o.fetchClientSecret()]), { mount, destroy() {} }),
+    });
+    const calls: any[] = [];
+    g.fetch = async (url: string, init: any) => (
+      calls.push([url, JSON.parse(init.body)]),
+      { json: async () => ({ clientSecret: "cs_secret", publishableKey: "pk_test_1", stripeAccount: "acct_1" }) }
+    );
+    stops.push(cart.init(document, { chunkBase: "/c/", cart: { api: "/pay/session", key: "cart-booking-pay", body: { pageId: "pg4" } } }));
+    fire(document.querySelector("form")!, "submit");
+    await tick(10);
+    assert.equal(calls[0][1].embedded, true);
+    assert.deepEqual(made[0], ["pk_test_1", { stripeAccount: "acct_1" }, "cs_secret"]);
+    assert.equal(mount.mock.calls[0]!.arguments[0], document.querySelector("[data-cart-pay]"));
+    assert.equal(showModal.mock.callCount(), 1);
+    assert.equal(assign.mock.callCount(), 0, "the buyer stays on the page");
+    delete (window as any).Stripe;
+  });
+
   it("a booking form with an empty templated field says so and adds nothing", async () => {
     resetDom('<span data-cart-count>0</span><form data-cart="add" data-cart-id-template="pd:abc/calendar={checkIn}..{checkOut}"><input name="checkIn" value="2026-11-02"><input name="checkOut" value=""><button>book</button></form>');
     stops.push(cart.init(document, { chunkBase: "/c/", cart: { key: "cart-booking-2" } }));

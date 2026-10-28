@@ -2,6 +2,7 @@ import type { RuntimeConfig } from "../config";
 import { trackOverlay, untrackOverlay } from "../overlays";
 import { CART_OPEN as OPEN } from "../state-action";
 import { get, set, subscribe, truthy } from "../state-store";
+import type { EmbeddedPay } from "../checkout";
 
 /** One cart line. `priceId` is the line identity (a payment-provider price id, or the `pd:<rowId>` sentinel); amounts are minor units. Same shape a payment-backed host stores. */
 export interface CartLine {
@@ -31,14 +32,17 @@ export interface CheckoutOptions {
   /** The buyer's choices kept on the order (dates, guests, a note): a `data-cart-then="checkout"` form's other fields. */
   details?: Record<string, string>;
 }
-/** Where the cart lives and how it checks out. `checkout` resolves to the URL to send the buyer to, or throws an Error whose message is shown in `cart:error`. */
+/**
+ * Where the cart lives and how it checks out. `checkout` resolves to the URL to send the buyer to, or the payment form
+ * to show in the page (`EmbeddedPay`), or throws an Error whose message is shown in `cart:error`.
+ */
 export interface CartAdapter {
   get(): Promise<Cart>;
   add(line: CartLine): Promise<Cart>;
   /** Zero or less removes the line. */
   setQuantity(priceId: string, quantity: number): Promise<Cart>;
   clear(): Promise<Cart>;
-  checkout(cart: Cart, opts: CheckoutOptions): Promise<string>;
+  checkout(cart: Cart, opts: CheckoutOptions): Promise<string | EmbeddedPay>;
 }
 
 const KEY = "cart";
@@ -133,28 +137,7 @@ export function localCart(win: Window, cfg: NonNullable<RuntimeConfig["cart"]> =
     async checkout(cart, o) {
       const api = cfg.api;
       if (!api) return (cfg.endpoint ?? "/checkout") + "?items=" + cart.items.map((l) => l.priceId + ":" + l.quantity).join(",");
-      let d: any = null;
-      try {
-        const r = await fetch(api, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            ...cfg.body,
-            items: cart.items.map((l) => ({ priceId: l.priceId, quantity: l.quantity })),
-            successUrl: o.successUrl,
-            cancelUrl: o.cancelUrl,
-            promotionCode: o.promotionCode || undefined,
-            details: o.details,
-          }),
-        });
-        d = await r.json().catch(() => null);
-      } catch {
-        throw new Error("Couldn't reach checkout. Check your connection and try again.");
-      }
-      if (d?.url) return String(d.url);
-      if (d?.code === "invalid_promo") set("cart:promo-invalid", d.error || "That promo code isn't valid");
-      throw new Error(d?.error || "Checkout didn't start. Try again in a moment.");
+      return (await import("../checkout")).requestCheckout(win, api, cfg.body, cart, o);
     },
   };
 }
@@ -230,6 +213,8 @@ function withVariant(item: Record<string, any>, template: string | null): Record
  *   form's other fields as the order's details.
  * - open: toggles the `cart:open` state key; the drawer panel and backdrop carry `data-state-show="cart:open"`.
  * - checkout: sends the lines to the adapter's checkout; `data-cart-success` / `data-cart-cancel` are the return paths.
+ *   With a `[data-cart-pay]` element on the page (inside a `<dialog>`), a site that can take payment in the page shows
+ *   the payment form there instead of sending the buyer to the payment provider's page.
  *
  * `[data-cart-count]` shows the item count (`[data-cart-items]` lists the lines: the `cart-items` chunk). The cart is published into the
  * state store as `cart:count`, `cart:total`, `cart:items-json`, with failures in `cart:error`.
@@ -321,7 +306,8 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
         promotionCode: (get("cart:promo") || "").trim() || undefined,
         details,
       });
-      win.location.assign(dest);
+      if (typeof dest === "string") return win.location.assign(dest);
+      await (await import("../checkout")).mountPay(win, dest); // loaded only when a site pays in the page
     } catch (e) {
       set(ERROR, e instanceof Error ? e.message : "Checkout didn't start. Try again in a moment.");
     }
