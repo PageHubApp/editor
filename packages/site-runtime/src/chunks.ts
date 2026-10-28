@@ -1,6 +1,6 @@
 import type { RuntimeConfig } from "./config";
 
-export type ChunkName = "cart" | "cart-items" | "autoplay" | "animate" | "track" | "scrollspy" | "invokers" | "form" | "map" | "fit-text" | "scroll-effect" | "overflow" | "carousel" | "state" | "state-view" | "state-compute" | "chat" | "on" | "show" | "refetch" | "actions" | "lightbox";
+export type ChunkName = "cart" | "cart-items" | "autoplay" | "animate" | "track" | "scrollspy" | "invokers" | "form" | "map" | "fit-text" | "scroll-effect" | "overflow" | "carousel" | "state" | "state-view" | "state-compute" | "chat" | "on" | "show" | "refetch" | "actions" | "lightbox" | "date-range";
 
 /** What a lazy chunk exports. `init` runs once after load; `mount` runs for every matching element, including ones added later. */
 export interface ChunkModule {
@@ -32,6 +32,7 @@ export const CHUNK_SELECTORS: Record<ChunkName, string> = {
   refetch: "[data-refetch]",
   actions: "[data-close-link],[data-print],[data-scroll-by],[data-set-field],[data-key-click],[data-tab-target]",
   lightbox: "[data-lightbox]",
+  "date-range": "[data-date-range]",
 };
 
 export type ChunkLoader = (url: string) => Promise<ChunkModule>;

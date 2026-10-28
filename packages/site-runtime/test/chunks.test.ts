@@ -6,6 +6,7 @@ import * as animate from "../src/chunks/animate.ts";
 import * as autoplay from "../src/chunks/autoplay.ts";
 import * as cart from "../src/chunks/cart.ts";
 import * as cartItems from "../src/chunks/cart-items.ts";
+import * as dateRange from "../src/chunks/date-range.ts";
 import * as form from "../src/chunks/form.ts";
 import * as invokers from "../src/chunks/invokers.ts";
 import * as show from "../src/chunks/show.ts";
@@ -596,5 +597,58 @@ describe("show", () => {
     assert.deepEqual(unlayered, [], "no top-level .ph-drawer/.ph-overlay display rule");
     assert.match(css, /@layer components \{\s*\.ph-overlay/);
     assert.doesNotMatch(css, /\[popover\]\.hidden:popover-open/);
+  });
+});
+
+describe("date-range", () => {
+  const cal = () => {
+    // Nov 1–2 open at $210, Nov 3 booked, Nov 4 open at $250.
+    resetDom(
+      '<form><input type="hidden" name="checkIn"><input type="hidden" name="checkOut">' +
+        '<div data-date-range="stay">' +
+        '<button type="button" data-date="2026-11-01" data-price="21000">1</button>' +
+        '<button type="button" data-date="2026-11-02" data-price="21000">2</button>' +
+        '<button type="button" data-date="2026-11-03" data-booked>3</button>' +
+        '<button type="button" data-date="2026-11-04" data-price="25000">4</button>' +
+        "</div></form>"
+    );
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    return (d: string) => document.querySelector<HTMLElement>(`[data-date="${d}"]`)!;
+  };
+  const val = (n: string) => document.querySelector<HTMLInputElement>(`input[name="${n}"]`)!.value;
+
+  it("check-in then check-out picks the stay, fills the form and totals the nights", () => {
+    const day = cal();
+    fire(day("2026-11-01"), "click");
+    assert.equal(day("2026-11-01").getAttribute("data-range"), "start");
+    assert.equal(get("stay:in"), "Sun, Nov 1");
+    assert.equal(get("stay:out"), undefined);
+    fire(day("2026-11-03"), "click"); // a booked night can be the check-out day
+    assert.deepEqual(["2026-11-01", "2026-11-02", "2026-11-03"].map((d) => day(d).getAttribute("data-range")), ["start", "in", "end"]);
+    assert.equal(val("checkIn"), "2026-11-01");
+    assert.equal(val("checkOut"), "2026-11-03");
+    assert.equal(get("stay:nights"), "2 nights");
+    assert.equal(get("stay:total"), "$420.00");
+  });
+
+  it("a stay across a booked night starts over; a booked day can't be check-in", () => {
+    const day = cal();
+    fire(day("2026-11-02"), "click");
+    fire(day("2026-11-04"), "click"); // Nov 3 is booked: Nov 4 becomes the new check-in
+    assert.equal(day("2026-11-04").getAttribute("data-range"), "start");
+    assert.equal(day("2026-11-02").getAttribute("data-range"), null);
+    assert.equal(val("checkOut"), "");
+    fire(day("2026-11-03"), "click"); // booked, and before check-in: ignored
+    assert.equal(val("checkIn"), "2026-11-04");
+  });
+
+  it("a tap after a full stay starts a new one", () => {
+    const day = cal();
+    fire(day("2026-11-01"), "click");
+    fire(day("2026-11-02"), "click");
+    assert.equal(get("stay:nights"), "1 night");
+    fire(day("2026-11-01"), "click");
+    assert.equal(val("checkOut"), "");
+    assert.equal(get("stay:total"), undefined);
   });
 });

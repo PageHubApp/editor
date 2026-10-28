@@ -14,7 +14,7 @@ import { themeClick } from "./core/themeToggle";
  * still mount, but author behaviour — `data-on` JS, form submission, tracking, chat, and the delegated
  * click actions (copy / dismiss / theme / closedby) — stays off so a click selects instead of acting.
  */
-const EDIT_SKIP = new Set<ChunkName>(["on", "form", "track", "chat", "actions", "lightbox"]);
+const EDIT_SKIP = new Set<ChunkName>(["on", "form", "track", "chat", "actions", "lightbox", "date-range"]);
 
 const NAMES = Object.keys(CHUNK_SELECTORS) as ChunkName[];
 

@@ -64,6 +64,20 @@ A form can build its line from its own fields: `data-cart-id-template` fills `{n
 </dialog>
 ```
 
+**Pick dates on a calendar.** `data-date-range` (`data-date-range="<name>"`) on a calendar makes its days a range picker: tap check-in, then check-out. Days are `data-date="YYYY-MM-DD"` buttons with the night's `data-price` in minor units; a booked night carries `data-booked` and can only be the check-out day, and a stay that would cross one starts over at the tapped day. The picked days get `data-range="start|in|end"` (style them with `data-[range=in]:bg-primary/20` and the like), the dates fill the `checkIn` / `checkOut` inputs in the calendar's form (`data-date-range-in` / `-out` rename them), and the state keys `<name>:in`, `<name>:out`, `<name>:nights` and `<name>:total` (in `data-currency`, default usd) feed a summary. Months can be slides of a `data-carousel` with your own arrows.
+
+```html
+<form data-cart="add" data-cart-then="checkout" data-cart-id-template="pd:{{ item.id }}/calendar={checkIn}..{checkOut}">
+  <input type="hidden" name="checkIn"> <input type="hidden" name="checkOut">
+  <div data-date-range="stay" data-currency="usd">
+    <button type="button" data-date="2026-11-01" data-price="21000" class="data-[range=start]:bg-primary">1</button>
+    <button type="button" data-date="2026-11-02" data-booked>2</button>
+  </div>
+  <p data-state-show="stay:out" hidden><span data-state-text="stay:nights"></span>, <span data-state-text="stay:total"></span></p>
+  <button>Book</button>
+</form>
+```
+
 `open` toggles the `cart:open` state key. The drawer panel and its backdrop are ordinary elements with `data-state-show="cart:open"` and `hidden`; a link with `data-cart="open"` on a page without one just follows its href. Adding to the cart opens it.
 
 ```html
