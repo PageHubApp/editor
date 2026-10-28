@@ -46,6 +46,16 @@ A product with options sets `hasMultipleVariants`, `optionNamesCsv` and `variant
 <button data-state-set="pdp:axis:Pot:Cream">Cream</button>
 ```
 
+A form can build its line from its own fields: `data-cart-id-template` fills `{name}` with each field's value (an empty one sets `cart:error`). With `data-cart-then="checkout"` it goes straight to checkout instead of opening the cart, and its other fields (not `id` / `quantity`) travel with the order as its details. With PageHub's checkout, `pd:<rowId>/<field>=<from>..<to>` charges the row's list entries between two days (a stay's nights), or `=<key>,<key>` named entries.
+
+```html
+<form data-cart="add" data-cart-then="checkout" data-cart-id-template="pd:{{ item.id }}/calendar={checkIn}..{checkOut}">
+  <input type="date" name="checkIn" required> <input type="date" name="checkOut" required>
+  <input type="number" name="guests" min="1" value="2">
+  <button>Book</button>
+</form>
+```
+
 `open` toggles the `cart:open` state key. The drawer panel and its backdrop are ordinary elements with `data-state-show="cart:open"` and `hidden`; a link with `data-cart="open"` on a page without one just follows its href. Adding to the cart opens it.
 
 ```html

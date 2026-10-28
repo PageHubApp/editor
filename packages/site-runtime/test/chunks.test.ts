@@ -313,6 +313,33 @@ describe("cart", () => {
     assert.equal(text("[data-cart-count]"), "3");
   });
 
+  it("a booking form builds its line from its fields and checks out with them as details", async () => {
+    resetDom(
+      '<form data-cart="add" data-cart-then="checkout" data-cart-id-template="pd:abc/calendar={checkIn}..{checkOut}">' +
+        '<input name="checkIn" value="2026-11-02"><input name="checkOut" value="2026-11-05"><input name="guests" value="4"><input name="note" value=""><button>book</button></form>'
+    );
+    const assign = mock.fn();
+    Object.defineProperty(window, "location", { value: { assign, origin: "https://stay.test", pathname: "/stay/dune", href: "https://stay.test/stay/dune", search: "" }, configurable: true });
+    const calls: any[] = [];
+    g.fetch = async (url: string, init: any) => (calls.push([url, JSON.parse(init.body)]), { json: async () => ({ url: "https://stripe.test/b" }) });
+    stops.push(cart.init(document, { chunkBase: "/c/", cart: { api: "/pay/session", key: "cart-booking", body: { pageId: "pg3" } } }));
+    fire(document.querySelector("form")!, "submit");
+    await tick(8);
+    assert.deepEqual(calls[0][1].items, [{ priceId: "pd:abc/calendar=2026-11-02..2026-11-05", quantity: 1 }]);
+    assert.deepEqual(calls[0][1].details, { checkIn: "2026-11-02", checkOut: "2026-11-05", guests: "4" }, "empty fields left out");
+    assert.equal(assign.mock.calls[0]!.arguments[0], "https://stripe.test/b");
+  });
+
+  it("a booking form with an empty templated field says so and adds nothing", async () => {
+    resetDom('<span data-cart-count>0</span><form data-cart="add" data-cart-id-template="pd:abc/calendar={checkIn}..{checkOut}"><input name="checkIn" value="2026-11-02"><input name="checkOut" value=""><button>book</button></form>');
+    stops.push(cart.init(document, { chunkBase: "/c/", cart: { key: "cart-booking-2" } }));
+    fire(document.querySelector("form")!, "submit");
+    await tick(5);
+    assert.equal(get("cart:error"), "Fill in every field first");
+    assert.equal(text("[data-cart-count]"), "0");
+    set("cart:error", undefined);
+  });
+
   it("checkout posts the lines the way storefront carts do and follows the url", async () => {
     resetDom(`<button ${priced("a", 1500)}>a</button><button data-cart="checkout" data-cart-success="/thanks">go</button>`);
     const assign = mock.fn();

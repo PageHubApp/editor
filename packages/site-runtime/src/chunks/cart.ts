@@ -28,6 +28,8 @@ export interface CheckoutOptions {
   successUrl: string;
   cancelUrl: string;
   promotionCode?: string;
+  /** The buyer's choices kept on the order (dates, guests, a note): a `data-cart-then="checkout"` form's other fields. */
+  details?: Record<string, string>;
 }
 /** Where the cart lives and how it checks out. `checkout` resolves to the URL to send the buyer to, or throws an Error whose message is shown in `cart:error`. */
 export interface CartAdapter {
@@ -143,6 +145,7 @@ export function localCart(win: Window, cfg: NonNullable<RuntimeConfig["cart"]> =
             successUrl: o.successUrl,
             cancelUrl: o.cancelUrl,
             promotionCode: o.promotionCode || undefined,
+            details: o.details,
           }),
         });
         d = await r.json().catch(() => null);
@@ -161,6 +164,27 @@ function returnUrl(win: Window, href: string | null, status: "success" | "cancel
   const loc = win.location;
   const path = href && href.startsWith("/") ? href.split("#")[0]! : loc.pathname;
   return loc.origin + path + (path.includes("?") ? "&" : "?") + "checkout=" + status;
+}
+
+/** `{name}` in `template` filled from the form's fields; null when one is empty or the form is missing. */
+function fillTemplate(template: string, f: FormData | null): string | null {
+  let missing = false;
+  const out = template.replace(/\{([\w-]+)\}/g, (_, name: string) => {
+    const v = String(f?.get(name) ?? "").trim();
+    if (!v) missing = true;
+    return v;
+  });
+  return missing ? null : out;
+}
+
+/** A form's fields as order details, leaving out the cart's own (`id`, `quantity`). Text only, as the server keeps it. */
+function detailsOf(f: FormData | null): Record<string, string> | undefined {
+  if (!f) return undefined;
+  const out: Record<string, string> = {};
+  f.forEach((v, k) => {
+    if (k !== "id" && k !== "quantity" && typeof v === "string" && v.trim()) out[k] = v.trim();
+  });
+  return Object.keys(out).length ? out : undefined;
 }
 
 /** The parsed `data-cart-item` JSON, or null. It is the product row's cart fields, written by the converter as `{{ item.* }}` bindings. */
@@ -201,6 +225,9 @@ function withVariant(item: Record<string, any>, template: string | null): Record
  * - add: the button's `data-cart-item` (the product row's cart fields as JSON, see `toCartLine`), or just
  *   `data-cart-id` / the form's `id` field. Quantity from the `data-cart-qty-field` input, the form's `quantity` field,
  *   `data-cart-qty`, else 1. A multi-variant item needs its options picked (`data-cart-variant-axes`).
+ *   `data-cart-id-template="pd:<rowId>/calendar={checkIn}..{checkOut}"` builds the line's id from the form's fields
+ *   (picked entries of a row: nights, slots); `data-cart-then="checkout"` goes straight to checkout, sending the
+ *   form's other fields as the order's details.
  * - open: toggles the `cart:open` state key; the drawer panel and backdrop carry `data-state-show="cart:open"`.
  * - checkout: sends the lines to the adapter's checkout; `data-cart-success` / `data-cart-cancel` are the return paths.
  *
@@ -259,7 +286,11 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
 
   const add = async (el: Element, form: HTMLFormElement | null) => {
     const f = form ? new FormData(form) : null;
-    const item = itemOf(el) ?? { id: String(f?.get("id") ?? el.getAttribute("data-cart-id") ?? "") };
+    // `data-cart-id-template="pd:…/calendar={checkIn}..{checkOut}"`: the line's id from the form's fields.
+    const template = el.getAttribute("data-cart-id-template");
+    const templated = template ? fillTemplate(template, f) : null;
+    if (template && !templated) return void set(ERROR, "Fill in every field first");
+    const item = templated ? { id: templated } : itemOf(el) ?? { id: String(f?.get("id") ?? el.getAttribute("data-cart-id") ?? "") };
     if (!item.id && !item.metadata?.priceId) return;
     // A bare `id` (hand-written markup) is its own price id; the title falls back to it.
     if (!item.metadata?.priceId && !item.priceId) item.priceId = item.id;
@@ -276,9 +307,11 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
     if (!line) return void set(ERROR, "This product is not available for purchase");
     set(ERROR, undefined);
     await apply(cart.add(line));
+    // `data-cart-then="checkout"` (a booking, a "buy now"): straight to checkout with the form's fields as details.
+    if (el.getAttribute("data-cart-then") === "checkout") return void checkout(el, detailsOf(f));
     set(OPEN, "true"); // show what was added, as storefront carts usually do
   };
-  const checkout = async (el: Element) => {
+  const checkout = async (el: Element, details?: Record<string, string>) => {
     if (!current.items.length) return;
     set(ERROR, undefined);
     try {
@@ -286,6 +319,7 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
         successUrl: returnUrl(win, el.getAttribute("data-cart-success"), "success"),
         cancelUrl: returnUrl(win, el.getAttribute("data-cart-cancel"), "cancel"),
         promotionCode: (get("cart:promo") || "").trim() || undefined,
+        details,
       });
       win.location.assign(dest);
     } catch (e) {
