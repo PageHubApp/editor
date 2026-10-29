@@ -49,7 +49,7 @@ export const RUNTIME_ATTRIBUTES: readonly string[] = [
   "data-carousel", "data-state-set", "data-state-toggle", "data-state-clear", "data-state-step", "data-state-show", "data-state-class", "data-state-text",
   "data-state-src", "data-state-bind", "data-state-in-view", "data-state-compute", "data-chat-send", "data-chat", "data-on", "data-show-on",
   "data-tab-target", "data-autosubmit", "data-copy", "data-dismiss", "data-theme-toggle", "data-refetch", "closedby",
-  "data-close-link", "data-print", "data-scroll-by", "data-set-field", "data-key-click", "data-lightbox",
+  "data-close-link", "data-print", "data-scroll-by", "data-set-field", "data-key-click", "data-lightbox", "data-date-range",
 ];
 const RUNTIME_SET: ReadonlySet<string> = new Set(RUNTIME_ATTRIBUTES);
 
