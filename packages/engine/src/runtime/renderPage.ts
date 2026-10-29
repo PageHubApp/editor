@@ -15,6 +15,7 @@ import MagicString from "magic-string";
 import { stripEditAttributes, EDITABLE_ATTRIBUTE } from "../attributes/editAttributes";
 import { allNodes, isElement, parseSource, segmentsText } from "../parse/parse";
 import { repairNesting } from "../parse/repairNesting";
+import type { Environment } from "../parse/environment";
 import { ATTRIBUTE_TYPES } from "../parse/parse";
 import { headSnippets, injectIntoHead, stampAriaCurrent } from "./pageHtml";
 import type { Renderer } from "./createRenderer";
@@ -52,7 +53,7 @@ export interface RenderRequest {
   form?: Record<string, string>;
 }
 /** What `renderPage` needs of a renderer: `createRenderer`'s `Renderer` satisfies it. */
-export type PageRenderer = Pick<Renderer, "render" | "readFile">;
+export type PageRenderer = Pick<Renderer, "render" | "readFile" | "parserEnvironment">;
 export interface RenderPageOptions {
   dataSources: DataSourceDef[];
   site: SiteJson;
@@ -74,26 +75,30 @@ const FILE_REF = /\{%-?\s*(section|render)\s+(['"])([A-Za-z0-9_-]+)\2/g;
 const MAX_CACHE = 500;
 
 /**
- * Strip `data-edit-*`, and `data-editable` when asked. Memoized on the text itself (no hash collisions).
- * Source that doesn't nest properly (a stray `</p>`, an unclosed `<li>`) is repaired first, as a browser would read
- * it: a page renders instead of failing (see `repairNesting`).
+ * Strip `data-edit-*`, and `data-editable` when asked. Memoized per parser environment on the text itself (no hash
+ * collisions). Every parse uses the renderer's environment: without it a custom block tag (`{% map %}…{% endmap %}`)
+ * isn't a block, and its end tag closes across the HTML around it. Source that doesn't nest properly (a stray `</p>`,
+ * an unclosed `<li>`) is repaired first, as a browser would read it: a page renders instead of failing (see
+ * `repairNesting`).
  */
-const stripCache = new Map<string, string>();
-export function stripForPublish(source: string, stripEditable: boolean): string {
+const stripCaches = new WeakMap<Environment, Map<string, string>>();
+export function stripForPublish(source: string, stripEditable: boolean, env: Environment): string {
+  let cache = stripCaches.get(env);
+  if (!cache) stripCaches.set(env, (cache = new Map()));
   const key = (stripEditable ? "1" : "0") + source;
-  const hit = stripCache.get(key);
+  const hit = cache.get(key);
   if (hit !== undefined) return hit;
-  const nested = repairNesting(source).source;
-  let out = stripEditAttributes(nested);
-  if (stripEditable && out.includes(EDITABLE_ATTRIBUTE)) out = removeAttribute(out, EDITABLE_ATTRIBUTE);
-  if (stripCache.size >= MAX_CACHE) stripCache.clear();
-  stripCache.set(key, out);
+  const nested = repairNesting(source, env).source;
+  let out = stripEditAttributes(nested, { env });
+  if (stripEditable && out.includes(EDITABLE_ATTRIBUTE)) out = removeAttribute(out, EDITABLE_ATTRIBUTE, env);
+  if (cache.size >= MAX_CACHE) cache.clear();
+  cache.set(key, out);
   return out;
 }
 
-function removeAttribute(source: string, name: string): string {
+function removeAttribute(source: string, name: string, env: Environment): string {
   const s = new MagicString(source);
-  for (const [node] of allNodes(parseSource(source))) {
+  for (const [node] of allNodes(parseSource(source, "strict", { env }))) {
     if (!isElement(node)) continue;
     for (const attr of node.attributes) {
       if (!ATTRIBUTE_TYPES.has(attr.type) || segmentsText((attr as unknown as { name: never }).name) !== name) continue;
@@ -147,7 +152,7 @@ export async function renderPage(r: PageRenderer, page: PageRecord, request: Ren
   const editor = mode === "editor";
   const sources = collectSources(r, page);
   const overrides: Record<Path, string> = {};
-  for (const [path, text] of sources) overrides[path] = editor ? text : stripForPublish(text, opts.stripEditable ?? false);
+  for (const [path, text] of sources) overrides[path] = editor ? text : stripForPublish(text, opts.stripEditable ?? false, r.parserEnvironment);
   const all = [...sources.values()].join("\n");
 
   const pageObj: Record<string, JsonValue> = { ...(page.meta ?? {}), path: page.path, url: page.url, title: page.title ?? "" };

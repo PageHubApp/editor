@@ -121,3 +121,10 @@ test("head snippets: theme toggle and dismiss add nonce'd scripts before </head>
   const u = await renderPage(renderer(), { path: "pages/u.liquid", url: "/u", source: FILES["pages/u.liquid"] }, { path: "/u" }, base);
   assert.ok(!u.html.includes("<script"));
 });
+
+test("publish strip parses with the renderer's tags: data-edit-* next to and inside a {% map %} block renders", async () => {
+  const source = `<section data-edit-name="offices"><div data-edit-name="map">{% map lat: 34, lng: -118, zoom: 14, tiles: 'osm' %}<address data-pin="34,-118" data-edit-id="pin111">HQ</address>{% endmap %}</div></section>`;
+  const out = await renderPage(renderer(), { path: "pages/map.liquid", url: "/map", source }, { path: "/map" }, base);
+  assert.ok(!out.html.includes("data-edit-"));
+  assert.match(out.html, /data-map/);
+});
