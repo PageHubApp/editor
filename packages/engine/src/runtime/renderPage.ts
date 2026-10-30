@@ -23,6 +23,7 @@ import type { JsonValue } from "./tags/schema";
 import type { Path } from "../state/changes";
 import type { DataSourceDef } from "./defineDataSource";
 import { BUILTIN_OBJECTS } from "./objects";
+import type { PageMeta } from "./tags/seo";
 
 export type RenderMode = "publish" | "editor";
 
@@ -69,6 +70,8 @@ export interface RenderPageResult {
   visitorDependent: boolean;
   /** Objects the sources mention: built-ins plus the data-source globals. */
   objects: string[];
+  /** What the page's `{% seo %}` calls set: the row its stored SEO resolves against, and head fields. */
+  pageMeta: PageMeta;
 }
 
 const FILE_REF = /\{%-?\s*(section|render)\s+(['"])([A-Za-z0-9_-]+)\2/g;
@@ -183,12 +186,14 @@ export async function renderPage(r: PageRenderer, page: PageRecord, request: Ren
   });
   if (dev()) assertPlainJson(pageObj, "page");
 
-  let html = await r.render(page.path, data, { mode, overrides, ...(opts.nonce ? { nonce: opts.nonce } : {}), ...(opts.timeoutMs === undefined ? {} : { timeoutMs: opts.timeoutMs }) });
+  const pageMeta: PageMeta = { fields: {} };
+  let html = await r.render(page.path, data, { mode, overrides, pageMeta, ...(opts.nonce ? { nonce: opts.nonce } : {}), ...(opts.timeoutMs === undefined ? {} : { timeoutMs: opts.timeoutMs }) });
   html = stampAriaCurrent(html, request.path);
   if (!editor) html = injectIntoHead(html, headSnippets(html, opts.nonce));
   return {
     html,
     visitorDependent: queried.some((d) => d.visitorDependent === true),
     objects: [...BUILTIN_OBJECTS.filter((n) => mentions(all, n)), ...queried.map((d) => d.liquid.global)],
+    pageMeta,
   };
 }

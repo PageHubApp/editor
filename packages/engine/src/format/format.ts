@@ -46,7 +46,7 @@ export interface FormatOptions {
 /** Liquid blocks whose children render in place, once or repeatedly. */
 const TRANSPARENT_BLOCKS = new Set(["if", "unless", "case", "for", "paginate"]);
 /** Liquid tags that render nothing. `capture` renders into a variable: its body is never touched. */
-const SILENT_TAGS = new Set(["assign", "capture", "break", "continue", "#", "comment", "doc", "schema", "javascript"]);
+const SILENT_TAGS = new Set(["assign", "capture", "break", "continue", "#", "comment", "doc", "schema", "javascript", "seo"]);
 
 type Tok =
   | { kind: "el"; start: number; end: number; depth: number; layout: Layout; box: Box | null }

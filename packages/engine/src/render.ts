@@ -7,6 +7,7 @@ export { builtinFilters, BUILTIN_FILTERS, TRUSTED_HTML_FILTERS } from "./runtime
 export { HostMissingError, splitArgs, safeUrl, type BuiltinFilter, type FilterCtx, type HostProviders } from "./runtime/filters/types";
 export { escapeHtml, escapeAttr, escapeMarkupText, attrString } from "./runtime/escape";
 export { renderPage, collectSources, assertPlainJson, stripForPublish, type PageRenderer, type PageRecord, type SiteJson, type RenderRequest, type RenderMode, type RenderPageOptions, type RenderPageResult } from "./runtime/renderPage";
+export { SEO_FIELDS, type PageMeta, type SeoField } from "./runtime/tags/seo";
 export { stampAriaCurrent, headSnippets, injectIntoHead, THEME_KEY, DISMISS_KEY_PREFIX } from "./runtime/pageHtml";
 export { createRenderer, createRendererFromConfiguration, RenderTimeoutError, type Renderer, type RendererOptions, type RenderCall } from "./runtime/createRenderer";
 export { defineTag, type TagDef, type TagInput, type TagRenderContext, type BodyRenderer, type TagHost } from "./runtime/defineTag";

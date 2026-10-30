@@ -28,6 +28,7 @@ import { adaptFilter } from "./filters/builtinFilters";
 import type { HostProviders } from "./filters/types";
 import type { FormHandler } from "./tags/form";
 import { withPageScripts } from "./tags/javascript";
+import type { PageMeta } from "./tags/seo";
 import type { Path } from "../state/changes";
 import type { RenderMode } from "./renderPage";
 
@@ -60,6 +61,8 @@ export interface RenderCall {
   overrides?: Record<Path, string>;
   /** CSP nonce for the `<script>` that carries the page's `{% javascript %}` blocks. */
   nonce?: string;
+  /** Filled with what this render's `{% seo %}` calls set. */
+  pageMeta?: PageMeta;
 }
 
 export interface Renderer {
@@ -133,7 +136,8 @@ export function createRenderer(opts: RendererOptions): Renderer {
   const build = (overrides: Record<Path, string>, renderLimit: number) => {
     const files = (p: Path) => (Object.hasOwn(overrides, p) ? overrides[p] : opts.files(p));
     const scripts = new Set<string>();
-    const tagHost: TagHost = { files, formHandler: opts.formHandler ?? NO_FORM_HANDLER, resolveSetting: opts.resolveSetting, scripts };
+    const pageMeta: PageMeta = { fields: {} };
+    const tagHost: TagHost = { files, formHandler: opts.formHandler ?? NO_FORM_HANDLER, resolveSetting: opts.resolveSetting, scripts, pageMeta };
     const partials = new Proxy({} as Record<string, string>, {
       has: (_t, k) => typeof k === "string" && files(`partials/${k}.liquid`) !== undefined,
       get: (_t, k) => (typeof k === "string" ? files(`partials/${k}.liquid`) : undefined),
@@ -141,7 +145,7 @@ export function createRenderer(opts: RendererOptions): Renderer {
     const classes: Record<string, TagClass> = {};
     for (const d of tags.values()) classes[d.name] = tagClass(d, tagHost);
     const engine = createEngine({ partials, limits: { ...limits, renderLimit }, timezoneOffset: opts.timezoneOffset, filters: filterImpls(), tags: classes });
-    return { engine, files, scripts };
+    return { engine, files, scripts, pageMeta };
   };
 
   return {
@@ -158,7 +162,7 @@ export function createRenderer(opts: RendererOptions): Renderer {
     },
     async render(path, data, call = {}) {
       const timeoutMs = call.timeoutMs ?? limits.renderLimit;
-      const { engine, files, scripts } = build(call.overrides ?? {}, timeoutMs);
+      const { engine, files, scripts, pageMeta } = build(call.overrides ?? {}, timeoutMs);
       const source = files(path);
       if (source === undefined) throw new Error(`file not found: ${path}`);
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -170,6 +174,7 @@ export function createRenderer(opts: RendererOptions): Renderer {
         // local scope but inherits globals, so a partial's `{{ company.name }}` / `{{ site.* }}` /
         // `{{ page.* }}` resolve without every `{% render %}` call forwarding them explicitly.
         const html = await Promise.race([engine.parseAndRender(source, data, { globals: data }), deadline]);
+        if (call.pageMeta) Object.assign(call.pageMeta, pageMeta);
         return withPageScripts(html, scripts, call.nonce);
       } catch (e) {
         if (e instanceof Error && /render limit/i.test(e.message)) throw new RenderTimeoutError(timeoutMs);

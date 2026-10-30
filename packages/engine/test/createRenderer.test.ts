@@ -92,7 +92,7 @@ test("escape is on, unknown properties are empty, removed tags fail", async () =
 });
 
 test("built-ins are defined values; map renders [data-map] and parses as a block", async () => {
-  assert.deepEqual(BUILTIN_TAGS.map((x) => x.name).sort(), ["doc", "form", "javascript", "map", "paginate", "schema", "section", "style"]);
+  assert.deepEqual(BUILTIN_TAGS.map((x) => x.name).sort(), ["doc", "form", "javascript", "map", "paginate", "schema", "section", "seo", "style"]);
   assert.ok(BUILTIN_FILTER_DEFS.some((f) => f.name === "money" && f.returns === "string"));
   const files = { p: `{% map lat: 33.8, lng: -118.3, zoom: 13 %}<address data-pin="1,2"><strong>A</strong></address>{% endmap %}{{ 4999 | money }}` };
   const rr = r([], files);

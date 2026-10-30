@@ -22,6 +22,7 @@ import { tagsFacet } from "./facets";
 import { BlockTag } from "./tags/blockTag";
 import type { FormHandler } from "./tags/form";
 import type { JsonValue } from "./tags/schema";
+import type { PageMeta } from "./tags/seo";
 
 /** What a tag's `render` can read from the page being rendered. */
 export interface TagRenderContext {
@@ -46,6 +47,8 @@ export interface TagHost {
   resolveSetting?(type: string, handle: string): JsonValue | Promise<JsonValue>;
   /** This render's `{% javascript %}` blocks, added to the page once by the renderer. */
   scripts?: Set<string>;
+  /** This render's `{% seo %}` calls, read by the host after the render. */
+  pageMeta?: PageMeta;
 }
 
 export interface TagDef<A = any> {
