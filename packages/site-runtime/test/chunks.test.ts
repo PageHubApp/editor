@@ -600,6 +600,49 @@ describe("show", () => {
   });
 });
 
+describe("date-range stay rules", () => {
+  const setup = () => {
+    resetDom(
+      '<div data-date-range="rules" data-fee="7500">' +
+        '<button type="button" data-date="2026-11-01" data-price="10000" data-min-stay="3">1</button>' +
+        '<button type="button" data-date="2026-11-02" data-price="10000">2</button>' +
+        '<button type="button" data-date="2026-11-03" data-price="10000" data-no-checkout>3</button>' +
+        '<button type="button" data-date="2026-11-04" data-price="10000" data-no-checkin>4</button>' +
+        '<button type="button" data-date="2026-11-05" data-price="10000">5</button>' +
+        "</div>"
+    );
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    return (d: string) => document.querySelector<HTMLElement>(`[data-date="${d}"]`)!;
+  };
+
+  it("won't end a stay under the check-in night's minimum, and says why", () => {
+    const day = setup();
+    day("2026-11-01").click();
+    day("2026-11-02").click();
+    assert.equal(get("rules:out"), undefined);
+    assert.match(String(get("rules:hint")), /at least 3 nights/);
+  });
+
+  it("won't start on a no-check-in day or end on a no-check-out day", () => {
+    const day = setup();
+    day("2026-11-04").click();
+    assert.equal(get("rules:in"), undefined);
+    assert.match(String(get("rules:hint")), /can't check in/);
+    day("2026-11-02").click();
+    day("2026-11-03").click();
+    assert.equal(get("rules:out"), undefined);
+    assert.match(String(get("rules:hint")), /can't check out/);
+  });
+
+  it("adds the fee once to a valid stay and clears the hint", () => {
+    const day = setup();
+    day("2026-11-02").click();
+    day("2026-11-05").click();
+    assert.equal(get("rules:hint"), undefined);
+    assert.equal(get("rules:total"), "$375.00");
+  });
+});
+
 describe("date-range", () => {
   const cal = () => {
     // Nov 1–2 open at $210, Nov 3 booked, Nov 4 open at $250.
