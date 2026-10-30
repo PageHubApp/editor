@@ -606,8 +606,8 @@ describe("date-range stay rules", () => {
       '<div data-date-range="rules" data-fee="7500">' +
         '<button type="button" data-date="2026-11-01" data-price="10000" data-min-stay="3">1</button>' +
         '<button type="button" data-date="2026-11-02" data-price="10000">2</button>' +
-        '<button type="button" data-date="2026-11-03" data-price="10000" data-no-checkout>3</button>' +
-        '<button type="button" data-date="2026-11-04" data-price="10000" data-no-checkin>4</button>' +
+        '<button type="button" data-date="2026-11-03" data-price="10000" data-no-checkout="true">3</button>' +
+        '<button type="button" data-date="2026-11-04" data-price="10000" data-no-checkin="true">4</button>' +
         '<button type="button" data-date="2026-11-05" data-price="10000">5</button>' +
         "</div>"
     );
@@ -632,6 +632,15 @@ describe("date-range stay rules", () => {
     day("2026-11-03").click();
     assert.equal(get("rules:out"), undefined);
     assert.match(String(get("rules:hint")), /can't check out/);
+  });
+
+  it("charges the tax percent on the nights and fee", () => {
+    const day = setup();
+    document.querySelector("[data-date-range]")!.setAttribute("data-tax-percent", "10");
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    day("2026-11-02").click();
+    day("2026-11-05").click();
+    assert.equal(get("rules:total"), "$412.50");
   });
 
   it("adds the fee once to a valid stay and clears the hint", () => {
