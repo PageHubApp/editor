@@ -34,6 +34,6 @@ describe("bundle budget", () => {
     }
   });
   it("emits the animate stylesheet", () => {
-    assert.ok(readFileSync(out + "/animate.css", "utf8").includes("html[data-runtime]"));
+    assert.ok(readFileSync(out + "/animate.css", "utf8").includes("html[data-animate-ready]"));
   });
 });

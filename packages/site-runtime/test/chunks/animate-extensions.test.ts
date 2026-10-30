@@ -45,6 +45,24 @@ describe("animate extensions", () => {
     ev(true);
     assert.ok(el.classList.contains("animate-css-fade-up") && !el.classList.contains("animate-css-fade-out"));
   });
+  it("init leaves what is already on screen as painted, then lets the stylesheet hide the rest", () => {
+    resetDom('<div id="top" data-animate="fade-up"></div><div id="below" data-animate="fade-up"></div><div id="hero" data-animate="fade-up" data-animate-trigger="load"></div><div id="closed" data-animate></div>');
+    const box = (top: number, height: number) => () => ({ top, bottom: top + height, height, width: 100, left: 0, right: 100, x: 0, y: top, toJSON() {} }) as DOMRect;
+    q("#top").getBoundingClientRect = box(100, 200);
+    q("#below").getBoundingClientRect = box(window.innerHeight + 400, 200);
+    q("#hero").getBoundingClientRect = box(0, 300);
+    q("#closed").getBoundingClientRect = () => ({ top: 0, bottom: 0, height: 0, width: 0, left: 0, right: 0, x: 0, y: 0, toJSON() {} }) as DOMRect;
+    animate.init(document);
+    assert.ok(document.documentElement.hasAttribute("data-animate-ready"));
+    assert.ok(q("#top").hasAttribute("data-animated"), "on screen: shown, never hidden");
+    assert.ok(!q("#below").hasAttribute("data-animated"), "below the fold: waits to scroll in");
+    assert.ok(!q("#hero").hasAttribute("data-animated"), "trigger=load: left for mount to play");
+    assert.ok(!q("#closed").hasAttribute("data-animated"), "zero-size (closed dialog): waits");
+    useIO();
+    animate.mount(q("#top"));
+    assert.equal(q("#top").className, "", "an element init showed doesn't replay");
+    assert.ok(!FakeIO.ever.some((f) => f.observed.has(q("#top"))));
+  });
   it("reduced motion: visible, no exit or entrance class", () => {
     motion(true);
     resetDom('<div data-animate="fade-up" data-animate-exit="fade-out" data-animate-trigger="load"></div>');

@@ -1,7 +1,12 @@
 /* Entrance presets for data-animate. Keyframes ported from the PageHub animation
    presets (MIT, see NOTICE). Content stays visible without JS: it is hidden only
-   once the runtime sets html[data-runtime], and shown again by data-animated. */
-html[data-runtime] [data-animate]:not([data-animated]) { opacity: 0; }
+   once the animate chunk sets html[data-animate-ready] (after marking what is
+   already on screen as data-animated, so nothing seen flashes), and shown again
+   by data-animated. A load-triggered element is hidden from the first paint and
+   shown after 2s anyway, so a runtime that never loads can't strand it. */
+html[data-animate-ready] [data-animate]:not([data-animated]) { opacity: 0; }
+[data-animate-trigger="load"]:not([data-animated]) { opacity: 0; animation: ph-animate-fallback 0s 2s forwards; }
+@keyframes ph-animate-fallback { to { opacity: 1; } }
 /* Entrance presets read --anim-{duration,easing,delay,iteration} with each preset's own defaults as
    fallbacks, so an element-level override (the Animation control writes `[--anim-duration:…]` etc.)
    wins regardless of where it sits in the published source order. The sub-properties can't be reset

@@ -14,14 +14,34 @@ const leave = (el: Element) => {
   el.classList.add("animate-css-" + exit);
 };
 
+/** Painted in the viewport (not a closed dialog's zero-size content). */
+const onScreen = (el: Element) => {
+  const r = el.getBoundingClientRect();
+  return (r.width > 0 || r.height > 0) && r.bottom > 0 && r.top < el.ownerDocument.defaultView!.innerHeight;
+};
+
+/**
+ * The page painted before this chunk loaded, so whatever is on screen now has already been seen: it stays as it is
+ * instead of hiding and replaying (a flash). Only then does `html[data-animate-ready]` let the stylesheet hide the
+ * rest, all of it off screen. `data-animate-trigger="load"` elements are the exception: the stylesheet hides them from
+ * the first paint, and `mount` plays them.
+ */
+export function init(doc: Document) {
+  for (const el of doc.querySelectorAll("[data-animate]")) {
+    if (el.getAttribute("data-animate-trigger") !== "load" && onScreen(el)) el.setAttribute("data-animated", "");
+  }
+  doc.documentElement.setAttribute("data-animate-ready", "");
+}
+
 /**
  * `data-animate="fade-up"`: play the preset once when the element scrolls into view (`data-animate-trigger="load"`: immediately).
  * `data-animate-stagger="80ms"` on the parent delays each animated child by one step more. `data-animate-exit="fade-out"` plays that
- * preset when the element scrolls back out, and the entrance again on return. The stylesheet hides it only under `html[data-runtime]`.
+ * preset when the element scrolls back out, and the entrance again on return. An element `init` found on screen is already shown.
  */
 export function mount(el: Element) {
   const win = el.ownerDocument.defaultView!;
   if (win.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return el.setAttribute("data-animated", "");
+  if (el.hasAttribute("data-animated") && !el.hasAttribute("data-animate-exit")) return;
   const step = parseFloat(el.parentElement?.getAttribute("data-animate-stagger") ?? "");
   if (step > 0) {
     const ms = /\ds\s*$/.test(el.parentElement!.getAttribute("data-animate-stagger")!) ? step * 1000 : step;

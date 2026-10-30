@@ -108,6 +108,8 @@ A form can build its line from its own fields: `data-cart-id-template` fills `{n
 
 `data-animate` plays a preset once when the element scrolls into view. Companions: `data-animate-trigger="load"`, `data-animate-stagger` on the parent, `data-animate-exit`.
 
+Whatever is already on screen when the animate chunk loads is left as painted (marked `data-animated`, never hidden and replayed), and only then does `html[data-animate-ready]` let the stylesheet hide the rest, all of it off screen. `data-animate-trigger="load"` is the opt-in for animating something on the first screen: the stylesheet hides it from the first paint and the chunk plays it, with a 2s CSS fallback that shows it if the runtime never loads.
+
 ```html
 <ul data-animate-stagger="80ms"><li data-animate="fade-up">One</li><li data-animate="fade-up">Two</li></ul>
 ```
