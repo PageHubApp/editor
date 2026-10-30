@@ -9,6 +9,10 @@ import { set } from "../state-store";
  * dates land in the inputs named by `data-date-range-in` / `-out` (default `checkIn` / `checkOut`) inside the
  * calendar's form. State keys for the summary: `<name>:in`, `<name>:out` ("Sun, Nov 1"), `<name>:nights`
  * ("2 nights"), `<name>:total` ("$420.00" in `data-currency`, default usd).
+ *
+ * Stay rules, all optional: a night's `data-min-stay` is the fewest nights a stay starting there can have,
+ * `data-no-checkin` can't start a stay, `data-no-checkout` can't end one. A tap that breaks one sets `<name>:hint` with
+ * the reason. `data-fee` on the calendar (minor units) is added once to the total, and the checkout enforces the same rules.
  */
 export function mount(root: Element) {
   const name = root.getAttribute("data-date-range") || "dates";
@@ -21,6 +25,9 @@ export function mount(root: Element) {
   const label = (iso: string) => day(iso).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   let start = "";
   let end = "";
+  let hint = "";
+  const fee = Number(root.getAttribute("data-fee")) || 0;
+  const cellOn = (iso: string) => root.querySelector<HTMLElement>('[data-date="' + iso + '"]');
 
   /** The nights from `a` up to (not including) `b`, or null when one is booked or missing. */
   const nights = (a: string, b: string): HTMLElement[] | null => {
@@ -45,7 +52,7 @@ export function mount(root: Element) {
     if (inEl) inEl.value = start;
     if (outEl) outEl.value = end;
     const n = stay.length;
-    const cents = stay.reduce((s, c) => s + (Number(c.getAttribute("data-price")) || 0), 0);
+    const cents = stay.reduce((s, c) => s + (Number(c.getAttribute("data-price")) || 0), n ? fee : 0);
     let total = "";
     try {
       total = new Intl.NumberFormat("en-US", { style: "currency", currency: root.getAttribute("data-currency") || "usd" }).format(cents / 100);
@@ -56,6 +63,7 @@ export function mount(root: Element) {
     set(name + ":out", end ? label(end) : undefined);
     set(name + ":nights", n ? n + (n === 1 ? " night" : " nights") : undefined);
     set(name + ":total", n ? total : undefined);
+    set(name + ":hint", hint || undefined);
   };
 
   root.addEventListener("click", (e) => {
@@ -64,7 +72,13 @@ export function mount(root: Element) {
     e.preventDefault();
     const d = c.getAttribute("data-date")!;
     const open = !c.hasAttribute("data-booked");
-    if (start && !end && d > start && nights(start, d)) end = d;
+    hint = "";
+    const stay = start && !end && d > start ? nights(start, d) : null;
+    const min = start ? Number(cellOn(start)?.getAttribute("data-min-stay")) || 0 : 0;
+    if (stay && c.hasAttribute("data-no-checkout")) hint = "You can't check out on " + label(d) + ". Pick another day.";
+    else if (stay && stay.length < min) hint = "A stay from " + label(start) + " is at least " + min + " nights.";
+    else if (stay) end = d;
+    else if (open && c.hasAttribute("data-no-checkin")) hint = "You can't check in on " + label(d) + ". Pick another day.";
     else if (open) (start = d), (end = "");
     render();
   });
