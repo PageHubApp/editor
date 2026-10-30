@@ -11,7 +11,6 @@ import { runRules } from "../rules/run";
 export type LintRuleId =
   | "parse"
   | "no-liquid-in-attr-list"
-  | "no-tag-in-attr-value"
   | "no-dangling-open"
   | "no-dangling-close"
   | "static-attr-name"

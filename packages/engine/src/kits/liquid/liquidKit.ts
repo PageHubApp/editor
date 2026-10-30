@@ -17,7 +17,7 @@ import { builtinParserTags } from "../../runtime/tags/builtinTags";
 import { noLiquidTagInScript, rawOnlyTrusted } from "../../rules/core/security";
 import { sectionLiteralArgs, sectionSettingType, sectionUnknownSetting } from "../../rules/core/sections";
 import { unknownFilter, unknownTag } from "../../rules/core/registryRules";
-import { noDanglingClose, noDanglingOpen, noLiquidInAttrList, noTagInAttrValue, staticAttrName, staticTagName } from "../../rules/core/structural";
+import { noDanglingClose, noDanglingOpen, noLiquidInAttrList, staticAttrName, staticTagName } from "../../rules/core/structural";
 import { t } from "../../schema/t";
 import type { TreeNode } from "../../parse/tree";
 import { isSafeExpression } from "../../schema/t";
@@ -105,7 +105,7 @@ export const setArg = defineCommand<{ name: string; value: string; at?: NodeHand
 export const LIQUID_COMMANDS = [wrapIf, wrapFor, setArg, ...BLOCK_COMMANDS, ...COMPONENT_COMMANDS, ...SCRIPT_COMMANDS] as const;
 
 export const LIQUID_RULES = [
-  noLiquidInAttrList, noTagInAttrValue, noDanglingOpen, noDanglingClose, staticAttrName, staticTagName,
+  noLiquidInAttrList, noDanglingOpen, noDanglingClose, staticAttrName, staticTagName,
   unknownTag, unknownFilter, noLiquidTagInScript, rawOnlyTrusted, sectionLiteralArgs, sectionSettingType, sectionUnknownSetting,
 ] as const;
 

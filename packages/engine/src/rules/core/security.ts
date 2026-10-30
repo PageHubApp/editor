@@ -36,7 +36,7 @@ const unsafeUrl = (prefix: string): boolean => {
  * and each `on*` attribute and `javascript:` / `vbscript:` / `data:text/html` URL (`attr`: its index in `attrs`).
  * `value` is the attribute's static text (a dynamic `type` counts as script). Shared by `noInlineJs` and the import report.
  */
-export function jsIn(tag: string, attrs: ReadonlyArray<{ name: string; value: string; dynamic?: boolean }>): Array<{ attr: number | null; message: string }> {
+export function jsIn(tag: string, attrs: ReadonlyArray<{ name: string; value: string; dynamic?: boolean; starts?: readonly string[] }>): Array<{ attr: number | null; message: string }> {
   const out: Array<{ attr: number | null; message: string }> = [];
   const t = tag.toLowerCase();
   if (t === "script") {
@@ -48,7 +48,7 @@ export function jsIn(tag: string, attrs: ReadonlyArray<{ name: string; value: st
   }
   attrs.forEach((a, i) => {
     if (a.name.startsWith("on")) out.push({ attr: i, message: `inline event handler ${a.name} on <${t}>` });
-    else if (URL_ATTRS.has(a.name) && unsafeUrl(a.value)) out.push({ attr: i, message: `script URL in ${a.name} on <${t}>` });
+    else if (URL_ATTRS.has(a.name) && (unsafeUrl(a.value) || a.starts?.some(unsafeUrl))) out.push({ attr: i, message: `script URL in ${a.name} on <${t}>` });
   });
   return out;
 }
@@ -62,7 +62,7 @@ export const noInlineJs = defineRule({
   create: (ctx) => ({
     Element(el: ElementNode) {
       const attrs = attrsOf(el);
-      for (const f of jsIn(elementName(el), attrs.map((a) => ({ name: a.name, value: a.name.startsWith("on") || a.name === "type" ? a.value : a.prefix, dynamic: a.dynamic })))) {
+      for (const f of jsIn(elementName(el), attrs.map((a) => ({ name: a.name, value: a.name.startsWith("on") || a.name === "type" ? a.value : a.prefix, dynamic: a.dynamic, starts: a.starts })))) {
         const a = f.attr === null ? null : attrs[f.attr]!;
         if (!a) ctx.report({ node: el, message: f.message, fix: removeSplices(ctx.source, el) });
         else ctx.report({ range: a.range, message: f.message, fix: [removeWithLeadingSpace(ctx.source, a.range)] });

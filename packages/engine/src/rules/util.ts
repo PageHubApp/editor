@@ -13,6 +13,23 @@ export interface Attr {
   dynamic: boolean;
   /** Static text before the first Liquid part. */
   prefix: string;
+  /** Every way the value can start: the prefix, or, when the value opens with a {% tag %}, the leading text of each of its branches. */
+  starts: string[];
+}
+
+const textOf = (nodes: LiquidHtmlNode[]): string => nodes.map((p) => (p as { value: string }).value).join("");
+
+/** The leading text of each branch of a Liquid tag, following a tag that opens a branch. */
+function branchStarts(tag: LiquidHtmlNode): string[] {
+  const branches = ((tag as { children?: LiquidHtmlNode[] }).children ?? []) as LiquidHtmlNode[];
+  return branches.flatMap((b) => leadingTexts(((b as { children?: LiquidHtmlNode[] }).children ?? []) as LiquidHtmlNode[]));
+}
+
+function leadingTexts(parts: LiquidHtmlNode[]): string[] {
+  const first = parts.findIndex((p) => p.type !== NodeTypes.TextNode);
+  const lead = textOf(parts.slice(0, first === -1 ? parts.length : first));
+  if (lead || first === -1 || parts[first]!.type !== NodeTypes.LiquidTag) return [lead];
+  return branchStarts(parts[first]!);
 }
 
 export function attrsOf(el: ElementNode): Attr[] {
@@ -30,6 +47,7 @@ export function attrsOf(el: ElementNode): Attr[] {
       value: texts.join(""),
       dynamic: first !== -1,
       prefix,
+      starts: leadingTexts(parts),
     });
   }
   return out;

@@ -71,15 +71,6 @@ export const noLiquidInAttrList = defineRule({
   }),
 });
 
-export const noTagInAttrValue = defineRule({
-  meta: { id: "no-tag-in-attr-value", severity: "error", description: "No {% tag %} inside an attribute value; {{ output }} is fine." },
-  create: (ctx) => ({
-    LiquidTag(node: LiquidHtmlNode, parent) {
-      if (parent && ATTRIBUTE_TYPES.has(parent.type)) ctx.report({ node, message: `{% ${(node as { name: string }).name} %} inside an attribute value` });
-    },
-  }),
-});
-
 export const noDanglingOpen = defineRule({
   meta: { id: "no-dangling-open", severity: "error", description: "An element opened in one Liquid branch must close in the same branch." },
   create: (ctx) => ({

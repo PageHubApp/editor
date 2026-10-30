@@ -18,7 +18,7 @@ const cases: Array<[string, string, LintRuleId[]]> = [
   ["a tag nested in a gate", `<button {% if a %}{% if b %}data-cart="add"{% endif %}{% endif %}>x</button>`, ["no-liquid-in-attr-list"]],
   ["an empty gate", `<button {% if a %}{% endif %}>x</button>`, ["no-liquid-in-attr-list"]],
   ["element split across branches", `{% if x %}<a href="/">{% else %}<span>{% endif %}text{% if x %}</a>{% else %}</span>{% endif %}`, ["no-dangling-close", "no-dangling-open"]],
-  ["{% if %} inside an attribute value", `<div class="card {% if x %}active{% endif %}">hi</div>`, ["no-tag-in-attr-value"]],
+  ["{% if %} inside an attribute value is allowed (Shopify Liquid)", `<div class="card {% if x %}active{% else %}idle{% endif %}" aria-current="{% if here %}page{% endif %}">hi</div>`, []],
   ["{{ output }} inside an attribute value is allowed", `<div class="card {{ variant }}" data-id="{{ item.id | escape }}">hi</div>`, []],
   ["Liquid in an attribute name", `<div data-{{ k }}="v">hi</div>`, ["static-attr-name"]],
   ["Liquid as a tag name", `<{{ tag }} class="a">x</{{ tag }}>`, ["static-tag-name"]],
@@ -41,7 +41,7 @@ test("lint: a parse error points at the offending tag", () => {
 });
 
 test("lint: issue ranges point at the offending source", () => {
-  const src = `<div class="card {% if x %}active{% endif %}">hi</div>`;
+  const src = `<input class="q" {{ attrs }} name="q">`;
   const [issue] = lint(src);
-  assert.equal(src.slice(issue!.range.start, issue!.range.end), "{% if x %}active{% endif %}");
+  assert.equal(src.slice(issue!.range.start, issue!.range.end), "{{ attrs }}");
 });

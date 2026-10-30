@@ -19,7 +19,6 @@ import { SAMPLE } from "./helpers.ts";
 test("structural rules", () => {
   RuleTester.run(structural.parseRule, { valid: ["<div>x</div>"], invalid: [{ code: "<div>\n<p>x</div>", errors: [{ text: "</div>" }], output: null }] });
   RuleTester.run(structural.noLiquidInAttrList, { valid: [`<div class="a">x</div>`], invalid: [{ code: `<input {{ attrs }} name="q">`, errors: [{ text: "{{ attrs }}" }] }] });
-  RuleTester.run(structural.noTagInAttrValue, { valid: [`<div class="{{ v }}">x</div>`], invalid: [{ code: `<div class="a {% if x %}b{% endif %}">x</div>`, errors: [{ text: "{% if x %}b{% endif %}" }] }] });
   RuleTester.run(structural.noDanglingOpen, { valid: ["<p>x</p>"], invalid: [{ code: `{% if x %}<a href="/">{% else %}<span>{% endif %}t{% if x %}</a>{% else %}</span>{% endif %}`, errors: 2 }] });
   RuleTester.run(structural.noDanglingClose, { valid: ["<p>x</p>"], invalid: [{ code: `{% if x %}<a>{% else %}<b>{% endif %}x{% if x %}</a>{% else %}</b>{% endif %}`, errors: 2 }] });
   RuleTester.run(structural.staticAttrName, { valid: ["<p data-a=1>x</p>"], invalid: [{ code: `<div data-{{ k }}="v">x</div>`, errors: 1 }] });
@@ -51,8 +50,10 @@ test("real engine registry knows the sample page", () => {
 
 test("no-inline-js (sanitize fixes)", () => {
   RuleTester.run(security.noInlineJs, {
-    valid: [`<script type="application/ld+json">{}</script><a href="/x" class="a">x</a><a href="{{ u }}">y</a>`],
+    valid: [`<script type="application/ld+json">{}</script><a href="/x" class="a">x</a><a href="{{ u }}">y</a><a href="{% if u %}/a{% else %}/b{% endif %}">z</a>`],
     invalid: [
+      { code: `<a href="{% if x %}/ok{% else %}javascript:x{% endif %}">x</a>`, errors: 1, output: `<a>x</a>` },
+      { code: `<a href="{% if x %}{% unless y %} javascript:x{% endunless %}{% endif %}">x</a>`, errors: 1, output: `<a>x</a>` },
       { code: `<button onclick="a()" id="b">x</button>`, errors: [{ text: `onclick="a()"` }], output: `<button id="b">x</button>` },
       { code: `<p>a</p><script>alert(1)</script>`, errors: 1, output: `<p>a</p>` },
       { code: `<a href="  JavaScript:x">x</a>`, errors: 1, output: `<a>x</a>` },
