@@ -80,9 +80,6 @@ export function mount(root: Element) {
     if (stay && stay.length >= (Number(first!.getAttribute("data-min-stay")) || 0) && !flagged(cellOn(b), "data-no-checkout")) {
       start = a;
       end = b;
-      // Months can be slides: open on the one holding the stay.
-      const slide = first!.closest("[data-carousel] > *") as HTMLElement | null;
-      if (slide?.parentElement) slide.parentElement.scrollLeft = slide.offsetLeft - slide.parentElement.offsetLeft;
     }
   }
 
