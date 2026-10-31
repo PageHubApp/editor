@@ -46,6 +46,12 @@ export interface EngineOptions {
   tags?: Record<string, TagClass>;
 }
 
+/** A price object (`{ amount, currency, formatted }`) printed whole is its stored amount. Data stays plain JSON, so the object can't print itself. */
+function printedValue(v: unknown): unknown {
+  const amount = v && typeof v === "object" ? (v as { amount?: unknown }).amount : undefined;
+  return typeof amount === "number" ? amount : v;
+}
+
 export function createEngine(options: EngineOptions = {}): Liquid {
   const limits = { ...DEFAULT_LIMITS, ...options.limits };
   const engine = new Liquid({
@@ -60,9 +66,13 @@ export function createEngine(options: EngineOptions = {}): Liquid {
     memoryLimit: limits.memoryLimit,
     cache: true,
   });
+  const coreOutput = engine.options.outputEscape as (this: unknown, v: unknown) => string;
+  engine.options.outputEscape = function (this: unknown, v: unknown) {
+    return coreOutput.call(this, printedValue(v));
+  };
   // `| escape` (a habit from Shopify themes) already returns safe text: written as the last filter it is not escaped a second
   // time by outputEscape, which would print `&amp;lt;` for `<`.
-  engine.registerFilter("escape", { handler: (v: unknown) => escapeHtml(v), raw: true } as unknown as FilterImplOptions);
+  engine.registerFilter("escape", { handler: (v: unknown) => escapeHtml(printedValue(v)), raw: true } as unknown as FilterImplOptions);
   const coreDate = engine.filters.date as unknown as (this: unknown, v: unknown, ...rest: unknown[]) => unknown;
   engine.registerFilter("date", function (this: unknown, v: unknown, ...rest: unknown[]) {
     // A string with no offset is a wall-clock time in the site's zone, never the server's (wallClock.ts).

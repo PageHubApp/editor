@@ -34,6 +34,18 @@ const DATA = {
 
 const engine = createEngine({ partials, filters, tags: { form: TestFormTag } });
 
+test("a price object printed whole is its stored amount; its fields and other objects are unchanged", async () => {
+  const car = { price: { amount: 450000, currency: "usd", formatted: "$4,500.00" }, free: { amount: 0, formatted: "$0.00" } };
+  const render = (src: string) => engine.parseAndRender(src, { car, name: "A & B", tags: ["x", "y"] });
+  assert.equal(await render("${{ car.price }}"), "$450000");
+  assert.equal(await render("{{ car.price | default: 0 }}"), "450000");
+  assert.equal(await render("{{ car.price | escape }}"), "450000");
+  assert.equal(await render("{{ car.free }}"), "0");
+  assert.equal(await render("{{ car.price.formatted }}"), "$4,500.00");
+  assert.equal(await render("{{ car.price.amount }}"), "450000");
+  assert.equal(await render("{{ name }}|{{ tags }}"), "A &amp; B|xy");
+});
+
 test("render: the sample page with partials, loops, branches, filters and paginate", async () => {
   const html = await engine.parseAndRender(SAMPLE, DATA);
   assert.ok(html.includes(`<header class="site-header"><a href="/">Moss &amp; Fern Painting</a></header>`));
