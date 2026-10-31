@@ -46,6 +46,22 @@ test("a price object printed whole is its stored amount; its fields and other ob
   assert.equal(await render("{{ name }}|{{ tags }}"), "A &amp; B|xy");
 });
 
+test("a price object compares and does math as its stored amount", async () => {
+  const car = { price: { amount: 450000, currency: "usd", formatted: "$4,500.00" }, tag: { amount: "n/a" } };
+  const render = (src: string) => engine.parseAndRender(src, { car });
+  assert.equal(await render("{{ car.price | plus: 1 }}"), "450001");
+  assert.equal(await render("{{ 1 | plus: car.price }}"), "450001");
+  assert.equal(await render("{{ car.price | divided_by: 1000 }}"), "450");
+  assert.equal(await render("{{ car.price | money }}"), "$4500.00");
+  for (const [cond, want] of [["> 1000", "y"], ["< 1000", "n"], [">= 450000", "y"], ["<= 449999", "n"], ["== 450000", "y"], ["!= 450000", "n"]]) {
+    assert.equal(await render(`{% if car.price ${cond} %}y{% else %}n{% endif %}`), want, cond);
+  }
+  assert.equal(await render(`{% if 1000 < car.price %}y{% else %}n{% endif %}`), "y");
+  assert.equal(await render(`{% if car.tag == car.tag %}y{% else %}n{% endif %}`), "y");
+  assert.equal(await render(`{% if car.price.currency == "usd" and car.price %}y{% else %}n{% endif %}`), "y");
+  assert.equal(await render("{{ 7 | plus: 1 }}|{{ 7.5 | round }}|{{ 'a' | size }}"), "8|8|1");
+});
+
 test("render: the sample page with partials, loops, branches, filters and paginate", async () => {
   const html = await engine.parseAndRender(SAMPLE, DATA);
   assert.ok(html.includes(`<header class="site-header"><a href="/">Moss &amp; Fern Painting</a></header>`));

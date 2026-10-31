@@ -16,7 +16,7 @@
  *    `render`, and liquidjs's `layout` / `block` mean template inheritance, not Shopify's
  *    tags of the same names.
  */
-import { Liquid, type FilterImplOptions } from "liquidjs";
+import { defaultOperators, Liquid, type FilterImplOptions, type Operators } from "liquidjs";
 import type { TagClass } from "../runtime/defineTag";
 import { escapeHtml } from "../runtime/escape";
 import { PaginateTag } from "./tags/paginate";
@@ -46,10 +46,27 @@ export interface EngineOptions {
   tags?: Record<string, TagClass>;
 }
 
-/** A price object (`{ amount, currency, formatted }`) printed whole is its stored amount. Data stays plain JSON, so the object can't print itself. */
+/**
+ * A price object (`{ amount, currency, formatted }`) used as a value is its stored amount: printed, compared or in math.
+ * Data stays plain JSON and a Drop would open prototype lookups, so the engine does this where values are used.
+ */
 function printedValue(v: unknown): unknown {
   const amount = v && typeof v === "object" ? (v as { amount?: unknown }).amount : undefined;
   return typeof amount === "number" ? amount : v;
+}
+
+const COMPARISONS = ["==", "!=", ">", "<", ">=", "<="] as const;
+const NUMERIC_FILTERS = ["abs", "at_least", "at_most", "ceil", "divided_by", "floor", "minus", "modulo", "plus", "round", "times", "money", "money_with_currency"];
+
+function comparePrices(): Operators {
+  const operators: Operators = { ...defaultOperators };
+  for (const name of COMPARISONS) {
+    const core = defaultOperators[name] as unknown as (l: unknown, r: unknown, ctx: unknown) => Generator<unknown, boolean, unknown>;
+    operators[name] = function* (l: unknown, r: unknown, ctx: unknown) {
+      return yield* core(printedValue(l), printedValue(r), ctx);
+    } as unknown as Operators[string];
+  }
+  return operators;
 }
 
 export function createEngine(options: EngineOptions = {}): Liquid {
@@ -65,6 +82,7 @@ export function createEngine(options: EngineOptions = {}): Liquid {
     renderLimit: limits.renderLimit,
     memoryLimit: limits.memoryLimit,
     cache: true,
+    operators: comparePrices(),
   });
   const coreOutput = engine.options.outputEscape as (this: unknown, v: unknown) => string;
   engine.options.outputEscape = function (this: unknown, v: unknown) {
@@ -93,5 +111,14 @@ export function createEngine(options: EngineOptions = {}): Liquid {
   engine.registerTag("paginate", PaginateTag);
   for (const [name, impl] of Object.entries(options.filters ?? {})) engine.registerFilter(name, impl);
   for (const [name, impl] of Object.entries(options.tags ?? {})) engine.registerTag(name, impl);
+  for (const name of NUMERIC_FILTERS) {
+    const impl = engine.filters[name] as unknown as ((...args: unknown[]) => unknown) | { handler: (...args: unknown[]) => unknown } | undefined;
+    if (!impl) continue;
+    const handler = typeof impl === "function" ? impl : impl.handler;
+    const wrapped = function (this: unknown, ...args: unknown[]) {
+      return handler.apply(this, args.map(printedValue));
+    };
+    engine.registerFilter(name, (typeof impl === "function" ? wrapped : { ...impl, handler: wrapped }) as unknown as FilterImplOptions);
+  }
   return engine;
 }
