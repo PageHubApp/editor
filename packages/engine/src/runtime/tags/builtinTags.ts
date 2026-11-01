@@ -32,7 +32,7 @@ export const BUILTIN_TAG_META: readonly BuiltinTagMeta[] = [
   { name: "doc", kind: "raw", parseLike: "raw", describe: "Documentation for a snippet. Renders nothing." },
   { name: "style", kind: "block", parseLike: "form", describe: "CSS wrapped in a <style> element; the body is rendered as Liquid." },
   { name: "map", kind: "block", parseLike: "form", describe: "An interactive map: {% map lat: 1, lng: 2, zoom: 12, tiles: 'osm' %} with child pins (<address data-pin=\"lat,lng\">) and routes (<span data-route=\"lat,lng; lat,lng\">). Also mode (interactive, static, background), grayscale, title." },
-  { name: "seo", kind: "tag", parseLike: "section", describe: "A detail page's head per row, inside its loop: {% seo item: item %} resolves the page SEO's {{item.*}}; title, description, image, og_title, og_description, canonical set fields." },
+  { name: "seo", kind: "tag", parseLike: "section", describe: "A detail page's head per row, inside its loop: {% seo item: item %} resolves the page SEO's {{item.*}}; title, description, image, og_title, og_description, canonical set fields; type: 'vacation_rental' adds that structured data." },
   { name: "javascript", kind: "raw", parseLike: "raw", describe: "A section's or partial's own JavaScript (raw, no Liquid inside). Added once per page, in one <script> at the end of <body>." },
 ];
 

@@ -47,3 +47,10 @@ test("an unknown argument is an error", async () => {
 test("{% seo %} parses and lints like any built-in", () => {
   assert.deepEqual(lint(`{% for item in rows limit: 1 %}{% seo item: item, title: item.name %}<p>{{ item.name }}</p>{% endfor %}`), []);
 });
+
+test("type: names the kind of page; blank is ignored; an unknown kind is an error", async () => {
+  const { pageMeta } = await render(`{% seo item: rows[0], type: 'vacation_rental' %}{% seo type: '' %}`, { rows });
+  assert.equal(pageMeta.type, "vacation_rental");
+  assert.deepEqual(pageMeta.fields, {});
+  await assert.rejects(render(`{% seo type: 'hotel' %}`), /seo: unknown type "hotel"/);
+});
