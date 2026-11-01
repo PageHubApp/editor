@@ -652,6 +652,49 @@ describe("date-range stay rules", () => {
   });
 });
 
+describe("date-range length-of-stay discounts", () => {
+  const nights = (count: number, attrs: string) => {
+    const days = Array.from({ length: count }, (_, i) => {
+      const d = new Date(Date.UTC(2026, 10, 1 + i)).toISOString().slice(0, 10);
+      return `<button type="button" data-date="${d}" data-price="20000">${i + 1}</button>`;
+    });
+    const out = new Date(Date.UTC(2026, 10, 1 + count)).toISOString().slice(0, 10);
+    days.push(`<button type="button" data-date="${out}" data-price="20000">out</button>`);
+    resetDom(`<div data-date-range="los" ${attrs}>${days.join("")}</div>`);
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    const at = (i: number) => document.querySelectorAll<HTMLElement>("[data-date]")[i]!;
+    at(0).click();
+    at(count).click();
+  };
+
+  it("takes the weekly percent off the nights, then adds the fee and tax on what is left", () => {
+    nights(8, 'data-weekly-percent="10" data-monthly-percent="20" data-fee="7500" data-tax-percent="10"');
+    // 8 x $200 = $1,600 less 10% = $1,440, plus $75 fee = $1,515, plus 10% tax.
+    assert.equal(get("los:total"), "$1,666.50");
+    assert.equal(get("los:saved"), "You save $160.00 on a weekly stay");
+  });
+
+  it("takes the monthly percent instead from 28 nights", () => {
+    nights(28, 'data-weekly-percent="10" data-monthly-percent="20"');
+    assert.equal(get("los:total"), "$4,480.00");
+    assert.equal(get("los:saved"), "You save $1,120.00 on a monthly stay");
+  });
+
+  it("gives a long stay the weekly percent when there is no monthly one", () => {
+    nights(30, 'data-weekly-percent="10"');
+    assert.equal(get("los:total"), "$5,400.00");
+  });
+
+  it("charges full price under 7 nights and for a bad percent", () => {
+    nights(6, 'data-weekly-percent="10"');
+    assert.equal(get("los:total"), "$1,200.00");
+    assert.equal(get("los:saved"), undefined);
+    nights(8, 'data-weekly-percent="100" data-monthly-percent="abc"');
+    assert.equal(get("los:total"), "$1,600.00");
+    assert.equal(get("los:saved"), undefined);
+  });
+});
+
 describe("date-range", () => {
   const cal = () => {
     // Nov 1–2 open at $210, Nov 3 booked, Nov 4 open at $250.

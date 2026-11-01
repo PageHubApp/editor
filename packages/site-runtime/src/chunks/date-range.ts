@@ -13,7 +13,9 @@ import { set } from "../state-store";
  * Stay rules, all optional: a night's `data-min-stay` is the fewest nights a stay starting there can have,
  * `data-no-checkin="true"` can't start a stay, `data-no-checkout="true"` can't end one. A tap that breaks one sets `<name>:hint` with
  * the reason. `data-fee` on the calendar (minor units) is added once to the total, `data-tax-percent` is charged on the
- * nights and fee, and the checkout enforces the same rules. `data-date-range-url` starts from a stay in the page's URL
+ * nights and fee, and the checkout enforces the same rules. `data-weekly-percent` (from 7 nights) and
+ * `data-monthly-percent` (from 28, instead of the weekly one) take that percent off the nights only, before the fee and
+ * tax, and set `<name>:saved` ("You save $84.00 on a weekly stay"). The server's total is the one charged. `data-date-range-url` starts from a stay in the page's URL
  * (`?checkIn=&checkOut=`, the input names), ignored unless it passes the same rules.
  */
 export function mount(root: Element) {
@@ -30,6 +32,13 @@ export function mount(root: Element) {
   let hint = "";
   const fee = Number(root.getAttribute("data-fee")) || 0;
   const taxPercent = Number(root.getAttribute("data-tax-percent")) || 0;
+  /** A percent the host can mean: above 0 and under 100. */
+  const rate = (attr: string) => {
+    const n = Number(root.getAttribute(attr));
+    return n > 0 && n < 100 ? n : 0;
+  };
+  const weekly = rate("data-weekly-percent");
+  const monthly = rate("data-monthly-percent");
   const flagged = (el: Element | null, attr: string) => el?.getAttribute(attr) === "true";
   const cellOn = (iso: string) => root.querySelector<HTMLElement>('[data-date="' + iso + '"]');
 
@@ -56,18 +65,26 @@ export function mount(root: Element) {
     if (inEl) inEl.value = start;
     if (outEl) outEl.value = end;
     const n = stay.length;
-    const subtotal = stay.reduce((s, c) => s + (Number(c.getAttribute("data-price")) || 0), n ? fee : 0);
+    // The percent for a stay this long, off the nights only: the same rounding as the checkout's.
+    const monthlyStay = n >= 28 && monthly > 0;
+    const percent = monthlyStay ? monthly : n >= 7 ? weekly : 0;
+    const nightsSum = stay.reduce((s, c) => s + (Number(c.getAttribute("data-price")) || 0), 0);
+    const saved = percent ? Math.round((nightsSum * percent) / 100) : 0;
+    const subtotal = nightsSum - saved + (n ? fee : 0);
     const cents = subtotal + Math.round((subtotal * taxPercent) / 100);
-    let total = "";
-    try {
-      total = new Intl.NumberFormat("en-US", { style: "currency", currency: root.getAttribute("data-currency") || "usd" }).format(cents / 100);
-    } catch {
-      total = (cents / 100).toFixed(2);
-    }
+    const money = (c: number) => {
+      try {
+        return new Intl.NumberFormat("en-US", { style: "currency", currency: root.getAttribute("data-currency") || "usd" }).format(c / 100);
+      } catch {
+        return (c / 100).toFixed(2);
+      }
+    };
+    const total = money(cents);
     set(name + ":in", start ? label(start) : undefined);
     set(name + ":out", end ? label(end) : undefined);
     set(name + ":nights", n ? n + (n === 1 ? " night" : " nights") : undefined);
     set(name + ":total", n ? total : undefined);
+    set(name + ":saved", saved ? "You save " + money(saved) + " on a " + (monthlyStay ? "monthly" : "weekly") + " stay" : undefined);
     set(name + ":hint", hint || undefined);
   };
 
