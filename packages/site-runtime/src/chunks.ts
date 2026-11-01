@@ -14,7 +14,7 @@ export const CHUNK_SELECTORS: Record<ChunkName, string> = {
   "cart-items": "[data-cart-items]",
   autoplay: "[data-autoplay]",
   animate: "[data-animate]",
-  track: "[data-track]",
+  track: "[data-track],[data-track-purchase]",
   scrollspy: "[data-scrollspy]",
   invokers: "button[commandfor]",
   form: "[data-form-state]",

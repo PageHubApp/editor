@@ -154,6 +154,79 @@ describe("track", () => {
   });
 });
 
+describe("track purchase", () => {
+  const w = window as any;
+  const tag = (kind = "", id = "cs_1", value = "64000", cur = "usd") => `<div hidden data-track-purchase="${kind}" data-id="${id}" data-value="${value}" data-currency="${cur}"></div>`;
+  const run = () => document.querySelectorAll("[data-track-purchase]").forEach((e) => track.mount(e, cfg));
+  beforeEach(() => {
+    w.localStorage.clear();
+    w.gtag = mock.fn();
+    w.fbq = mock.fn();
+  });
+  afterEach(() => {
+    delete w.gtag;
+    delete w.fbq;
+  });
+
+  it("fires gtag purchase and fbq Purchase with the order id, and only once across a reload", () => {
+    resetDom(tag());
+    run();
+    assert.deepEqual(w.gtag.mock.calls[0].arguments, ["event", "purchase", { transaction_id: "cs_1", value: 640, currency: "USD" }]);
+    assert.deepEqual(w.fbq.mock.calls[0].arguments, ["track", "Purchase", { value: 640, currency: "USD" }, { eventID: "cs_1" }]);
+    assert.equal(w.localStorage.getItem("ph:purchase:cs_1"), "1");
+    document.body.innerHTML = tag(); // a reload: new elements, same storage (resetDom would clear it)
+    run();
+    assert.equal(w.gtag.mock.callCount(), 1);
+    assert.equal(w.fbq.mock.callCount(), 1);
+  });
+
+  it("does nothing, and remembers nothing, while no tag is loaded; a later load still counts it", () => {
+    delete w.gtag;
+    delete w.fbq;
+    resetDom(tag());
+    run();
+    assert.equal(w.localStorage.getItem("ph:purchase:cs_1"), null);
+    w.gtag = mock.fn();
+    run();
+    assert.equal(w.gtag.mock.callCount(), 1);
+  });
+
+  it("a held request sends generate_lead only: no purchase, no value, no Meta event", () => {
+    resetDom(tag("lead"));
+    run();
+    assert.deepEqual(w.gtag.mock.calls.map((c: any) => c.arguments), [["event", "generate_lead"]]);
+    assert.equal(w.fbq.mock.callCount(), 0);
+    run();
+    assert.equal(w.gtag.mock.callCount(), 1);
+  });
+
+  it("converts by the currency's digits: yen is whole, dinar has three decimals", () => {
+    resetDom(tag("", "a", "5000", "jpy") + tag("", "b", "5000", "bhd"));
+    run();
+    assert.equal(w.gtag.mock.calls[0].arguments[2].value, 5000);
+    assert.equal(w.gtag.mock.calls[1].arguments[2].value, 5);
+  });
+
+  it("sends nothing for a missing id, a bad value or an unknown currency", () => {
+    resetDom(tag("", "", "100") + tag("", "x", "abc") + tag("", "y", "100", "zz!"));
+    run();
+    assert.equal(w.gtag.mock.callCount(), 0);
+  });
+
+  it("still sends when storage is blocked, and a throwing tag never breaks the page", () => {
+    resetDom(tag());
+    const real = Object.getOwnPropertyDescriptor(window, "localStorage")!;
+    Object.defineProperty(window, "localStorage", { configurable: true, get() { throw new Error("blocked"); } });
+    try {
+      w.gtag = mock.fn(() => { throw new Error("tag"); });
+      run();
+      assert.equal(w.gtag.mock.callCount(), 1);
+    } finally {
+      Object.defineProperty(window, "localStorage", real);
+    }
+  });
+});
+
 describe("cart", () => {
   beforeEach(() => ["cart:count", "cart:total", "cart:items-json", "cart:open", "cart:error", "cart:promo", "cart:checkout-status"].forEach((k) => set(k, undefined)));
   const priced = (id: string, cents: number, extra = "") =>

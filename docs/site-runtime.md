@@ -176,6 +176,12 @@ Whatever is already on screen when the animate chunk loads is left as painted (m
 <a href="/contact" data-track="ga4:generate_lead">Contact</a>
 ```
 
+`data-track-purchase` on a hidden element of an order confirmation page reports the order to Google Analytics and Meta: `data-id` (the order id, used to avoid counting it twice), `data-value` (the amount in the currency's smallest unit, such as cents) and `data-currency`. It sends gtag `purchase` and fbq `Purchase`. With the value `lead` (`data-track-purchase="lead"`, a request the host has yet to approve and nothing charged) it sends gtag `generate_lead` only. Each order is sent once per browser (`localStorage` keys `ph:purchase:<id>` and `ph:lead:<id>`). If no tag is on the page it sends nothing and remembers nothing, so consent stays with the tag's own snippet. Put only the id, amount and currency on it, never a guest's name, email or dates.
+
+```html
+<div hidden data-track-purchase data-id="cs_123" data-value="64000" data-currency="USD"></div>
+```
+
 `data-form-state` marks the children of a form shown for one state (`idle`, `sending`, `sent`, `error`). The form submits with fetch and swaps them in place. On a failed submit the `idle` fields stay visible with their values, the `error` slot shows (or a default message is added) and takes focus as an alert, and the form can be submitted again.
 
 ```html
