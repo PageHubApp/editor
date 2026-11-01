@@ -72,9 +72,13 @@ export function mount(root: Element) {
     const saved = percent ? Math.round((nightsSum * percent) / 100) : 0;
     const subtotal = nightsSum - saved + (n ? fee : 0);
     const cents = subtotal + Math.round((subtotal * taxPercent) / 100);
+    // Minor units, with the currency's own digit count (JPY has 0, USD 2; Stripe keeps ISK and UGX at 2).
     const money = (c: number) => {
+      const code = (root.getAttribute("data-currency") || "usd").toUpperCase();
       try {
-        return new Intl.NumberFormat("en-US", { style: "currency", currency: root.getAttribute("data-currency") || "usd" }).format(c / 100);
+        const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: code });
+        const digits = code === "ISK" || code === "UGX" ? 2 : fmt.resolvedOptions().maximumFractionDigits ?? 2;
+        return fmt.format(c / 10 ** digits);
       } catch {
         return (c / 100).toFixed(2);
       }

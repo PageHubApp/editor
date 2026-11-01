@@ -716,6 +716,16 @@ describe("date-range stay rules", () => {
     assert.equal(get("rules:total"), "$412.50");
   });
 
+  it("shows a yen total in whole yen", () => {
+    const day = setup();
+    document.querySelector("[data-date-range]")!.setAttribute("data-currency", "jpy");
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    day("2026-11-02").click();
+    day("2026-11-05").click();
+    // Three nights of 10,000 yen and a 7,500 yen fee.
+    assert.equal(get("rules:total"), "¥37,500");
+  });
+
   it("adds the fee once to a valid stay and clears the hint", () => {
     const day = setup();
     day("2026-11-02").click();
