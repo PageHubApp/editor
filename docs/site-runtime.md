@@ -91,6 +91,8 @@ A form can build its line from its own fields: `data-cart-id-template` fills `{n
 <div data-cart-items data-empty-text="Your cart is empty" data-row-class="flex gap-4"></div>
 ```
 
+`data-cart-agreement="<dialog id>"` on a checkout form asks the buyer to sign before checkout, when `cart.agreementApi` is set. The dialog has `data-agreement-row` (the row id), an element with `data-agreement-text` that the preview fills, a form with `agreementName` and `agreementConsent`, and the signature's token goes to checkout as `agreementToken`.
+
 `data-cart-count` shows the number of items in the cart. The cart is also published as the state keys `cart:count`, `cart:total` (the formatted subtotal, empty for an empty cart) and `cart:items-json`, so `data-state-text="cart:total"` and `data-state-show="cart:count>0"` work anywhere. `cart:error` holds the last failure and `cart:checkout-status` is `success` or `cancel` on the page checkout returns to.
 
 ```html

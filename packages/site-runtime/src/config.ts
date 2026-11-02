@@ -10,7 +10,7 @@ export interface RuntimeConfig {
    * at `endpoint` (default `/checkout`) with `?items=priceId:qty,…`. There is no default `api`: the host names it.
    * `adapter` replaces the localStorage cart entirely (programmatic only).
    */
-  cart?: { key?: string; api?: string; body?: Record<string, unknown>; endpoint?: string; adapter?: CartAdapter };
+  cart?: { key?: string; api?: string; agreementApi?: string; body?: Record<string, unknown>; endpoint?: string; adapter?: CartAdapter };
   /**
    * `data-chat-send` dispatches `event` on `document` (default `site:chat`, `detail: { text, open: true }`) for the chat widget.
    * `api` is the site-chat endpoint base (`/api/site-chat/<siteId>`, with `/history` and `/message` under it) that `[data-chat]`

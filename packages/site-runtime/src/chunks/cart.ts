@@ -203,6 +203,54 @@ function withVariant(item: Record<string, any>, template: string | null): Record
 }
 
 /**
+ * Opens a stay's agreement `<dialog data-agreement-row>`: the server's text for these dates goes in
+ * `[data-agreement-text]`, and its form signs it. Resolves with the token, or null if the guest closes it.
+ */
+function askAgreement(dialog: HTMLDialogElement, api: string, stay: unknown): Promise<string | null> {
+  const win = dialog.ownerDocument.defaultView!;
+  const form = dialog.querySelector("form")!;
+  const failed = dialog.querySelector<HTMLElement>("[data-agreement-error]");
+  const fail = (e: unknown) => {
+    if (!failed) return;
+    failed.textContent = e instanceof Error ? e.message : "That didn't work. Try again in a moment.";
+    failed.hidden = false;
+  };
+  const call = async (body: Record<string, unknown>) => {
+    if (failed) failed.hidden = true;
+    const r = await win.fetch(api, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rowId: dialog.getAttribute("data-agreement-row"), stay, ...body }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || "That didn't work. Try again in a moment.");
+    return j;
+  };
+  return new Promise((resolve) => {
+    const open = new AbortController();
+    const finish = (token: string | null) => {
+      open.abort();
+      resolve(token);
+    };
+    dialog.addEventListener("close", () => finish(null), { signal: open.signal });
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const d = new FormData(form);
+      call({ name: d.get("agreementName"), consent: !!d.get("agreementConsent") })
+        .then((j) => {
+          finish(j.token);
+          dialog.close();
+        })
+        .catch(fail);
+    }, { signal: open.signal });
+    dialog.showModal();
+    const box = dialog.querySelector("[data-agreement-text]");
+    // The server escaped everything in this HTML (`agreementHtml`).
+    call({ preview: true }).then((j) => { if (box) box.innerHTML = j.html; }).catch(fail);
+  });
+}
+
+/**
  * `data-cart="add|open|checkout"` on a button or form.
  *
  * - add: the button's `data-cart-item` (the product row's cart fields as JSON, see `toCartLine`), or just
@@ -210,7 +258,7 @@ function withVariant(item: Record<string, any>, template: string | null): Record
  *   `data-cart-qty`, else 1. A multi-variant item needs its options picked (`data-cart-variant-axes`).
  *   `data-cart-id-template="pd:<rowId>/calendar={checkIn}..{checkOut}"` builds the line's id from the form's fields
  *   (picked entries of a row: nights, slots); `data-cart-then="checkout"` goes straight to checkout, sending the
- *   form's other fields as the order's details.
+ *   form's other fields as the order's details. `data-cart-agreement="<dialog id>"` has the guest sign first.
  * - open: toggles the `cart:open` state key; the drawer panel and backdrop carry `data-state-show="cart:open"`.
  * - checkout: sends the lines to the adapter's checkout; `data-cart-success` / `data-cart-cancel` are the return paths.
  *   With a `[data-cart-pay]` element on the page (inside a `<dialog>`), a site that can take payment in the page shows
@@ -275,6 +323,15 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
     const template = el.getAttribute("data-cart-id-template");
     const templated = template ? fillTemplate(template, f) : null;
     if (template && !templated) return void set(ERROR, "Fill in every field first");
+    let details = detailsOf(f);
+    const agreement = doc.getElementById(el.getAttribute("data-cart-agreement") || "");
+    if (agreement && cfg.cart?.agreementApi) {
+      set(ERROR, undefined);
+      const stay = { checkIn: f?.get("checkIn"), checkOut: f?.get("checkOut") };
+      const token = await askAgreement(agreement as HTMLDialogElement, cfg.cart.agreementApi, stay);
+      if (!token) return;
+      details = { ...details, agreementToken: token };
+    }
     const item = templated ? { id: templated } : itemOf(el) ?? { id: String(f?.get("id") ?? el.getAttribute("data-cart-id") ?? "") };
     if (!item.id && !item.metadata?.priceId) return;
     // A bare `id` (hand-written markup) is its own price id; the title falls back to it.
@@ -293,7 +350,7 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
     set(ERROR, undefined);
     await apply(cart.add(line));
     // `data-cart-then="checkout"` (a booking, a "buy now"): straight to checkout with the form's fields as details.
-    if (el.getAttribute("data-cart-then") === "checkout") return void checkout(el, detailsOf(f));
+    if (el.getAttribute("data-cart-then") === "checkout") return void checkout(el, details);
     set(OPEN, "true"); // show what was added, as storefront carts usually do
   };
   const checkout = async (el: Element, details?: Record<string, string>) => {
