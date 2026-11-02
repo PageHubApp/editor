@@ -76,6 +76,8 @@ test("link_to — https://shopify.dev/docs/api/liquid/filters/link_to (escapes t
   assert.equal(await r(`{{ 'Shopify' | link_to: 'https://shopify.com', title: 'Shopify' }}`), `<a href="https://shopify.com" title="Shopify">Shopify</a>`);
   assert.equal(await r(`{{ t | link_to: '/x' }}`, { t: "<script>" }), `<a href="/x">&lt;script&gt;</a>`);
   assert.equal(await r(`{{ 'x' | link_to: 'javascript:alert(1)' }}`), `<a href="">x</a>`);
+  assert.equal(await r(`{{ 'x' | link_to: u }}`, { u: "java\tscript:alert(1)" }), `<a href="">x</a>`);
+  assert.equal(await r(`{{ 'x' | link_to: u }}`, { u: "\u0001javascript:alert(1)" }), `<a href="">x</a>`);
   assert.equal(await r(`{{ 'x' | link_to: '/a', target: '_blank' }}`), `<a href="/a" target="_blank" rel="noopener">x</a>`);
   assert.equal(await r(`{{ 'x' | link_to: '/a', title: '" onclick="y' }}`), `<a href="/a" title="&quot; onclick=&quot;y">x</a>`);
 });

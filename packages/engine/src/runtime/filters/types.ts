@@ -55,6 +55,9 @@ export function splitArgs(args: unknown[]): { pos: unknown[]; kv: Record<string,
 /** A URL safe for `href` / `src`: relative, http(s), mailto, tel; never `javascript:` and friends. */
 export function safeUrl(value: unknown): string {
   const u = String(value ?? "").trim();
-  if (/^[a-z][a-z0-9+.-]*:/i.test(u) && !/^(https?|mailto|tel):/i.test(u)) return "";
+  // Browsers drop tabs, newlines and leading control characters before reading the scheme (`java\tscript:`, `\u0001javascript:`).
+  // eslint-disable-next-line no-control-regex
+  const probe = u.replace(/[\u0000-\u0020]/g, "");
+  if (/^[a-z][a-z0-9+.-]*:/i.test(probe) && !/^(https?|mailto|tel):/i.test(probe)) return "";
   return u;
 }
