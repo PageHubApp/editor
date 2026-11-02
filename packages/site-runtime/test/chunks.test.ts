@@ -778,6 +778,49 @@ describe("date-range length-of-stay discounts", () => {
   });
 });
 
+describe("date-range part payment", () => {
+  const pick = (from: string, to: string, attrs: string) => {
+    resetDom(
+      `<form><input type="checkbox" name="cardConsent"><div data-date-range="pp" ${attrs}>` +
+        `<button type="button" data-date="${from}" data-price="20000">in</button>` +
+        `<button type="button" data-date="${to}" data-price="20000">out</button></div></form>`
+    );
+    dateRange.mount(document.querySelector("[data-date-range]")!);
+    const at = (i: number) => document.querySelectorAll<HTMLElement>("[data-date]")[i]!;
+    at(0).click();
+    at(1).click();
+    return document.querySelector<HTMLInputElement>('input[name="cardConsent"]')!;
+  };
+  const SPLIT = 'data-part-percent="30" data-balance-days="30" data-fee="7500" data-tax-percent="10"';
+
+  it("splits each line, names the due date and requires the card agreement", () => {
+    const consent = pick("2099-06-01", "2099-06-02", SPLIT);
+    // $200 + $75 + $27.50 tax = $302.50; 30% of each line = $60 + $22.50 + $8.25.
+    assert.equal(get("pp:total"), "$302.50");
+    assert.equal(get("pp:today"), "$90.75");
+    assert.equal(get("pp:balance"), "$211.75");
+    assert.equal(get("pp:due"), "May 2, 2099");
+    assert.equal(consent.required, true);
+    assert.equal(consent.disabled, false);
+  });
+
+  it("charges in full once the due date has passed, with the box switched off", () => {
+    const consent = pick("2020-06-01", "2020-06-02", SPLIT);
+    assert.equal(get("pp:total"), "$302.50");
+    assert.equal(get("pp:today"), undefined);
+    assert.equal(get("pp:balance"), undefined);
+    assert.equal(get("pp:due"), undefined);
+    assert.equal(consent.required, false);
+    assert.equal(consent.disabled, true);
+  });
+
+  it("does nothing without a percent", () => {
+    const consent = pick("2099-06-01", "2099-06-02", 'data-balance-days="30"');
+    assert.equal(get("pp:today"), undefined);
+    assert.equal(consent.required, false);
+  });
+});
+
 describe("date-range", () => {
   const cal = () => {
     // Nov 1–2 open at $210, Nov 3 booked, Nov 4 open at $250.

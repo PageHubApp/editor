@@ -17,6 +17,10 @@ import { set } from "../state-store";
  * `data-monthly-percent` (from 28, instead of the weekly one) take that percent off the nights only, before the fee and
  * tax, and set `<name>:saved` ("You save $84.00 on a weekly stay"). The server's total is the one charged. `data-date-range-url` starts from a stay in the page's URL
  * (`?checkIn=&checkOut=`, the input names), ignored unless it passes the same rules.
+ *
+ * Part payment, optional: `data-part-percent` (1 to 99) with `data-balance-days` (how long before check-in the balance
+ * falls due). A stay check-in far enough off sets `<name>:today`, `<name>:balance` and `<name>:due` ("March 3, 2027"),
+ * and makes the page's `cardConsent` box required; any other stay disables that box. Same split and rule as checkout.
  */
 export function mount(root: Element) {
   const name = root.getAttribute("data-date-range") || "dates";
@@ -39,6 +43,8 @@ export function mount(root: Element) {
   };
   const weekly = rate("data-weekly-percent");
   const monthly = rate("data-monthly-percent");
+  const partPercent = rate("data-part-percent");
+  const balanceDays = Number(root.getAttribute("data-balance-days")) || 0;
   const flagged = (el: Element | null, attr: string) => el?.getAttribute(attr) === "true";
   const cellOn = (iso: string) => root.querySelector<HTMLElement>('[data-date="' + iso + '"]');
 
@@ -71,7 +77,18 @@ export function mount(root: Element) {
     const nightsSum = stay.reduce((s, c) => s + (Number(c.getAttribute("data-price")) || 0), 0);
     const saved = percent ? Math.round((nightsSum * percent) / 100) : 0;
     const subtotal = nightsSum - saved + (n ? fee : 0);
-    const cents = subtotal + Math.round((subtotal * taxPercent) / 100);
+    const tax = Math.round((subtotal * taxPercent) / 100);
+    const cents = subtotal + tax;
+    // Each line is scaled on its own, as the checkout's split does. Stripe won't charge a part under about 50 cents.
+    const dueOn = start ? new Date(day(start).getTime() - balanceDays * 86_400_000).toISOString().slice(0, 10) : "";
+    const part = (amount: number) => Math.round((amount * partPercent) / 100);
+    const first = part(nightsSum - saved) + (n ? part(fee) : 0) + part(tax);
+    const split = !!n && !!partPercent && new Date().toISOString().slice(0, 10) <= dueOn && first >= 50 && cents - first >= 50;
+    const consent = document.querySelector<HTMLInputElement>('input[name="cardConsent"]');
+    if (consent) {
+      consent.required = split;
+      consent.disabled = !split;
+    }
     // Minor units, with the currency's own digit count (JPY has 0, USD 2; Stripe keeps ISK and UGX at 2).
     const money = (c: number) => {
       const code = (root.getAttribute("data-currency") || "usd").toUpperCase();
@@ -89,6 +106,9 @@ export function mount(root: Element) {
     set(name + ":nights", n ? n + (n === 1 ? " night" : " nights") : undefined);
     set(name + ":total", n ? total : undefined);
     set(name + ":saved", saved ? "You save " + money(saved) + " on a " + (monthlyStay ? "monthly" : "weekly") + " stay" : undefined);
+    set(name + ":today", split ? money(first) : undefined);
+    set(name + ":balance", split ? money(cents - first) : undefined);
+    set(name + ":due", split ? day(dueOn).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : undefined);
     set(name + ":hint", hint || undefined);
   };
 
