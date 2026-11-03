@@ -92,6 +92,16 @@ test("map: class goes on the map element, not into the config", async () => {
   assert.equal(out, `<div class="h-full rounded-box" data-map="{&quot;lat&quot;:1,&quot;lng&quot;:2}"></div>`);
 });
 
+test("pagehub_badge: a marked link; class replaces the default; unknown arguments are a parse error", async () => {
+  const out = await setup().parseAndRender(`<footer>{% pagehub_badge %}</footer>`);
+  assert.match(out, /^<footer><a class="inline-flex items-center gap-1 text-sm hover:underline" href="https:\/\/pagehub\.dev\/\?ref=badge" target="_blank" rel="noopener" data-pagehub-badge><svg [^>]*aria-hidden="true">.*<\/svg>Made with PageHub<\/a><\/footer>$/);
+  assert.match(await setup().parseAndRender(`{% pagehub_badge class: "text-xs opacity-80" %}`), /^<a class="text-xs opacity-80" /);
+  await assert.rejects(() => setup().parseAndRender(`{% pagehub_badge size: 2 %}`), /pagehub_badge: unknown argument "size"/);
+  const env = createParserEnvironment(builtinParserTags());
+  const ast = parseSource(`<p>{% pagehub_badge %}</p>`, "strict", { env } as never);
+  assert.ok(ast.children.length === 1);
+});
+
 test("form: renders a post form with hidden form_type and class", async () => {
   const liquid = setup();
   const out = await liquid.parseAndRender(`{% form 'contact', class: "f" %}<input name="email">{% endform %}`, { request: { path: "/contact", method: "GET" } });

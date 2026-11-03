@@ -12,6 +12,7 @@ import type { ParserTag, ParseLike } from "../../parse/environment";
 import { SilentBlockTag } from "./blockTag";
 import { createFormTag, type FormHandler } from "./form";
 import { MapTag } from "./map";
+import { PagehubBadge } from "./pagehubBadge";
 import { createJavascriptTag } from "./javascript";
 import { createSeoTag, type PageMeta } from "./seo";
 import { createSectionTag, type SectionTagOptions } from "./section";
@@ -34,6 +35,7 @@ export const BUILTIN_TAG_META: readonly BuiltinTagMeta[] = [
   { name: "map", kind: "block", parseLike: "form", describe: "An interactive map: {% map lat: 1, lng: 2, zoom: 12, tiles: 'osm' %} with child pins (<address data-pin=\"lat,lng\">) and routes (<span data-route=\"lat,lng; lat,lng\">). Also mode (interactive, static, background), grayscale, title." },
   { name: "seo", kind: "tag", parseLike: "section", describe: "A detail page's head per row, inside its loop: {% seo item: item %} resolves the page SEO's {{item.*}}; title, description, image, og_title, og_description, canonical set fields; type: 'vacation_rental' adds that structured data." },
   { name: "javascript", kind: "raw", parseLike: "raw", describe: "A section's or partial's own JavaScript (raw, no Liquid inside). Added once per page, in one <script> at the end of <body>." },
+  { name: "pagehub_badge", kind: "tag", parseLike: "section", describe: "A \"Made with PageHub\" link in the site's text colour, for the footer: {% pagehub_badge %} or {% pagehub_badge class: '…' %} (replaces the default classes). On a free plan it replaces the floating badge." },
 ];
 
 /** Built-ins the parser already understands; every other built-in (`map`) is registered on the parser side too. */
@@ -63,5 +65,6 @@ export function builtinTags(opts: BuiltinTagOptions): Record<string, TagClass> {
     map: MapTag as unknown as TagClass,
     javascript: createJavascriptTag(opts.scripts ?? new Set()),
     seo: createSeoTag(opts.pageMeta ?? { fields: {} }),
+    pagehub_badge: PagehubBadge,
   };
 }

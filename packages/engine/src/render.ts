@@ -8,6 +8,7 @@ export { HostMissingError, splitArgs, safeUrl, type BuiltinFilter, type FilterCt
 export { escapeHtml, escapeAttr, escapeMarkupText, attrString } from "./runtime/escape";
 export { renderPage, collectSources, assertPlainJson, stripForPublish, type PageRenderer, type PageRecord, type SiteJson, type RenderRequest, type RenderMode, type RenderPageOptions, type RenderPageResult } from "./runtime/renderPage";
 export { SEO_FIELDS, SEO_TYPES, type PageMeta, type SeoField, type SeoType } from "./runtime/tags/seo";
+export { PAGEHUB_BADGE_ATTR, PAGEHUB_BADGE_HREF, PAGEHUB_BADGE_LABEL, PAGEHUB_BADGE_ICON } from "./runtime/tags/pagehubBadge";
 export { stampAriaCurrent, headSnippets, injectIntoHead, THEME_KEY, DISMISS_KEY_PREFIX } from "./runtime/pageHtml";
 export { createRenderer, createRendererFromConfiguration, RenderTimeoutError, type Renderer, type RendererOptions, type RenderCall } from "./runtime/createRenderer";
 export { defineTag, type TagDef, type TagInput, type TagRenderContext, type BodyRenderer, type TagHost } from "./runtime/defineTag";

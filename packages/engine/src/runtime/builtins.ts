@@ -19,6 +19,7 @@ const TAG_ARGS = {
   doc: t.hash({}),
   style: t.hash({}),
   javascript: t.hash({}),
+  pagehub_badge: t.hash({ class: t.string().optional().describe("Replaces the default classes") }),
   map: t.hash({
     lat: t.number().min(-90).max(90).describe("Centre latitude"),
     lng: t.number().min(-180).max(180).describe("Centre longitude"),

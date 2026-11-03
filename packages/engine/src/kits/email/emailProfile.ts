@@ -28,7 +28,7 @@ export const EMAIL_BLOCKED_TAGS: ReadonlySet<string> = new Set([
 export const EMAIL_WEAK_TAGS: ReadonlySet<string> = new Set(["svg", "picture", "math"]);
 
 /** Liquid tags that only make sense on a site page (they render forms, sections, maps or paginate data). */
-export const EMAIL_BLOCKED_LIQUID_TAGS: ReadonlySet<string> = new Set(["form", "section", "map", "paginate", "style", "block"]);
+export const EMAIL_BLOCKED_LIQUID_TAGS: ReadonlySet<string> = new Set(["form", "section", "map", "paginate", "style", "block", "pagehub_badge"]);
 
 /**
  * Class tokens email clients ignore or that break the layout (positioning, effects, motion, DaisyUI components whose

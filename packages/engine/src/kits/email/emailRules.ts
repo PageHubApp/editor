@@ -44,7 +44,7 @@ const NATIVE_INTERACTIVE: ReadonlySet<string> = new Set(["popover", "popovertarg
  * carry. test/email.test.ts checks every name against the runtime's own `needsRuntime`, so the two can't drift apart.
  */
 export const RUNTIME_ATTRIBUTES: readonly string[] = [
-  "data-cart", "data-cart-count", "data-cart-items", "data-autoplay", "data-animate", "data-track", "data-scrollspy", "data-form-state",
+  "data-cart", "data-cart-count", "data-cart-items", "data-autoplay", "data-animate", "data-track", "data-track-purchase", "data-scrollspy", "data-form-state",
   "data-map", "data-fit-text", "data-scroll-effect", "data-drag-scroll", "data-wheel-horizontal", "data-scrollbar-autohide", "data-scroll-smoothing",
   "data-carousel", "data-state-set", "data-state-toggle", "data-state-clear", "data-state-step", "data-state-show", "data-state-class", "data-state-text",
   "data-state-src", "data-state-bind", "data-state-in-view", "data-state-compute", "data-chat-send", "data-chat", "data-on", "data-show-on",
