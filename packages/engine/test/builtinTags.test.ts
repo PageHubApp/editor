@@ -94,7 +94,7 @@ test("map: class goes on the map element, not into the config", async () => {
 
 test("pagehub_badge: a marked link; class replaces the default; unknown arguments are a parse error", async () => {
   const out = await setup().parseAndRender(`<footer>{% pagehub_badge %}</footer>`);
-  assert.match(out, /^<footer><a class="inline-flex items-center gap-1 text-sm hover:underline" href="https:\/\/pagehub\.dev\/\?ref=badge" target="_blank" rel="noopener" data-pagehub-badge><svg [^>]*aria-hidden="true">.*<\/svg>Made with PageHub<\/a><\/footer>$/);
+  assert.match(out, /^<footer><a class="text-sm hover:underline" href="https:\/\/pagehub\.dev\/\?ref=badge" target="_blank" rel="noopener" data-pagehub-badge>Made with PageHub<\/a><\/footer>$/);
   assert.match(await setup().parseAndRender(`{% pagehub_badge class: "text-xs opacity-80" %}`), /^<a class="text-xs opacity-80" /);
   await assert.rejects(() => setup().parseAndRender(`{% pagehub_badge size: 2 %}`), /pagehub_badge: unknown argument "size"/);
   const env = createParserEnvironment(builtinParserTags());
