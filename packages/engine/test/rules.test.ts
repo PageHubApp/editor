@@ -102,6 +102,8 @@ test("editor-attr-value", () => {
       { code: `<p data-edit-id="NOPE">x</p>`, errors: 1, output: null },
       { code: `<p data-editable="video">x</p>`, errors: 1 },
       { code: `<p class="k" data-edit-src="a#1">x</p>`, errors: 1, output: `<p class="k">x</p>` },
+      { code: `<p class="k" data-edit-row="{{ item.id }}" data-edit-field="description">x</p>`, errors: 2, output: `<p class="k">x</p>` },
+      { code: `<p data-edit-row="r1">x</p>`, errors: 1, output: `<p>x</p>` },
       { code: `<p data-edit-name="{{ n }}">x</p>`, errors: 1 },
     ],
   });

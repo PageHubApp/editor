@@ -23,7 +23,7 @@ import { CanvasRenderContext, defaultCanvasRender } from "./canvasContext";
 import { useCanvasHost } from "./canvasHost";
 import { canvasOf, canvasPage, lastEditOf } from "./canvasState";
 import { isTextSurface } from "../keyboard/domKeymap";
-import { applyFrameStates, elementsFor, srcOf, writeFrame } from "./frameDom";
+import { applyFrameStates, copyOf, srcOf, writeFrame } from "./frameDom";
 import { setRenderStatus, useRenderStatus } from "./renderStatus";
 import { setMainCanvasDoc } from "./overlayPreview";
 import { PageSkeleton } from "./PageSkeleton";
@@ -94,6 +94,8 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
   const page = useEditorState(canvasPage);
   const preview = useEditorState((s) => chromeOf(s).preview);
   const live = !readOnly && !preview;
+  // `canvas.reloadData` bumps it: render again, so the renderer asks the host for fresh data
+  const dataVersion = useEditorState((s) => canvasOf(s).dataVersion);
   const status = useRenderStatus(store);
   const waiting = useDelayedFlag(!readOnly && status.pending);
   // The first-paint skeleton stays until the frame has really painted (fonts and styles applied), not just until it was written.
@@ -153,7 +155,7 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
       clearTimeout(t);
       clearTimeout(timer);
     };
-  }, [files, page, render, store, delayMs, stale, readOnly]);
+  }, [files, page, render, store, delayMs, stale, readOnly, dataVersion]);
 
   // an unmounting main canvas leaves nothing "pending" behind
   useEffect(() => () => void (!readOnly && setRenderStatus(store, { pending: false })), [store, readOnly]);
@@ -201,10 +203,10 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
       const Ptr = host?.defaultView?.PointerEvent;
       if (host && Ptr) host.body.dispatchEvent(new Ptr("pointerdown", { bubbles: true, button: e.button }));
       if (e.button !== 0) return;
-      const src = srcOf(e.target as Element);
-      if (!src) return void store.run("selection.clear");
-      pending = src === primarySrc() ? { x: e.clientX, y: e.clientY } : null;
-      store.run("canvas.select", { src });
+      const hit = copyOf(e.target as Element);
+      if (!hit) return void store.run("selection.clear");
+      pending = hit.src === primarySrc() ? { x: e.clientX, y: e.clientY } : null;
+      store.run("canvas.select", hit);
     };
     const onUp = (e: MouseEvent) => {
       if (pending && Math.hypot(e.clientX - pending.x, e.clientY - pending.y) <= DESELECT_SLOP) store.run("selection.clear");
@@ -216,10 +218,10 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
     const onContext = (e: MouseEvent) => {
       const t = e.target as Element;
       if (t.closest?.(EDITABLE)) return;
-      const src = srcOf(t);
-      if (!src) return;
+      const hit = copyOf(t);
+      if (!hit) return;
       e.preventDefault();
-      store.run("canvas.select", { src });
+      store.run("canvas.select", hit);
       const f = frame.current!.getBoundingClientRect();
       const z = chromeOf(store.state).zoom || 1;
       store.run("contextMenu.open", { x: f.left + e.clientX * z, y: f.top + e.clientY * z });

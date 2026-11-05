@@ -26,6 +26,13 @@ export const EDIT_ATTRIBUTES = {
   name: "data-edit-name",
   /** Canvas-only source offset (`<file>#<offset>`); never stored. */
   src: "data-edit-src",
+  /**
+   * Canvas-only: the `id` of the collection entry this copy of a repeated element shows (the row its `{{ item.x }}`
+   * outputs read), so a click on the 2nd product card knows it is that product. Never stored.
+   */
+  row: "data-edit-row",
+  /** Canvas-only: space list of the entry fields the element shows (`description`, `image`). Never stored. */
+  field: "data-edit-field",
 } as const;
 
 export type EditAttributeName = (typeof EDIT_ATTRIBUTES)[keyof typeof EDIT_ATTRIBUTES];
@@ -61,6 +68,8 @@ export function validateEditAttribute(name: string, value: string): string | nul
     case EDIT_ATTRIBUTES.name:
       return value.trim() ? null : `${name} must not be empty`;
     case EDIT_ATTRIBUTES.src:
+    case EDIT_ATTRIBUTES.row:
+    case EDIT_ATTRIBUTES.field:
       return `${name} is canvas-only and must not be stored`;
     default:
       return `${name} is not a known editor attribute`;

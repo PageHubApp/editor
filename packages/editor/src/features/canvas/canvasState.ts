@@ -40,9 +40,17 @@ interface CanvasState {
    * the writes go to the canvas runtime's state store, never the saved source.
    */
   statePreview: Readonly<Record<string, readonly (readonly [string, string | undefined])[]>>;
+  /**
+   * Which rendered copy of a repeated element was clicked: its `data-edit-src` and its index among the elements with
+   * that src. The selection maps every copy to one handle; this says which product card the author meant, so the
+   * entry button and the text editing act on that copy. Read it only while `src` is the selection's src.
+   */
+  copy: { src: string; index: number } | null;
+  /** Bumped by `canvas.reloadData`: the canvas renders again, asking the host for fresh data. */
+  dataVersion: number;
 }
 
-const DEFAULT_CANVAS: CanvasState = { page: null, includes: [], device: false, responsive: true, widthOverride: null, markers: false, guides: false, mirror: null, phone: DEVICE_PRESETS[0]!, closedDetails: [], openOverlays: [], statePreview: {} };
+const DEFAULT_CANVAS: CanvasState = { page: null, includes: [], device: false, responsive: true, widthOverride: null, markers: false, guides: false, mirror: null, phone: DEVICE_PRESETS[0]!, closedDetails: [], openOverlays: [], statePreview: {}, copy: null, dataVersion: 0 };
 
 export const setCanvas = StateEffect.define<Partial<CanvasState>>("canvas.set");
 
@@ -95,15 +103,39 @@ export function selectTarget(store: SourceHost, src: string | null): NodeHandle 
 
 const hostOf = (ctx: CommandContext): SourceHost | null => (ctx.registry ? { state: ctx.state, registry: ctx.registry } : null);
 
-const canvasSelect = defineCommand<{ src: string | null }>({
+/** The copy of `src` that was clicked (its index among the rendered elements with that src), or 0. */
+export function clickedCopyIndex(s: EditorState, src: string | null): number {
+  const c = canvasOf(s).copy;
+  return src && c?.src === src ? c.index : 0;
+}
+
+/** Select what a click on `src` selects; `copy` is which rendered copy of `src` was clicked (see `CanvasState.copy`). */
+const canvasSelect = defineCommand<{ src: string | null; copy?: number }>({
   id: "canvas.select",
   title: "Select element",
   run(ctx, args) {
     const host = hostOf(ctx);
     const h = args && host ? selectTarget(host, args.src) : null;
-    if (!h) return false;
-    if (ctx.selection.handles.length === 1 && ctx.selection.primary === h) return false;
-    ctx.dispatch?.(ctx.tr.effect(setSelection, { handles: [h] }));
+    if (!h || !args) return false;
+    const was = canvasOf(ctx.state).copy;
+    const copy = args.src && args.copy != null ? { src: args.src, index: args.copy } : null;
+    const copyChanged = ctx.state.hasField(canvasField) && (was?.src !== copy?.src || was?.index !== copy?.index);
+    const same = ctx.selection.handles.length === 1 && ctx.selection.primary === h;
+    if (same && !copyChanged) return false;
+    if (copyChanged) ctx.tr.effect(setCanvas, { copy });
+    if (!same) ctx.tr.effect(setSelection, { handles: [h] });
+    ctx.dispatch?.(ctx.tr);
+    return true;
+  },
+});
+
+/** Render the canvas again with fresh host data (the host calls it after an entry the page shows was saved). */
+const canvasReloadData = defineCommand({
+  id: "canvas.reloadData",
+  title: "Reload canvas data",
+  run(ctx) {
+    if (!ctx.state.hasField(canvasField)) return false;
+    ctx.dispatch?.(ctx.tr.effect(setCanvas, { dataVersion: canvasOf(ctx.state).dataVersion + 1 }));
     return true;
   },
 });
@@ -238,7 +270,7 @@ const toggle = (id: string, title: string, key: "markers" | "guides") =>
 export const toggleMarkers = toggle("view.toggleMarkers", "Toggle breakpoint lines", "markers");
 export const toggleGuides = toggle("view.toggleGuides", "Toggle device guides", "guides");
 
-const CANVAS_COMMANDS = [canvasSelect, canvasHover, canvasEditInclude, canvasSet, canvasView, canvasDevice, canvasToggleDetails, canvasToggleOverlay, lintFix, toggleMarkers, toggleGuides, themeSetBreakpoint] as const;
+const CANVAS_COMMANDS = [canvasSelect, canvasReloadData, canvasHover, canvasEditInclude, canvasSet, canvasView, canvasDevice, canvasToggleDetails, canvasToggleOverlay, lintFix, toggleMarkers, toggleGuides, themeSetBreakpoint] as const;
 
 const PALETTE = contributes({ palette: ["canvas.toggleDevice", "view.toggleMarkers", "view.toggleGuides"].map((command) => ({ command, group: "View" })) });
 

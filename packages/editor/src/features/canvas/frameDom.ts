@@ -18,6 +18,17 @@ export function elementsFor(doc: Document, src: string | null | undefined): HTML
   return [...doc.querySelectorAll<HTMLElement>(`[${SRC_ATTR}="${CSS.escape(src)}"]`)].filter((el) => !UNMARKED.has(el.tagName));
 }
 
+/**
+ * The `canvas.select` args for a press on `target`: the nearest rendered element's src, and which copy of it this is
+ * (its index among the elements rendered from the same source, e.g. the 2nd product card).
+ */
+export function copyOf(target: Element | null): { src: string; copy: number } | null {
+  const el = target?.closest<HTMLElement>(`[${SRC_ATTR}]`);
+  const src = el?.getAttribute(SRC_ATTR);
+  if (!el || !src) return null;
+  return { src, copy: Math.max(0, elementsFor(el.ownerDocument, src).indexOf(el)) };
+}
+
 /** Elements rendered from a file (an include's output). */
 export function elementsOfFile(doc: Document, path: string): HTMLElement[] {
   const top: HTMLElement[] = [];

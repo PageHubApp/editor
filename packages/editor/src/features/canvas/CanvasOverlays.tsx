@@ -15,6 +15,7 @@ import { AncestorsMenu, crumbsOf } from "./AncestorsMenu";
 import { editSrcOf } from "@pagehub/engine/canvas";
 import { useCanvasFrame } from "./canvasContext";
 import { canvasOf } from "./canvasState";
+import { EntryButton, entryOf, useEntryLink } from "./EntryButton";
 import { elementsFor, hostRect, toRect, visibleInFrame } from "./frameDom";
 import type { Rect } from "./geometry";
 import { IncludeInAiButton } from "./NodeToolExtras";
@@ -166,11 +167,28 @@ function NameChip({ handle, rect, place = "top-end", clamp }: { handle: NodeHand
   );
 }
 
-function RepeatedChip({ count, rect }: { count: number; rect: Rect }) {
+/** An entry field that holds a photo (an `<img>` copy opens its entry there). */
+const PHOTO_FIELD = /image|photo|picture|img/i;
+
+/**
+ * "repeated ×N" over the copy that was clicked, and, when that copy shows a collection entry the host knows, the
+ * button that opens that entry ("Change photo of …" on a photo).
+ */
+function RepeatedChip({ count, copy }: { count: number; copy: HTMLElement }) {
+  const { frame, host } = useCanvasFrame();
+  const zoom = useEditorState((s) => chromeOf(s).zoom || 1);
+  const rect = frame && host ? hostRect(toRect(copy.getBoundingClientRect()), frame, host, zoom) : toRect(copy.getBoundingClientRect());
   const keep = useKeepInView<HTMLSpanElement>(rect);
+  const entry = entryOf(copy);
+  const link = useEntryLink(entry?.rowId);
+  const photo = copy.tagName === "IMG";
+  const field = entry ? ((photo ? entry.fields.find((f) => PHOTO_FIELD.test(f)) : null) ?? entry.fields[0] ?? null) : null;
   return (
-    <span ref={keep} data-repeated={count} className={`${CHIP} bg-primary! text-primary-content!`} style={at(rect, "top-start")}>
-      repeated ×{count}
+    <span ref={keep} className="pointer-events-none absolute z-40 flex items-center gap-1" style={at(rect, "top-start")}>
+      <span data-repeated={count} className={`${CHIP} static! bg-primary! text-primary-content!`}>
+        repeated ×{count}
+      </span>
+      {link && <EntryButton link={link} field={field} photo={photo} className={`${CHIP} static! cursor-pointer font-medium`} />}
     </span>
   );
 }
@@ -265,10 +283,12 @@ export function CanvasOverlays() {
   const g = useSelectionGeometry();
   const { host } = useCanvasFrame();
   const hostH = host?.getBoundingClientRect().height;
+  const clicked = useEditorState((s) => canvasOf(s).copy);
+  const copyIndex = clicked && g?.handle.kind === "element" && clicked.src === editSrcOf(g.handle) ? clicked.index : 0;
   return (
     <div data-slot="CanvasOverlays" className="pointer-events-none absolute inset-0">
       {g && g.elements.length > 1 && !g.include && (
-        <RepeatedChip count={g.elements.length} rect={g.rect} />
+        <RepeatedChip count={g.elements.length} copy={g.elements[copyIndex] ?? g.elements[0]!} />
       )}
       {g?.include && (
         <>

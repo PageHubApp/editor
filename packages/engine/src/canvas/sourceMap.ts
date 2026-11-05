@@ -10,9 +10,16 @@
  * Elements rendered more than once (`{% for %}` rows) share one value, so every row maps to the
  * one template element. Elements of a partial carry the partial's path (`partials/header.liquid`),
  * which is how the canvas knows a click landed inside an include.
+ *
+ * So a click can still tell rows apart, an element that prints a local row's fields (`{{ item.description }}`
+ * in a `{% for item in … %}`, or in a partial rendered with `item: item`) also carries
+ * `data-edit-row="{{ item.id }}"` (the entry id, rendered per copy; empty means no entry) and
+ * `data-edit-field="description"` (the fields it shows). Both exist only in this copy; the rule for
+ * "local" is in `rowBindings.ts`. Stored source with any of the three gets a lint remove fix.
  */
 import { EDIT_ATTRIBUTES } from "../attributes/editAttributes";
 import { applySplices } from "../edit/ops";
+import { paramsFor, partialParams, rowAttributes } from "./rowBindings";
 import type { EditorState, Path } from "../state/state";
 import type { HandleRegistry, NodeHandle } from "../state/handles";
 
@@ -37,13 +44,19 @@ export function parseEditSrc(value: string | null | undefined): { path: Path; of
   return m ? { path: m[1]!, offset: Number(m[2]) } : null;
 }
 
-/** One file's text with `data-edit-src` on every element whose tag name is static. */
-export function instrumentFile(state: EditorState, path: Path): string {
+/**
+ * One file's text with `data-edit-src` on every element whose tag name is static, plus `data-edit-row` /
+ * `data-edit-field` where the element prints a local row's fields (`rowBindings`). Every insertion is a
+ * zero-width splice after the tag name, and offsets come from the original tree, so values stay offsets
+ * of the stored file. `params` (partial name → render args) is computed from `state` when omitted.
+ */
+export function instrumentFile(state: EditorState, path: Path, params: Map<string, Set<string>> = partialParams(state)): string {
   const tree = state.tree(path);
+  const own = paramsFor(path, params);
   const splices = tree.flat.flatMap((n) => {
     if (n.kind !== "element" || !STATIC_TAG.test(n.tag)) return [];
     const at = n.openTag.start + 1 + n.tag.length;
-    return [{ from: at, to: at, insert: ` ${EDIT_SRC_ATTR}="${path}#${n.range.start}"` }];
+    return [{ from: at, to: at, insert: ` ${EDIT_SRC_ATTR}="${path}#${n.range.start}"${rowAttributes(tree, n, own)}` }];
   });
   return applySplices(tree.text, splices);
 }
@@ -51,10 +64,11 @@ export function instrumentFile(state: EditorState, path: Path): string {
 /** Instrumented copies of every markup file that parses (render overrides; never stored). */
 export function instrumentFiles(state: EditorState): Record<Path, string> {
   const out: Record<Path, string> = {};
+  const params = partialParams(state);
   for (const path of state.files.keys()) {
     if (!MARKUP.test(path)) continue;
     try {
-      out[path] = instrumentFile(state, path);
+      out[path] = instrumentFile(state, path, params);
     } catch {
       // a file that doesn't parse renders as stored (the renderer reports its error)
     }
@@ -72,9 +86,9 @@ export function renderCanvas(
   return renderer.render(path, data, { overrides: instrumentFiles(state), mode: "editor" });
 }
 
-/** Remove every `data-edit-src` from rendered HTML (what the plain render looks like). */
+/** Remove the canvas-only attributes (`data-edit-src`, `-row`, `-field`) from rendered HTML (what the plain render looks like). */
 export function stripEditSrc(html: string): string {
-  return html.replace(/ data-edit-src="[^"]*"/g, "");
+  return html.replace(/ data-edit-(?:src|row|field)="[^"]*"/g, "");
 }
 
 /** The element a `data-edit-src` value names, in the current state; null when it is gone. */

@@ -114,23 +114,25 @@ export const rawOnlyTrusted = defineRule({
   },
 });
 
+/** Attributes only the canvas copy carries; stored, they are removed by the fix. */
+const CANVAS_ONLY = new Set<string>([EDIT_ATTRIBUTES.src, EDIT_ATTRIBUTES.row, EDIT_ATTRIBUTES.field]);
+
 export const editorAttrValue = defineRule({
-  meta: { id: "editor-attr-value", severity: "error", fixKind: "sanitize", description: "data-edit-* and data-editable attributes must carry valid values; data-edit-src is never stored." },
+  meta: { id: "editor-attr-value", severity: "error", fixKind: "sanitize", description: "data-edit-* and data-editable attributes must carry valid values; data-edit-src, -row and -field are never stored." },
   create: (ctx) => ({
     Element(el: ElementNode) {
       for (const a of attrsOf(el)) {
         if (!isEditAttribute(a.name) && a.name !== EDITABLE_ATTRIBUTE) continue;
+        if (CANVAS_ONLY.has(a.name)) {
+          ctx.report({ range: a.range, message: validateEditAttribute(a.name, a.value)!, fix: [removeWithLeadingSpace(ctx.source, a.range)] });
+          continue;
+        }
         if (a.dynamic) {
           ctx.report({ range: a.range, message: `${a.name} must be static` });
           continue;
         }
         const problem = validateEditAttribute(a.name, a.value);
-        if (!problem) continue;
-        ctx.report({
-          range: a.range,
-          message: problem,
-          ...(a.name === EDIT_ATTRIBUTES.src ? { fix: [removeWithLeadingSpace(ctx.source, a.range)] } : {}),
-        });
+        if (problem) ctx.report({ range: a.range, message: problem });
       }
     },
   }),

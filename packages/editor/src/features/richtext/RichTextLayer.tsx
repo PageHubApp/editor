@@ -16,7 +16,8 @@ import { editSrcOf, handleForSrc } from "@pagehub/engine/canvas";
 import { useEditorState, useEditorStore } from "../../react/bindings";
 import { useOverlay } from "../../primitives/overlayStack";
 import { useCanvasFrame } from "../canvas/canvasContext";
-import { elementsFor, hostRect, srcOf, toRect } from "../canvas/frameDom";
+import { copyOf, elementsFor, hostRect, srcOf, toRect } from "../canvas/frameDom";
+import { clickedCopyIndex } from "../canvas/canvasState";
 import { chromeOf } from "../../shell/chromeState";
 import { RichTextSession, type RichTextPanel } from "./session";
 import { isRichTextLeaf } from "@pagehub/engine/kits";
@@ -25,6 +26,7 @@ import { TextContextMenu } from "./TextContextMenu";
 import { VariableSuggest } from "./VariableSuggest";
 import { richTextOf } from "./richTextState";
 import { RICHTEXT_CSS, RICHTEXT_STYLE_ID } from "./richTextCss";
+import { RepeatNotice } from "./RepeatNotice";
 
 /** Gap between the element and the toolbar, and the inset from the canvas edges. */
 const TOOLBAR_GAP = 8;
@@ -126,10 +128,14 @@ export function RichTextLayer() {
       const h = store.state.selection.primary;
       if (h && isRichTextLeaf(h) && srcOf(hit) === editSrcOf(h)) {
         e.stopPropagation();
+        // the copy pressed is the one edited (and the one "Edit this entry" names), even after selecting another copy
+        const copy = copyOf(hit);
+        if (copy) store.run("canvas.select", copy);
         store.run("richtext.edit");
       } else if (block) {
         e.stopPropagation();
-        store.run("canvas.select", { src: srcOf(block) });
+        const copy = copyOf(block);
+        if (copy) store.run("canvas.select", copy);
       }
     };
     // right-click in the edited text: the text menu (anywhere else the canvas / browser handles it)
@@ -160,8 +166,10 @@ export function RichTextLayer() {
       if (doc) stampEmpty(doc, store);
     }
     if (!editing || !doc) return;
-    const copies = elementsFor(doc, editSrcOf(editing));
-    const el = copies[0];
+    // edit the copy that was clicked (every copy renders the same source, so any one of them can host the session)
+    const src = editSrcOf(editing);
+    const copies = elementsFor(doc, src);
+    const el = copies[clickedCopyIndex(store.state, src)] ?? copies[0];
     if (!el) return;
     if (!session.current) {
       setBlocked(false);
@@ -248,7 +256,7 @@ export function RichTextLayer() {
     <>
       <div ref={toolbar} data-slot="InlineTextToolbar" data-rt-toolbar="" data-pagehub-canvas-chrome="" className="pointer-events-auto absolute z-[110] w-fit max-w-full cursor-default font-sans" style={pos ?? { visibility: "hidden" }} onMouseDown={(e) => e.stopPropagation()}>
         <InlineToolbar session={active} panel={panel} openPanel={openPanel} />
-        {active.repeats > 1 && <RepeatNotice copies={active.repeats} blocked={blocked} />}
+        {active.repeats > 1 && <RepeatNotice copies={active.repeats} blocked={blocked} copy={active.editor.view.dom as HTMLElement} source={editing.alive ? editing.text() : ""} />}
         <TextContextMenu session={active} at={menu} onClose={() => setMenu(null)} />
       </div>
       {suggestStyle && (
@@ -257,19 +265,5 @@ export function RichTextLayer() {
         </div>
       )}
     </>
-  );
-}
-
-/**
- * Under the toolbar while editing text that renders more than once: typing here changes every copy, and the
- * `{{ … }}` fields are what keep each copy's own details (the session refuses edits that remove one).
- */
-function RepeatNotice({ copies, blocked }: { copies: number; blocked: boolean }) {
-  return (
-    <p data-rt-repeat-notice={blocked ? "blocked" : ""} role={blocked ? "status" : undefined} className={`mt-1 max-w-72 rounded-md px-2 py-1 text-xs shadow-sm ${blocked ? "bg-warning text-warning-content" : "bg-base-100 text-base-content"}`}>
-      {blocked
-        ? "The highlighted fields fill in each copy's own details, so they can't be typed over. To change one copy, edit its entry in Collections."
-        : `This text shows on all ${copies} copies. Words you type here change every copy.`}
-    </p>
   );
 }

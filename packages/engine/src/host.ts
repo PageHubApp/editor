@@ -4,6 +4,7 @@ export { iconCatalogueFacet, memoryIconCatalogue, type IconCatalogue, type IconS
 export { fontCatalogueFacet, defaultFontCatalogue, FONT_TABS, fontsInTab, type FontCatalogue, type FontFamily, type FontCategory, type FontTab } from "./host/fonts";
 export { themeColorsFacet, defaultThemeColors, type ThemeColor, type ThemeColors } from "./host/colors";
 export { blockSourceFacet, type BlockDetail, type BlockItem, type BlockSource } from "./host/blocks";
+export { collectionRowsFacet, type CollectionRows, type CollectionRowLabel } from "./host/collectionRows";
 export { themePresetsFacet, fontPairingsFacet, type ThemePreset, type PresetColor, type FontPairing } from "./host/presets";
 export { PLACEHOLDER_IMAGE } from "./host/placeholder";
 export { profileFacet, type EditorProfile, type ProfileTile } from "./host/profile";
