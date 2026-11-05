@@ -14,6 +14,18 @@ export const PanelHeaderRow = ({ children }: { children: ReactNode }) => (
   <div className="border-base-300 bg-base-100 flex h-12 shrink-0 items-center gap-2 border-b px-3">{children}</div>
 );
 
+/** A Components tile's face: icon over label; accent while pressed (or its picker is open). */
+export const TileFace = ({ icon, label, pressed }: { icon: IconName; label: string; pressed?: boolean }) => (
+  <div className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto mx-auto h-full w-full max-w-24 rounded-lg border ${pressed ? "border-accent bg-accent text-accent-content" : ""}`}>
+    <div className="pointer-events-none flex h-full min-h-[60px] w-full flex-col items-center gap-1.5 px-1 pt-3 pb-2 transition-colors">
+      <span className="shrink-0 text-2xl"><Icon name={icon} className="size-6" /></span>
+      <div className="flex flex-1 items-center justify-center">
+        <span className="text-center text-[10px]">{label}</span>
+      </div>
+    </div>
+  </div>
+);
+
 /** Room to park the scroll below the last item. */
 export const PanelScrollSpacer = () => <div className="shrink-0" style={{ minHeight: "70vh" }} />;
 

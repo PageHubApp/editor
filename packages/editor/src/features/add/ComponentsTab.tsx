@@ -17,13 +17,15 @@ import { activePartial } from "../board/boardState";
 import { useEditorState, useEditorStore, useRunCommand } from "../../react/bindings";
 import { useInsertDrag } from "../dnd/useInsertDrag";
 import { TOOLTIP_ID } from "../../primitives/tooltip";
-import { Icon, type IconName } from "../../primitives/icons";
+import { type IconName } from "../../primitives/icons";
 import { glyphFor } from "../layers/glyphs";
+import { useHostCollections } from "../canvas/hostCollections";
 import { addPanelOf } from "./addPanelState";
 import { insertComponent } from "./insertTarget";
 import { capital } from "./useBlocks";
 import { toolboxTiles } from "./toolboxCatalog";
-import { FilterDropdown, PanelHeaderRow, PanelScrollSpacer, SearchInput } from "./panelParts";
+import { COLLECTION_LIST_TILE, CollectionListTile } from "./CollectionListTile";
+import { FilterDropdown, PanelHeaderRow, PanelScrollSpacer, SearchInput, TileFace } from "./panelParts";
 
 export const TOOLBOX_HINT_DELAY_MS = 500;
 
@@ -40,6 +42,8 @@ export interface ToolTile {
   category: string;
   description?: string;
   insert: InsertArgs;
+  /** The tile asks a question before inserting (it has no fixed markup to drag). */
+  picker?: "collection";
 }
 
 const AUTOMATIC_TILE: ToolTile = { key: "automatic", label: "Automatic", icon: "sparkles", category: "Layout", description: "Becomes what its spot needs: a row inside a column, a column inside a row.", insert: { automatic: true } };
@@ -59,14 +63,7 @@ function Tile({ tile }: { tile: ToolTile }) {
   const { onPointerDown, pressed } = useInsertDrag(tile.insert, tile.label);
   return (
     <div {...insertHint(tile.description)} role="button" tabIndex={0} aria-label={tile.label} data-tile={tile.key} data-pressed={pressed ? "" : undefined} onPointerDown={onPointerDown} onDoubleClick={() => insertComponent(store, tile.insert)} onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && insertComponent(store, tile.insert)} className="flex h-full w-full min-w-0 cursor-grab active:cursor-grabbing">
-      <div className={`border-base-300 bg-base-200 text-base-content hover:bg-accent pointer-events-auto mx-auto h-full w-full max-w-24 rounded-lg border ${pressed ? "border-accent bg-accent text-accent-content" : ""}`}>
-        <div className="pointer-events-none flex h-full min-h-[60px] w-full flex-col items-center gap-1.5 px-1 pt-3 pb-2 transition-colors">
-          <span className="shrink-0 text-2xl"><Icon name={tile.icon} className="size-6" /></span>
-          <div className="flex flex-1 items-center justify-center">
-            <span className="text-center text-[10px]">{tile.label}</span>
-          </div>
-        </div>
-      </div>
+      <TileFace icon={tile.icon} label={tile.label} pressed={pressed} />
     </div>
   );
 }
@@ -97,6 +94,8 @@ export function useToolCategories(): { title: string; tiles: ToolTile[] }[] {
   const names = useEditorState((s) => componentNames(s.files).join("\n"));
   const editing = useEditorState(activePartial);
   const profile = useEditorState((s) => s.facet(profileFacet));
+  // The Collection list tile needs the host's list of collections to bind to; without one it is left out.
+  const hasCollections = !!useHostCollections();
   return useMemo(() => {
     const groups = new Map<string, ToolTile[]>();
     const add = (t: ToolTile) => groups.set(t.category, [...(groups.get(t.category) ?? []), t]);
@@ -109,12 +108,13 @@ export function useToolCategories(): { title: string; tiles: ToolTile[] }[] {
     if (profile?.toolbox !== false) {
       add(AUTOMATIC_TILE);
       for (const t of toolboxTiles()) add(t);
+      if (hasCollections) add(COLLECTION_LIST_TILE);
       for (const t of reusableTiles(names ? names.split("\n") : [], editing)) add(t);
     }
     for (const t of profile?.tiles ?? []) add({ key: t.key, label: t.label, icon: glyphFor(t.icon), category: t.category, description: t.description, insert: { snippet: t.snippet } });
     const rank = (t: string) => (t === REUSABLE_TITLE ? ORDER.length + 1 : ORDER.includes(t) ? ORDER.indexOf(t) : ORDER.length);
     return [...groups].map(([title, tiles]) => ({ title, tiles })).sort((a, b) => rank(a.title) - rank(b.title));
-  }, [elements, names, editing, profile]);
+  }, [elements, names, editing, profile, hasCollections]);
 }
 
 export function searchTiles(cats: { title: string; tiles: ToolTile[] }[], query: string) {
@@ -151,7 +151,7 @@ export function ComponentsTab() {
             <div className="border-base-300 grid w-full grid-cols-3 gap-3 border-t p-3">
               {c.tiles.map((t) => (
                 <div key={t.key} className="flex min-w-0 justify-center">
-                  <Tile tile={t} />
+                  {t.picker === "collection" ? <CollectionListTile tile={t} /> : <Tile tile={t} />}
                 </div>
               ))}
             </div>

@@ -10,84 +10,54 @@
  * `dataSourceModel`). Every write goes through the engine (`liquid.*` commands and the edit
  * transaction), so each is one undo step and renders through the real runtime.
  */
-import { useMemo, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { type NodeHandle } from "@pagehub/engine";
 import { useEditorState, useEditorStore } from "../../react/bindings";
 import { AddBranchButton, BranchRow, ExpressionField, PanelNote } from "../liquid/LiquidFields";
 import { ToolbarItemView } from "../toolbar/ToolbarItemView";
 import { buildFor, buildPaginate, markupOf, parseFor, parsePaginate, wrapperOf } from "../liquid/markup";
-import { loopVariables } from "../liquid/completions";
 import { useCommit, useCommitAt } from "../liquid/useCommit";
 import { useBranches, useCompletions } from "../liquid/BlockPanels";
 import { buildPipeline, forInner, readDataSource, type DataSource, type UrlFilter, type WhereClause } from "./dataSourceModel";
 import { filterFormMarkup, paginatedMarkup, urlFilterMarkup } from "./dataSourceActions";
 import { DataSourceUrlControls } from "./DataSourceUrlControls";
+import { SortField, SourceSelect, WhereRow, sampleAt, useSources } from "./DataSourceFields";
 
 /** Same data source: primitives equal and the same handles (JSON would walk each handle's registry). */
 const sameSource = (a: DataSource | null, b: DataSource | null): boolean =>
   a === b ||
   (!!a && !!b && a.assign === b.assign && a.paginate === b.paginate && a.urlFilters.length === b.urlFilters.length && a.urlFilters.every((f, i) => f.handle === b.urlFilters[i]!.handle) && JSON.stringify({ ...a, assign: 0, paginate: 0, anchor: 0, urlFilters: 0 }) === JSON.stringify({ ...b, assign: 0, paginate: 0, anchor: 0, urlFilters: 0 }));
 
-/** Collection globals that read as lists (the panel's quick-pick sources). */
-const LIST_GLOBALS = ["products", "collections", "product_categories", "pages"] as const;
-
-const SORT_HINT = "A property name — items are sorted by it (e.g. price, title).";
-
-/** Available collections: the canvas sample data's array keys, the list globals, and loop scopes. */
-function useCollections(handle: NodeHandle): { value: string; label: string }[] {
-  const store = useEditorStore();
-  const data = (store as { data?: Record<string, unknown> }).data ?? {};
-  const loops = useEditorState(() => (handle.alive ? loopVariables(handle) : []), (a, b) => a.join(",") === b.join(","));
-  return useMemo(() => {
-    const out: { value: string; label: string }[] = [];
-    const seen = new Set<string>();
-    const add = (value: string, label: string) => {
-      if (value && !seen.has(value)) {
-        seen.add(value);
-        out.push({ value, label });
-      }
-    };
-    for (const [k, v] of Object.entries(data)) if (Array.isArray(v)) add(k, k);
-    for (const g of LIST_GLOBALS) add(g, g);
-    // Nested scope: iterate a field of the enclosing loop item.
-    for (const lv of loops) add(`${lv}.`, `${lv}.… (nested)`);
-    return out;
-  }, [data, loops]);
+/**
+ * Liquid fields kept as a fallback. With a host that lists collections they fold into "Edit as Liquid" (picking by
+ * name is the main path); without one they show, as the only way to name a source the editor doesn't know.
+ */
+function LiquidFallback({ folded, children }: { folded: boolean; children: ReactNode }) {
+  if (!folded) return <>{children}</>;
+  return (
+    <details data-ds-advanced="" className="group">
+      <summary className="text-base-content/60 hover:text-base-content cursor-pointer text-[11px] select-none">Edit as Liquid</summary>
+      <div className="mt-1.5 flex flex-col gap-1.5">{children}</div>
+    </details>
+  );
 }
 
 /** The source-picker shown before an element is bound to data. */
 function SourcePicker({ handle }: { handle: NodeHandle }) {
   const commit = useCommit();
-  const collections = useCollections(handle);
+  const sources = useSources(handle);
   const names = useCompletions(handle);
   const start = (collection: string) => commit("liquid.wrapFor", { item: "item", collection, at: handle });
+  const host = sources.host;
   return (
     <div className="flex flex-col gap-1.5" data-data-source="unbound">
-      <PanelNote>Bind this container to a collection — its children repeat for each item.</PanelNote>
-      <ToolbarItemView
-        label="Source"
-        inputId="ds-source"
-        type="select"
-        value=""
-        valueCoalesce=""
-        onChange={(v) => v && start(v.endsWith(".") ? `${v}` : v)}
-      >
-        <option value="">Pick a collection…</option>
-        {collections.map((c) => (
-          <option key={c.value} value={c.value}>{c.label}</option>
-        ))}
-      </ToolbarItemView>
-      <ExpressionField id="ds-custom" label="Custom" value="" placeholder="products | where: …" completions={names} onCommit={(v) => (v ? start(v) : true)} />
+      <PanelNote>Pick a collection and this element repeats once for each entry.</PanelNote>
+      {host?.loaded && !host.list.length && <PanelNote>This site has no collections yet.</PanelNote>}
+      <SourceSelect sources={sources} value="" onPick={start} />
+      <LiquidFallback folded={!!host}>
+        <ExpressionField id="ds-custom" label="Liquid" value="" placeholder="collections.team" completions={names} onCommit={(v) => (v ? start(v) : true)} />
+      </LiquidFallback>
     </div>
-  );
-}
-
-function WhereRow({ clause, onChange, onRemove }: { clause: WhereClause; onChange(patch: Partial<WhereClause>): void; onRemove(): void }) {
-  return (
-    <BranchRow title={clause.prop || "field"} onRemove={onRemove} removeLabel="Remove filter">
-      <ExpressionField id={`ds-where-prop-${clause.prop}`} label="Field" value={clause.prop} mono onCommit={(v) => (onChange({ prop: v }), true)} />
-      <ExpressionField id={`ds-where-val-${clause.prop}`} label="Equals" value={clause.value} onCommit={(v) => (onChange({ value: v }), true)} />
-    </BranchRow>
   );
 }
 
@@ -96,7 +66,7 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
   const store = useEditorStore();
   const commit = useCommit();
   const commitAt = useCommitAt(wrapper);
-  const collections = useCollections(handle);
+  const sources = useSources(handle);
   const names = useCompletions(wrapper);
   const branches = useBranches(wrapper);
   const ds = useEditorState<DataSource | null>(
@@ -111,7 +81,9 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
   if (!ds) return <PanelNote>This loop is written in a form the panel can't edit; use the code view.</PanelNote>;
 
   const varName = (base: string) => {
-    const id = /([a-z_]\w*)\s*$/i.exec(base.replace(/\..*$/, ""))?.[1];
+    // `collections.team` → teamRows; `products` → productsRows
+    const head = /^collections\.([\w-]+)/.exec(base)?.[1]?.replace(/-/g, "_") ?? base.replace(/\..*$/, "");
+    const id = /([a-z_]\w*)\s*$/i.exec(head)?.[1];
     return id ? `${id}Rows` : "rows";
   };
 
@@ -196,8 +168,7 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
     if (ds.paginate && p && by.trim()) commit("liquid.setMarkup", { markup: buildPaginate({ ...p, by: by.trim() }), at: ds.paginate });
   };
   const sampleRows = (() => {
-    let v: unknown = (store as { data?: Record<string, unknown> }).data;
-    for (const k of ds.base.split(".")) v = v && typeof v === "object" ? (v as Record<string, unknown>)[k] : undefined;
+    const v = sampleAt((store as { data?: Record<string, unknown> }).data, ds.base);
     return Array.isArray(v) ? v : [];
   })();
 
@@ -214,33 +185,30 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
     commit("liquid.unwrap", { at: wrapper });
   };
 
-  const currentSource = collections.find((c) => c.value === ds.base)?.value ?? "";
+  const currentSource = sources.options.find((c) => c.value === ds.base)?.value ?? "";
+  const coll = sources.collection(ds.base);
+  const fields = coll?.fields;
+  // "Split text at" turns a text value into a list; a list source has nothing to split.
+  const showSplit = !!ds.split || !sources.isList(ds.base);
 
   return (
     <div className="flex flex-col gap-1.5" data-data-source="bound">
-      <ToolbarItemView
-        label="Source"
-        inputId="ds-source"
-        type="select"
-        value={currentSource}
-        valueCoalesce=""
-        onChange={(v) => v && setBase(v)}
-      >
-        {!currentSource && <option value="">{ds.base} (custom)</option>}
-        {collections.map((c) => (
-          <option key={c.value} value={c.value}>{c.label}</option>
-        ))}
-      </ToolbarItemView>
-      <ExpressionField id="ds-base" label="Collection" value={ds.base} completions={names} onCommit={(v) => (setBase(v), true)} />
-      <ExpressionField id="ds-item" label="Item name" value={ds.item} onCommit={(v) => (setHead({ item: v }), true)} />
+      <SourceSelect sources={sources} value={currentSource} onPick={setBase} current={!currentSource && <option value="">Other: {ds.base}</option>} />
+      <LiquidFallback folded={!!coll}>
+        <ExpressionField id="ds-base" label="Collection" value={ds.base} completions={names} onCommit={(v) => (setBase(v), true)} />
+        <ExpressionField id="ds-item" label="Call each entry" value={ds.item} onCommit={(v) => (setHead({ item: v }), true)} />
+      </LiquidFallback>
 
       {/* Filter by metadata (managed assign | where: …) — draft rows persist while empty. */}
       <div className="border-base-300/60 mt-1 flex flex-col gap-1.5 border-t pt-1.5">
-        <span className="text-base-content/70 text-[10px] font-semibold">Filter</span>
+        <span className="text-base-content/70 text-[10px] font-semibold">Show only entries where</span>
         {draft.map((w, i) => (
           <WhereRow
             key={i}
+            index={i}
             clause={w}
+            fields={fields}
+            rows={sampleRows}
             onChange={(patch) => writeWhere(draft.map((c, j) => (j === i ? { ...c, ...patch } : c)))}
             onRemove={() => writeWhere(draft.filter((_, j) => j !== i))}
           />
@@ -248,12 +216,12 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
         <AddBranchButton onClick={() => setDraft([...draft, { prop: "", value: "" }])}>Add filter</AddBranchButton>
       </div>
 
-      <ExpressionField id="ds-sort" label="Sort by" value={ds.sort} placeholder="None" onCommit={(v) => (setFilters({ where: draftFilled, sort: v, split: ds.split }), true)} />
-      <ExpressionField id="ds-split" label="Split by" value={ds.split} placeholder="e.g. ," mono onCommit={(v) => (setFilters({ where: draftFilled, sort: ds.sort, split: v }), true)} />
+      <SortField value={ds.sort} fields={fields} onCommit={(v) => setFilters({ where: draftFilled, sort: v, split: ds.split })} />
+      {showSplit && <ExpressionField id="ds-split" label="Split text at" value={ds.split} placeholder="e.g. ," mono onCommit={(v) => (setFilters({ where: draftFilled, sort: ds.sort, split: v }), true)} />}
 
-      <ExpressionField id="ds-limit" label="Limit" value={ds.limit} placeholder="All" onCommit={(v) => (setArg("limit", v), true)} />
-      <ExpressionField id="ds-offset" label="Skip" value={ds.offset} placeholder="0" onCommit={(v) => (setArg("offset", v), true)} />
-      <ToolbarItemView key={String(ds.reversed)} label="Reversed" inputId="ds-reversed" type="toggle" on="on" value={ds.reversed ? "on" : ""} onChange={(v) => setHead({ reversed: !!v })} />
+      <ExpressionField id="ds-limit" label="Show at most" value={ds.limit} placeholder="All" onCommit={(v) => (setArg("limit", v), true)} />
+      <ExpressionField id="ds-offset" label="Skip the first" value={ds.offset} placeholder="0" onCommit={(v) => (setArg("offset", v), true)} />
+      <ToolbarItemView key={String(ds.reversed)} label="Reverse order" inputId="ds-reversed" type="toggle" on="on" value={ds.reversed ? "on" : ""} onChange={(v) => setHead({ reversed: !!v })} />
 
       <DataSourceUrlControls
         ds={ds}
@@ -269,7 +237,7 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
 
       {branches.includes("else") ? (
         <BranchRow title="Empty" onRemove={() => commitAt("liquid.removeBranch", { index: branches.indexOf("else") })} removeLabel="Remove empty state">
-          <PanelNote>Shown when the collection has no items.</PanelNote>
+          <PanelNote>Shown when the collection has no entries.</PanelNote>
         </BranchRow>
       ) : (
         <AddBranchButton onClick={() => commitAt("liquid.addBranch", { branch: "else" })}>Add empty state</AddBranchButton>
@@ -278,9 +246,7 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
       <button type="button" onClick={stop} className="text-error/80 hover:bg-error/10 mt-1 rounded-md border border-dashed border-current/30 px-2 py-1 text-[11px]" data-ds-stop="">
         Stop repeating
       </button>
-      <span className="text-base-content/45 text-[10px]">
-        Use {"{{"}{ds.item}.title{"}}"} in text nodes to show each item.
-      </span>
+      <span className="text-base-content/45 text-[10px]">To show an entry's details, select text or a photo inside and pick a field.</span>
     </div>
   );
 }

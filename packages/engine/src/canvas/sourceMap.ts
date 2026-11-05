@@ -20,7 +20,8 @@
 import { EDIT_ATTRIBUTES } from "../attributes/editAttributes";
 import { applySplices } from "../edit/ops";
 import { paramsFor, partialParams, rowAttributes } from "./rowBindings";
-import type { EditorState, Path } from "../state/state";
+import type { EditorState, Path, SourceTree } from "../state/state";
+import type { BlockTreeNode } from "../parse/tree";
 import type { HandleRegistry, NodeHandle } from "../state/handles";
 
 /** What the lookups need: a store, or a command context's state + registry. */
@@ -45,15 +46,43 @@ export function parseEditSrc(value: string | null | undefined): { path: Path; of
 }
 
 /**
+ * The canvas-only marker an empty list renders: `<ph-empty-list data-edit-empty="<file>#<offset of the {% for %}>">`.
+ * A `{% for %}` with no `{% else %}` renders nothing when its list is empty, so the canvas copy gives it an
+ * `{% else %}` holding this marker: the editor finds the spot and draws its "No entries yet" placeholder there.
+ */
+export const EMPTY_LIST_TAG = "ph-empty-list";
+export const EMPTY_LIST_ATTR = "data-edit-empty";
+
+/** Elements a marker can't sit in (raw text, head content, or where the parser would move it elsewhere). */
+const NO_MARKER_IN = new Set(["head", "title", "script", "style", "textarea", "select", "option", "optgroup", "table", "thead", "tbody", "tfoot", "tr", "colgroup", "template"]);
+/** Liquid blocks whose body isn't page markup. */
+const NO_MARKER_BLOCKS = new Set(["capture", "raw", "comment", "javascript", "stylesheet", "style", "schema"]);
+
+function takesEmptyMarker(tree: SourceTree, n: BlockTreeNode): boolean {
+  if (n.tag !== "for" || n.branches.some((b) => b.name === "else")) return false;
+  for (let p = tree.parent(n); p; p = tree.parent(p)) {
+    if (p.kind === "element" && NO_MARKER_IN.has(p.tag.toLowerCase())) return false;
+    if (p.kind === "liquid-block" && NO_MARKER_BLOCKS.has(p.tag)) return false;
+  }
+  return true;
+}
+
+/**
  * One file's text with `data-edit-src` on every element whose tag name is static, plus `data-edit-row` /
- * `data-edit-field` where the element prints a local row's fields (`rowBindings`). Every insertion is a
- * zero-width splice after the tag name, and offsets come from the original tree, so values stay offsets
- * of the stored file. `params` (partial name → render args) is computed from `state` when omitted.
+ * `data-edit-field` where the element prints a local row's fields (`rowBindings`), plus an empty-list marker
+ * (`EMPTY_LIST_TAG`) in every `{% for %}` without an `{% else %}`. Every insertion is a zero-width splice, and
+ * offsets come from the original tree, so values stay offsets of the stored file. `params` (partial name →
+ * render args) is computed from `state` when omitted.
  */
 export function instrumentFile(state: EditorState, path: Path, params: Map<string, Set<string>> = partialParams(state)): string {
   const tree = state.tree(path);
   const own = paramsFor(path, params);
   const splices = tree.flat.flatMap((n) => {
+    if (n.kind === "liquid-block") {
+      if (!takesEmptyMarker(tree, n)) return [];
+      const at = n.closeTag.start;
+      return [{ from: at, to: at, insert: `{% else %}<${EMPTY_LIST_TAG} ${EMPTY_LIST_ATTR}="${path}#${n.range.start}"></${EMPTY_LIST_TAG}>` }];
+    }
     if (n.kind !== "element" || !STATIC_TAG.test(n.tag)) return [];
     const at = n.openTag.start + 1 + n.tag.length;
     return [{ from: at, to: at, insert: ` ${EDIT_SRC_ATTR}="${path}#${n.range.start}"${rowAttributes(tree, n, own)}` }];
@@ -86,9 +115,9 @@ export function renderCanvas(
   return renderer.render(path, data, { overrides: instrumentFiles(state), mode: "editor" });
 }
 
-/** Remove the canvas-only attributes (`data-edit-src`, `-row`, `-field`) from rendered HTML (what the plain render looks like). */
+/** Remove the canvas-only markup (`data-edit-src`, `-row`, `-field`, empty-list markers) from rendered HTML (what the plain render looks like). */
 export function stripEditSrc(html: string): string {
-  return html.replace(/ data-edit-(?:src|row|field)="[^"]*"/g, "");
+  return html.replace(new RegExp(`<${EMPTY_LIST_TAG} ${EMPTY_LIST_ATTR}="[^"]*"></${EMPTY_LIST_TAG}>`, "g"), "").replace(/ data-edit-(?:src|row|field)="[^"]*"/g, "");
 }
 
 /** The element a `data-edit-src` value names, in the current state; null when it is gone. */

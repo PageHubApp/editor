@@ -9,6 +9,7 @@ import { EDIT_ATTRIBUTES } from "@pagehub/engine";
 import { collectionRowsFacet, type CollectionRowLabel, type CollectionRows } from "@pagehub/engine/host";
 import { useEditorState } from "../../react/bindings";
 import { tooltip } from "../../primitives/tooltip";
+import { Icon } from "../../primitives/icons";
 
 /** The entry a rendered copy shows, and the entry fields it shows (in `data-edit-field` order). */
 export interface EntryRef {
@@ -69,6 +70,24 @@ interface EntryButtonProps {
   /** A photo: the button says "Change photo of …" (deleting it here would remove it from every copy). */
   photo?: boolean;
   className?: string;
+}
+
+/** "+ Add entry" next to a repeated copy of a collection's list: opens the host's blank entry form for `slug`. */
+export function AddEntryButton({ rows, slug, name, className = "" }: { rows: CollectionRows; slug: string; name: string; className?: string }) {
+  if (!rows.createEntry) return null;
+  return (
+    <button
+      type="button"
+      data-add-entry={slug}
+      className={`inline-flex items-center gap-0.5 ${className}`}
+      {...tooltip(`Opens a new ${name} entry. Save it and it shows in this list.`, "bottom")}
+      onMouseDown={(e) => e.stopPropagation()}
+      onClick={() => rows.createEntry!(slug)}
+    >
+      <Icon name="plus" className="size-3" />
+      Add entry
+    </button>
+  );
 }
 
 export function EntryButton({ link, field, photo = false, className = "" }: EntryButtonProps) {

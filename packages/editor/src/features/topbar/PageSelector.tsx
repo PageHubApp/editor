@@ -3,7 +3,8 @@
  * (`TopBar`), styled like the current editor's browser-style address bar — a home / file icon,
  * the page's name, a chevron, then a round "open in a new tab" link. The trigger stretches to
  * fill the pill. The list is titled "Pages", gets a search field at 8+ pages ("No pages found"),
- * and shows each page's name and route. A deleted page falls back to the home page.
+ * and shows each page's name and route. A deleted page falls back to the home page. A detail page also gets the
+ * "Previewing: <entry>" switcher (`DetailPreviewPicker`).
  */
 import { useRef, useState } from "react";
 import type { Path } from "@pagehub/engine";
@@ -17,6 +18,7 @@ import { Spinner } from "../../primitives/Spinner";
 import { useDelayedFlag } from "../../primitives/useDelayedFlag";
 import { useRenderStatus } from "../canvas/renderStatus";
 import { PAGE_SEARCH_MIN, pageInfo, pagesRoot } from "./pages";
+import { DetailPreviewPicker } from "./DetailPreviewPicker";
 
 const sameList = (a: readonly Path[], b: readonly Path[]) => a.length === b.length && a.every((p, i) => p === b[i]);
 
@@ -61,6 +63,7 @@ export function PageSelector() {
         <span className={`min-w-0 flex-1 truncate ${switching ? "opacity-60" : ""}`}>{currentName}</span>
         <Icon name="chevron-down" className={`size-3.5 shrink-0 opacity-60 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
+      <DetailPreviewPicker />
       {previewUrl && (
         <a data-page-open="" className="text-base-content/50 hover:bg-base-content/10 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded-full transition-colors" href={previewUrl} target="_blank" rel="noopener noreferrer" aria-label="Open page in a new tab" {...tooltip("Open page in a new tab", "bottom")}>
           <Icon name="external-link" className="size-3.5" />

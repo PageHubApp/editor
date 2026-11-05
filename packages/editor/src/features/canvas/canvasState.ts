@@ -48,9 +48,14 @@ interface CanvasState {
   copy: { src: string; index: number } | null;
   /** Bumped by `canvas.reloadData`: the canvas renders again, asking the host for fresh data. */
   dataVersion: number;
+  /**
+   * Page → the `request.params` values the author picked to preview on a detail page (the "Previewing" switcher).
+   * Canvas-only, for the session: without one the page previews its list's first entry (sampleParams.ts).
+   */
+  previewParams: Readonly<Record<Path, Readonly<Record<string, string>>>>;
 }
 
-const DEFAULT_CANVAS: CanvasState = { page: null, includes: [], device: false, responsive: true, widthOverride: null, markers: false, guides: false, mirror: null, phone: DEVICE_PRESETS[0]!, closedDetails: [], openOverlays: [], statePreview: {}, copy: null, dataVersion: 0 };
+const DEFAULT_CANVAS: CanvasState = { page: null, includes: [], device: false, responsive: true, widthOverride: null, markers: false, guides: false, mirror: null, phone: DEVICE_PRESETS[0]!, closedDetails: [], openOverlays: [], statePreview: {}, copy: null, dataVersion: 0, previewParams: {} };
 
 export const setCanvas = StateEffect.define<Partial<CanvasState>>("canvas.set");
 
@@ -136,6 +141,18 @@ const canvasReloadData = defineCommand({
   run(ctx) {
     if (!ctx.state.hasField(canvasField)) return false;
     ctx.dispatch?.(ctx.tr.effect(setCanvas, { dataVersion: canvasOf(ctx.state).dataVersion + 1 }));
+    return true;
+  },
+});
+
+/** Preview another entry on a detail page: `params` are the `request.params` values for `path` (canvas-only). */
+const canvasPreviewParams = defineCommand<{ path: Path; params: Readonly<Record<string, string>> }>({
+  id: "canvas.previewParams",
+  title: "Preview another entry",
+  run(ctx, args) {
+    if (!args?.path || !ctx.state.hasField(canvasField)) return false;
+    const all = canvasOf(ctx.state).previewParams;
+    ctx.dispatch?.(ctx.tr.effect(setCanvas, { previewParams: { ...all, [args.path]: { ...all[args.path], ...args.params } } }));
     return true;
   },
 });
@@ -270,7 +287,7 @@ const toggle = (id: string, title: string, key: "markers" | "guides") =>
 export const toggleMarkers = toggle("view.toggleMarkers", "Toggle breakpoint lines", "markers");
 export const toggleGuides = toggle("view.toggleGuides", "Toggle device guides", "guides");
 
-const CANVAS_COMMANDS = [canvasSelect, canvasReloadData, canvasHover, canvasEditInclude, canvasSet, canvasView, canvasDevice, canvasToggleDetails, canvasToggleOverlay, lintFix, toggleMarkers, toggleGuides, themeSetBreakpoint] as const;
+const CANVAS_COMMANDS = [canvasSelect, canvasReloadData, canvasPreviewParams, canvasHover, canvasEditInclude, canvasSet, canvasView, canvasDevice, canvasToggleDetails, canvasToggleOverlay, lintFix, toggleMarkers, toggleGuides, themeSetBreakpoint] as const;
 
 const PALETTE = contributes({ palette: ["canvas.toggleDevice", "view.toggleMarkers", "view.toggleGuides"].map((command) => ({ command, group: "View" })) });
 

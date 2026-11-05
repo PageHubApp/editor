@@ -17,10 +17,11 @@ import type { Node as PmNode } from "@tiptap/pm/model";
 import { closeHistoryGroup, type ElementTreeNode, type NodeHandle, type Store } from "@pagehub/engine";
 import { GROUP_DELAY } from "@pagehub/engine";
 import { isRichTextLeaf } from "@pagehub/engine/kits";
-import { NODE, richTextSchema } from "./schema";
+import { NODE, chipLabel, richTextSchema } from "./schema";
 import { holdAutosave, registerPendingCommit } from "../save/saveHolds";
 import { findTrigger } from "./suggest";
-import { filterVariables, sessionVariables, type VariableItem } from "./variableItems";
+import { filterVariables, sessionLoop, sessionVariables, type VariableItem } from "./variableItems";
+import { fieldLabel } from "../liquid/collectionFields";
 import { leafToDoc, type JsonNode } from "./toDoc";
 import { docToSource } from "./toSource";
 
@@ -170,7 +171,7 @@ export class RichTextSession {
     this.pristine = { html: el.innerHTML, attrs: Object.fromEntries(EDITOR_ATTRS.map((a) => [a, el.getAttribute(a)])) };
     this.editor = new TipTap({
       element: { mount: el },
-      extensions: [...richTextSchema(), this.keys(), this.keepFields()],
+      extensions: [...richTextSchema((source) => fieldLabel(sessionLoop(this, this.collectionsLoaded), source)), this.keys(), this.keepFields()],
       content,
       injectCSS: false,
       autofocus: false,
@@ -193,6 +194,7 @@ export class RichTextSession {
     el.addEventListener("compositionend", this.onCompositionEnd);
     this.committed = this.pristineSource = this.serialize();
     el.toggleAttribute("data-rt-blank", this.editor.isEmpty);
+    sessionLoop(this, this.collectionsLoaded); // start loading the host's collections for the field list and chip names
     const size = this.editor.state.doc.content.size;
     const sel = focus === "end" ? { from: size, to: size } : { from: Math.min(focus.from, size), to: Math.min(focus.to, size) };
     this.editor.commands.setTextSelection(sel);
@@ -211,11 +213,25 @@ export class RichTextSession {
     }
     const from = sel.from - hit.length;
     if (this.dismissedAt === from) return null;
-    const items = filterVariables(sessionVariables(this), hit.query).flatMap((g) => g.items).slice(0, SUGGEST_MAX);
+    const items = filterVariables(sessionVariables(this, this.collectionsLoaded), hit.query).flatMap((g) => g.items).slice(0, SUGGEST_MAX);
     const key = `${from}:${hit.query}`;
     if (key !== this.suggestKey) [this.suggestKey, this.suggestIndex] = [key, 0];
     return items.length ? { from, to: sel.from, query: hit.query, items, index: Math.min(this.suggestIndex, items.length - 1) } : null;
   }
+
+  /** The host's collections arrived: name the field chips already drawn (ProseMirror ignores changes inside an atom's DOM) and refresh the `{{` list. */
+  private readonly collectionsLoaded = () => {
+    const ed = this.editor;
+    if (!ed || ed.isDestroyed) return;
+    const loop = sessionLoop(this);
+    for (const chip of (ed.view.dom as HTMLElement).querySelectorAll<HTMLElement>(`[data-rt-${NODE.output}]`)) {
+      const source = chip.getAttribute(`data-rt-${NODE.output}`) ?? "";
+      const { text, attrs } = chipLabel(source, fieldLabel(loop, source));
+      chip.textContent = text;
+      for (const [k, v] of Object.entries(attrs)) if (v !== undefined) chip.setAttribute(k, v);
+    }
+    this.hooks.changed();
+  };
 
   moveSuggestion(by: 1 | -1): boolean {
     const s = this.suggestion();

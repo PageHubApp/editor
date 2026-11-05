@@ -1,8 +1,9 @@
 // Chips drawn over the selection; positions come from the canvas.
 /**
  * The default `CanvasOverlays` slot: chips drawn over the selection — the editable name chip
- * (media, embeds and form fields), "repeated ×N" on a `{% for %}` row, the include ring with
- * "Edit <name>", the condition badge — a lint dot on every element with issues, and the Alt-held distance lines.
+ * (media, embeds and form fields), "repeated ×N" on a `{% for %}` row (with "Edit <entry>" and "Add entry" for a
+ * collection's list), the include ring with "Edit <name>", the condition badge, the empty-list placeholder — a lint
+ * dot on every element with issues, and the Alt-held distance lines.
  */
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Diagnostic, NodeHandle } from "@pagehub/engine";
@@ -15,7 +16,11 @@ import { AncestorsMenu, crumbsOf } from "./AncestorsMenu";
 import { editSrcOf } from "@pagehub/engine/canvas";
 import { useCanvasFrame } from "./canvasContext";
 import { canvasOf } from "./canvasState";
-import { EntryButton, entryOf, useEntryLink } from "./EntryButton";
+import { AddEntryButton, EntryButton, entryOf, useEntryLink } from "./EntryButton";
+import { EmptyListLayer } from "./EmptyListLayer";
+import { hostCollection } from "./collectionLoops";
+import { loopCollection } from "../liquid/collectionFields";
+import { useHostCollections } from "./hostCollections";
 import { elementsFor, hostRect, toRect, visibleInFrame } from "./frameDom";
 import type { Rect } from "./geometry";
 import { IncludeInAiButton } from "./NodeToolExtras";
@@ -174,7 +179,7 @@ const PHOTO_FIELD = /image|photo|picture|img/i;
  * "repeated ×N" over the copy that was clicked, and, when that copy shows a collection entry the host knows, the
  * button that opens that entry ("Change photo of …" on a photo).
  */
-function RepeatedChip({ count, copy }: { count: number; copy: HTMLElement }) {
+function RepeatedChip({ count, copy, handle }: { count: number; copy: HTMLElement; handle: NodeHandle }) {
   const { frame, host } = useCanvasFrame();
   const zoom = useEditorState((s) => chromeOf(s).zoom || 1);
   const rect = frame && host ? hostRect(toRect(copy.getBoundingClientRect()), frame, host, zoom) : toRect(copy.getBoundingClientRect());
@@ -183,12 +188,16 @@ function RepeatedChip({ count, copy }: { count: number; copy: HTMLElement }) {
   const link = useEntryLink(entry?.rowId);
   const photo = copy.tagName === "IMG";
   const field = entry ? ((photo ? entry.fields.find((f) => PHOTO_FIELD.test(f)) : null) ?? entry.fields[0] ?? null) : null;
+  const cols = useHostCollections();
+  const source = useEditorState((s) => (handle.alive ? (s.files.get(handle.path) ?? "") : ""));
+  const list = cols?.rows.createEntry ? hostCollection(cols.list, loopCollection(handle, cols.list, source)?.collection.slug ?? null, link?.label.collection) : null;
   return (
     <span ref={keep} className="pointer-events-none absolute z-40 flex items-center gap-1" style={at(rect, "top-start")}>
       <span data-repeated={count} className={`${CHIP} static! bg-primary! text-primary-content!`}>
         repeated ×{count}
       </span>
       {link && <EntryButton link={link} field={field} photo={photo} className={`${CHIP} static! cursor-pointer font-medium`} />}
+      {cols && list && <AddEntryButton rows={cols.rows} slug={list.slug} name={list.name} className={`${CHIP} static! cursor-pointer font-medium`} />}
     </span>
   );
 }
@@ -288,7 +297,7 @@ export function CanvasOverlays() {
   return (
     <div data-slot="CanvasOverlays" className="pointer-events-none absolute inset-0">
       {g && g.elements.length > 1 && !g.include && (
-        <RepeatedChip count={g.elements.length} copy={g.elements[copyIndex] ?? g.elements[0]!} />
+        <RepeatedChip count={g.elements.length} copy={g.elements[copyIndex] ?? g.elements[0]!} handle={g.handle} />
       )}
       {g?.include && (
         <>
@@ -304,6 +313,7 @@ export function CanvasOverlays() {
         )
       )}
       {g && !g.include && <ConditionBadge handle={g.handle} rect={g.rect} />}
+      <EmptyListLayer />
       <LintDots />
       <MeasurementLines />
     </div>

@@ -16,6 +16,8 @@ export interface VariableItem {
   label: string;
   /** The value in the canvas sample data, when there is one. */
   sample?: string;
+  /** What kind of value it is, in the owner's words ("number", "photo"), for a collection field. */
+  hint?: string;
 }
 
 export interface VariableGroup {

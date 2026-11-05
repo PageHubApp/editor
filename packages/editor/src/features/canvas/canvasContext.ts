@@ -12,6 +12,7 @@ import { PLACEHOLDER_IMAGE } from "@pagehub/engine/host";
 import { renderCanvas, splitThemeFonts, fontHeadTags, type LocalFonts } from "@pagehub/engine/canvas";
 import type { CanvasHost } from "./canvasHost";
 import { sampleRequest } from "./sampleParams";
+import { canvasOf } from "./canvasState";
 
 /** Render `path` of `state` to canvas HTML (instrumented with `data-edit-src`). */
 export type CanvasRender = (state: EditorState, path: Path) => Promise<string>;
@@ -54,6 +55,10 @@ interface CanvasAssets {
 }
 
 const assets = new WeakMap<Store, CanvasAssets>();
+
+/** The data the default renderer last rendered the canvas with, per editor (what the "Previewing" switcher lists). */
+const lastData = new WeakMap<Store, Record<string, unknown>>();
+export const canvasDataOf = (store: Store): Record<string, unknown> | null => lastData.get(store) ?? null;
 
 /** The per-editor cache (a different host, e.g. after a site switch, starts a fresh one). */
 function assetsOf(store: Store, host: CanvasHost | null): CanvasAssets {
@@ -124,8 +129,9 @@ export function defaultCanvasRender(store: Store, canvasHost: CanvasHost | null 
     }
     // Sample/connector data for repeaters comes from the host; merge the editor's own data over it.
     const data: Record<string, unknown> = { ...(await canvasHost?.data?.()), ...((store as Store & { data?: Record<string, unknown> }).data ?? {}) };
-    // A detail page (`/product/:handle`) has no URL here: stand in the first row's value so the page renders a row, not nothing.
-    data.request ??= sampleRequest(state.files.get(path) ?? "", data);
+    // A detail page (`/product/:handle`) has no URL here: stand in the row the author picked to preview, else the first.
+    data.request ??= sampleRequest(state.files.get(path) ?? "", data, canvasOf(state).previewParams[path]);
+    lastData.set(store, data);
     // The site's compiled Tailwind + its theme. INLINE both (not an async <link>), so the page paints
     // styled on the first write — no flash of unstyled content. Await the CSS on first render; after
     // that use the cached copy and refresh in the background so edits that add classes still land.

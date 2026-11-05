@@ -155,3 +155,26 @@ test("row attributes don't shift data-edit-src values; handles still resolve; st
   assert.equal(stripEditSrc(await renderCanvas(renderer, e.state, "index.liquid", shopData)), plain);
   assert.equal(e.state.files.get("partials/product-card.liquid"), CARD);
 });
+
+// ── empty-list marker ───────────────────────────────────────────────────────────────────────
+
+test("an empty {% for %} without else renders a canvas-only marker at its spot; strip gives the plain render", async () => {
+  const { e, renderer } = setup();
+  const empty = { ...data, items: [] };
+  const html = await renderCanvas(renderer, e.state, "index.liquid", empty);
+  assert.match(html, new RegExp(`<ul data-edit-src="index\\.liquid#\\d+">\\s*<ph-empty-list data-edit-empty="index\\.liquid#${PAGE.indexOf("{% for")}"></ph-empty-list>\\s*</ul>`));
+  assert.equal(stripEditSrc(html), await renderer.render("index.liquid", empty));
+  assert.equal(e.text(), PAGE, "the stored file never changes");
+  // a list with rows renders no marker
+  assert.doesNotMatch(await renderCanvas(renderer, e.state, "index.liquid", data), /ph-empty-list/);
+});
+
+test("no marker for a loop with its own else, or one inside raw-text / table / capture contexts", () => {
+  const files = {
+    "index.liquid": `<div>{% for a in xs %}<p>{{ a }}</p>{% else %}<p>None</p>{% endfor %}</div><table><tr>{% for a in xs %}<td>{{ a }}</td>{% endfor %}</tr></table>{% capture c %}{% for a in xs %}{{ a }}{% endfor %}{% endcapture %}<section>{% for a in xs %}<i>{{ a }}</i>{% endfor %}</section>`,
+  };
+  const e = createTestEditor({ files, extensions: [htmlKit()] });
+  const out = instrumentFile(e.state, "index.liquid");
+  assert.equal(out.match(/ph-empty-list data-edit-empty/g)?.length, 1);
+  assert.match(out, /<i [^>]*>\{\{ a \}\}<\/i>\{% else %\}<ph-empty-list/);
+});

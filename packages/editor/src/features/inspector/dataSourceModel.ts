@@ -15,6 +15,8 @@ import { parseFor } from "../liquid/markup";
 export interface WhereClause {
   prop: string;
   value: string;
+  /** Written unquoted (`where: "inStock", true`): a Yes / No field compares to a boolean, not the text "true". */
+  bare?: boolean;
 }
 
 /** The parsed data source of a `{% for %}` wrapper. */
@@ -109,7 +111,7 @@ function splitPipeline(rhs: string): { base: string; filters: string[] } {
   return { base: parts[0]!.trim(), filters: parts.slice(1).map((p) => p.trim()).filter(Boolean) };
 }
 
-const WHERE = /^where\s*:\s*(['"])(.*?)\1\s*,\s*(['"])(.*?)\3$/i;
+const WHERE = /^where\s*:\s*(['"])(.*?)\1\s*,\s*(?:(['"])(.*?)\3|(true|false|-?\d+(?:\.\d+)?))$/i;
 const SORT = /^sort\s*:\s*(['"])(.*?)\1$/i;
 const SPLIT = /^split\s*:\s*(['"])(.*?)\1$/i;
 
@@ -120,7 +122,7 @@ function parseFilters(filters: string[]): Pick<DataSource, "where" | "sort" | "s
   for (const f of filters) {
     const w = WHERE.exec(f);
     if (w) {
-      where.push({ prop: w[2]!, value: w[4]! });
+      where.push(w[5] !== undefined ? { prop: w[2]!, value: w[5], bare: true } : { prop: w[2]!, value: w[4]! });
       continue;
     }
     const s = SORT.exec(f);
@@ -177,7 +179,7 @@ export function readDataSource(wrapper: NodeHandle): DataSource | null {
 /** The RHS pipeline for the managed assign, or null when no filters/sort/split are set. */
 export function buildPipeline(ds: Pick<DataSource, "base" | "where" | "sort" | "split">): string | null {
   const filters: string[] = [];
-  for (const w of ds.where) if (w.prop.trim()) filters.push(`where: "${w.prop.trim()}", "${w.value}"`);
+  for (const w of ds.where) if (w.prop.trim()) filters.push(`where: "${w.prop.trim()}", ${w.bare ? w.value : `"${w.value}"`}`);
   if (ds.split.trim()) filters.push(`split: "${ds.split.trim()}"`);
   if (ds.sort.trim()) filters.push(`sort: "${ds.sort.trim()}"`);
   return filters.length ? `${ds.base} | ${filters.join(" | ")}` : null;

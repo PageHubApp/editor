@@ -96,6 +96,8 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
   const live = !readOnly && !preview;
   // `canvas.reloadData` bumps it: render again, so the renderer asks the host for fresh data
   const dataVersion = useEditorState((s) => canvasOf(s).dataVersion);
+  // the entry a detail page previews (the "Previewing" switcher): a new pick renders again
+  const previewing = useEditorState((s) => (page ? JSON.stringify(canvasOf(s).previewParams[page] ?? null) : ""));
   const status = useRenderStatus(store);
   const waiting = useDelayedFlag(!readOnly && status.pending);
   // The first-paint skeleton stays until the frame has really painted (fonts and styles applied), not just until it was written.
@@ -155,7 +157,7 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
       clearTimeout(t);
       clearTimeout(timer);
     };
-  }, [files, page, render, store, delayMs, stale, readOnly, dataVersion]);
+  }, [files, page, render, store, delayMs, stale, readOnly, dataVersion, previewing]);
 
   // an unmounting main canvas leaves nothing "pending" behind
   useEffect(() => () => void (!readOnly && setRenderStatus(store, { pending: false })), [store, readOnly]);

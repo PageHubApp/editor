@@ -6,6 +6,7 @@
  * changes has `src: null` and serializes canonically.
  */
 import { Mark, Node, mergeAttributes, type Extensions, type KeyboardShortcutCommand } from "@tiptap/core";
+import { tooltip } from "../../primitives/tooltip";
 
 export const NODE = { output: "liquidOutput", raw: "rawInline", br: "hardBreak" } as const;
 
@@ -83,7 +84,15 @@ const HardBreak = Node.create({
   },
 });
 
-function atom(name: string, label: (source: string) => string) {
+/** What a `{{ output }}` chip reads as: the owner's name for the field it prints ("Price"), or null to show the source. */
+export type OutputLabel = (source: string) => string | null;
+
+/** A chip's text and extra attributes; a named field keeps its source in a tooltip. */
+export function chipLabel(source: string, named: string | null): { text: string; attrs: Record<string, string | undefined> } {
+  return named ? { text: named, attrs: { "data-rt-field": named, ...tooltip(source.trim(), "top") } } : { text: source, attrs: {} };
+}
+
+function atom(name: string, label: (source: string) => { text: string; attrs: Record<string, string | undefined> }) {
   return Node.create({
     name,
     group: "inline",
@@ -92,22 +101,21 @@ function atom(name: string, label: (source: string) => string) {
     selectable: true,
     addAttributes: () => ({ source: { default: "", rendered: false } }),
     parseHTML: () => [{ tag: `span[data-rt-${name}]`, getAttrs: (el) => ({ source: (el as HTMLElement).getAttribute(`data-rt-${name}`) }) }],
-    renderHTML: ({ node, HTMLAttributes }) => [
-      "span",
-      mergeAttributes(HTMLAttributes, { [`data-rt-${name}`]: node.attrs.source, class: "ph-rt-chip", contenteditable: "false" }),
-      label(node.attrs.source as string),
-    ],
+    renderHTML: ({ node, HTMLAttributes }) => {
+      const { text, attrs } = label(node.attrs.source as string);
+      return ["span", mergeAttributes(HTMLAttributes, { [`data-rt-${name}`]: node.attrs.source, class: "ph-rt-chip", contenteditable: "false", ...attrs }), text];
+    },
   });
 }
 
-/** Every extension a rich-text leaf uses (plus the host's keyboard extension). */
-export function richTextSchema(): Extensions {
+/** Every extension a rich-text leaf uses (plus the host's keyboard extension). `outputLabel` names field chips; the stored source never changes. */
+export function richTextSchema(outputLabel?: OutputLabel): Extensions {
   return [
     Doc,
     Text,
     HardBreak,
-    atom(NODE.output, (s) => s),
-    atom(NODE.raw, (s) => `<${/^<\s*([a-z0-9-]+)/i.exec(s)?.[1] ?? "?"}>`),
+    atom(NODE.output, (s) => chipLabel(s, outputLabel?.(s) ?? null)),
+    atom(NODE.raw, (s) => ({ text: `<${/^<\s*([a-z0-9-]+)/i.exec(s)?.[1] ?? "?"}>`, attrs: {} })),
     ...(Object.keys(MARK_TAGS) as SimpleMark[]).map(simpleMark),
     Link,
     tokenMark("textColor", "text"),

@@ -69,5 +69,8 @@ body[data-is-dragging]:not([data-ph-drag-copy]) [data-dragging] > * { visibility
   outline: 1px dashed var(--ph-editor-accent) !important;
   outline-offset: 2px;
 }
+/* An empty collection list's spot (canvas copy only): room for the editor's placeholder, in edit mode only. */
+ph-empty-list { display: none; }
+html[data-ph-live="true"] ph-empty-list[data-ph-shown] { display: block; width: 100%; min-height: 4.5rem; grid-column: 1 / -1; flex: 1 1 100%; }
 body[data-dragging-type="section"] :is(main, header, footer) { outline: 2px dashed currentColor !important; outline-offset: -2px; }
 `;

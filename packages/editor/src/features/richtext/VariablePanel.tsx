@@ -38,7 +38,10 @@ export function VariablePanel({ session, onClose }: { session: RichTextSession; 
                 {g.items.map((i) => (
                   <button key={i.expression} type="button" role="menuitem" data-rt-var={i.expression} className={`${ROW} hover:bg-base-200`} onMouseDown={keepFocus} onClick={() => pick(i.expression)}>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate">{i.label}</span>
+                      <span className="flex items-baseline gap-2">
+                        <span className="min-w-0 flex-1 truncate">{i.label}</span>
+                        {i.hint && <span className="text-base-content/50 shrink-0 text-[10px]">{i.hint}</span>}
+                      </span>
                       {i.sample && <span className="text-base-content/50 block truncate text-[10px]">{i.sample}</span>}
                     </span>
                   </button>

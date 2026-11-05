@@ -6,6 +6,9 @@
  * - the Background image row: the arbitrary background-image url class (the converter writes the
  *   file's URL there, since a class can't hold Liquid) plus its size, position, repeat and
  *   attachment classes.
+ * - inside a list of a collection's entries, an image's "From" row picks one of the collection's
+ *   photo fields (written `{{ item.photo | image_url: width: 800 }}`, the bound form) or goes
+ *   back to a fixed image.
  *
  *   <BgImageControl handle={h} />
  *   <ImageSrcControl handle={h} />
@@ -20,8 +23,11 @@ import { useUi, uiScopeEq } from "../../../react/useUi";
 import { writeScopes } from "../../../state/uiState";
 import { MediaInput } from "../../media/MediaInput";
 import { ExpressionField, PanelNote } from "../../liquid/LiquidFields";
-import { useAttrs } from "../useAttrs";
+import { useBoundAttrs } from "./useBoundAttrs";
 import { GroupValueRow } from "./groupFields";
+import { ToolbarItemView } from "../../toolbar/ToolbarItemView";
+import { useHostCollections } from "../../canvas/hostCollections";
+import { fieldLabel, imageFields, loopCollection, type LoopCollection } from "../../liquid/collectionFields";
 
 const TW = ["tailwind"] as const;
 
@@ -88,9 +94,12 @@ function pickerValue(ref: MediaRef): string {
 }
 
 export function ImageSrcControl({ handle }: { handle: NodeHandle }) {
-  const { read, write } = useAttrs(handle);
+  const { read, write } = useBoundAttrs(handle);
   const src = read("src") ?? "";
   const ref = parseMediaSrc(src);
+  const host = useHostCollections();
+  const file = useEditorState((s) => s.files.get(handle.path) ?? "");
+  const loop = host ? loopCollection(handle, host.list, file) : null;
   const args = ref.kind === "media" || ref.kind === "bound" ? ref.args : "";
   // A pick is a library id (written in the converter's `image_url` form), a dynamic `{{ path }}`, or a URL.
   const pick = (v: string) => {
@@ -102,8 +111,41 @@ export function ImageSrcControl({ handle }: { handle: NodeHandle }) {
   };
   return (
     <div data-image-src-control="" className="flex flex-col gap-1">
-      <MediaInput label="Source" value={pickerValue(ref)} onChange={pick} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
+      <MediaInput label="Source" value={pickerValue(ref)} boundLabel={ref.kind === "bound" ? (fieldLabel(loop, `{{ ${ref.path} }}`) ?? undefined) : undefined} onChange={pick} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
+      <FieldSource loop={loop} ref_={ref} onPick={(path) => write("src", path ? boundSrc(path, args || FIELD_ARGS) : null)} />
       <ExpressionToggle id="image-src-expression" value={src} onCommit={(v) => write("src", v || null)} />
+    </div>
+  );
+}
+
+/** The size a field image is first written at (the converter's card size). */
+const FIELD_ARGS = ": width: 800";
+const FIXED = "__fixed__";
+
+/** "From": a fixed image, or one of the photo fields of the collection the image repeats over. Shown only inside such a list. */
+function FieldSource({ loop, ref_, onPick }: { loop: LoopCollection | null; ref_: MediaRef; onPick(path: string | null): void }) {
+  const photos = imageFields(loop);
+  if (!loop || !photos.length) return null;
+  const prefix = `${loop.item}.`;
+  const key = ref_.kind === "bound" && ref_.path.startsWith(prefix) ? ref_.path.slice(prefix.length) : "";
+  const current = photos.some((f) => f.key === key) ? key : FIXED;
+  const choose = (v: string) => {
+    if (v === current) return;
+    if (v !== FIXED) return onPick(`${prefix}${v}`);
+    if (ref_.kind === "bound") onPick(null);
+  };
+  return (
+    <div data-image-field-source="">
+      <ToolbarItemView type="select" inputId="image-src-field" label="From" value={current} onChange={choose}>
+        <option value={FIXED}>A fixed image</option>
+        <optgroup label={`${loop.collection.name} fields`}>
+          {photos.map((f) => (
+            <option key={f.key} value={f.key}>
+              {f.label}
+            </option>
+          ))}
+        </optgroup>
+      </ToolbarItemView>
     </div>
   );
 }

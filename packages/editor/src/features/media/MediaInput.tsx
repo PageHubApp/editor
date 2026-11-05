@@ -11,6 +11,7 @@ import { Slot, useSlot } from "../../components";
 import { useEditorState } from "../../react/bindings";
 import type { MediaSource } from "./MediaManagerView";
 import { PopoverChip } from "../../primitives/Chip";
+import { tooltip } from "../../primitives/tooltip";
 
 interface MediaInputProps {
   label?: string;
@@ -19,6 +20,8 @@ interface MediaInputProps {
   value: string;
   onChange(value: string): void;
   kindFilter?: MediaKind;
+  /** The owner's name for a bound value ("Photo" for `{{ item.photo }}`), shown on its chip instead of the path. */
+  boundLabel?: string;
   /** Liquid expressions of the site logo (light, and for dark backgrounds). */
   siteLogo?: { light: string; dark?: string };
 }
@@ -36,7 +39,7 @@ function DynamicSource({ pick }: { pick(v: string): void }) {
   );
 }
 
-export function MediaInput({ label, labelWidth, adornment, value, onChange, kindFilter = "image", siteLogo }: MediaInputProps) {
+export function MediaInput({ label, labelWidth, adornment, value, onChange, kindFilter = "image", siteLogo, boundLabel }: MediaInputProps) {
   const [open, setOpen] = useState(false);
   // No MediaManager injected → there's nowhere to pick from, so the trigger stays inert (the
   // popover `Slot` renders nothing on its own, this just keeps the button from looking live).
@@ -96,8 +99,8 @@ export function MediaInput({ label, labelWidth, adornment, value, onChange, kind
           !value ? (
             "Pick media"
           ) : bound ? (
-            <span data-media-bound="" className="bg-primary/10 text-primary rounded px-1.5 py-0.5 font-mono text-[11px]">
-              {bound}
+            <span data-media-bound="" {...(boundLabel ? { "data-media-field": boundLabel, ...tooltip(`{{ ${bound} }}`, "top") } : {})} className={`bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[11px] ${boundLabel ? "" : "font-mono"}`}>
+              {boundLabel ?? bound}
             </span>
           ) : (
             (item?.name ?? value)
