@@ -106,6 +106,8 @@ export function RichTextLayer() {
   const toolbar = useRef<HTMLDivElement>(null);
   const wasEmpty = useRef(true);
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  /** The session refused to remove a data field from repeating text: say why under the toolbar. */
+  const [blocked, setBlocked] = useState(false);
 
   const openPanel = (p?: RichTextPanel) => void store.run("richtext.panel", p ? { panel: p } : {});
 
@@ -158,14 +160,23 @@ export function RichTextLayer() {
       if (doc) stampEmpty(doc, store);
     }
     if (!editing || !doc) return;
-    const el = elementsFor(doc, editSrcOf(editing))[0];
+    const copies = elementsFor(doc, editSrcOf(editing));
+    const el = copies[0];
     if (!el) return;
     if (!session.current) {
-      session.current = new RichTextSession(store, editing, el, {
-        openPanel: (p) => void store.run("richtext.panel", { panel: p }),
-        escape: () => void (richTextOf(store.state).panel ? openPanel() : store.run("richtext.exit")),
-        changed: () => setTick((n) => n + 1),
-      });
+      setBlocked(false);
+      session.current = new RichTextSession(
+        store,
+        editing,
+        el,
+        {
+          openPanel: (p) => void store.run("richtext.panel", { panel: p }),
+          escape: () => void (richTextOf(store.state).panel ? openPanel() : store.run("richtext.exit")),
+          changed: () => setTick((n) => n + 1),
+          blocked: () => setBlocked(true),
+        },
+        copies.length,
+      );
       el.removeAttribute("data-rt-empty");
       setActive(session.current);
     } else session.current.remount(el);
@@ -237,6 +248,7 @@ export function RichTextLayer() {
     <>
       <div ref={toolbar} data-slot="InlineTextToolbar" data-rt-toolbar="" data-pagehub-canvas-chrome="" className="pointer-events-auto absolute z-[110] w-fit max-w-full cursor-default font-sans" style={pos ?? { visibility: "hidden" }} onMouseDown={(e) => e.stopPropagation()}>
         <InlineToolbar session={active} panel={panel} openPanel={openPanel} />
+        {active.repeats > 1 && <RepeatNotice copies={active.repeats} blocked={blocked} />}
         <TextContextMenu session={active} at={menu} onClose={() => setMenu(null)} />
       </div>
       {suggestStyle && (
@@ -245,5 +257,19 @@ export function RichTextLayer() {
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * Under the toolbar while editing text that renders more than once: typing here changes every copy, and the
+ * `{{ … }}` fields are what keep each copy's own details (the session refuses edits that remove one).
+ */
+function RepeatNotice({ copies, blocked }: { copies: number; blocked: boolean }) {
+  return (
+    <p data-rt-repeat-notice={blocked ? "blocked" : ""} role={blocked ? "status" : undefined} className={`mt-1 max-w-72 rounded-md px-2 py-1 text-xs shadow-sm ${blocked ? "bg-warning text-warning-content" : "bg-base-100 text-base-content"}`}>
+      {blocked
+        ? "The highlighted fields fill in each copy's own details, so they can't be typed over. To change one copy, edit its entry in Collections."
+        : `This text shows on all ${copies} copies. Words you type here change every copy.`}
+    </p>
   );
 }

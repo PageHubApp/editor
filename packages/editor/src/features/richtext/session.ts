@@ -12,6 +12,8 @@
  * element, keeping the caret (and any typing not yet committed).
  */
 import { Editor as TipTap, Extension } from "@tiptap/core";
+import { Plugin } from "@tiptap/pm/state";
+import type { Node as PmNode } from "@tiptap/pm/model";
 import { closeHistoryGroup, type ElementTreeNode, type NodeHandle, type Store } from "@pagehub/engine";
 import { GROUP_DELAY } from "@pagehub/engine";
 import { isRichTextLeaf } from "@pagehub/engine/kits";
@@ -31,6 +33,17 @@ interface SessionHooks {
   escape(): void;
   /** Any TipTap transaction (selection, marks): the toolbar re-reads its state. */
   changed(): void;
+  /** An edit was refused because it removed a `{{ … }}` field from text that repeats (`repeats` > 1). */
+  blocked?(): void;
+}
+
+/** How many times each `{{ … }}` field occurs in a TipTap document, by its source. */
+function outputCounts(doc: PmNode): Map<string, number> {
+  const counts = new Map<string, number>();
+  doc.descendants((n) => {
+    if (n.type.name === NODE.output) counts.set(n.attrs.source as string, (counts.get(n.attrs.source as string) ?? 0) + 1);
+  });
+  return counts;
 }
 
 /** The `{{` suggestion list: the text typed after `{{` (replaced on pick), what matches it, the highlighted row. */
@@ -60,14 +73,19 @@ export class RichTextSession {
   private suggestIndex = 0;
   private suggestKey = "";
   private dismissedAt: number | null = null;
+  /** The `{{ … }}` fields the leaf had when editing began; in repeating text none of them may be removed. */
+  private pristineOutputs = new Map<string, number>();
 
   constructor(
     readonly store: Store,
     readonly handle: NodeHandle,
     el: HTMLElement,
     private readonly hooks: SessionHooks,
+    /** How many times the leaf renders: inside a `{% for %}` (or a partial a loop renders) it is the template for every row. */
+    readonly repeats = 1,
   ) {
     this.mount(el, this.sourceDoc(), "end");
+    this.pristineOutputs = outputCounts(this.editor.state.doc);
     this.unregisterCommit = registerPendingCommit(() => void this.flush());
   }
 
@@ -117,12 +135,42 @@ export class RichTextSession {
     });
   }
 
+  /**
+   * In text that repeats (a loop's row, a partial a loop renders), each `{{ item.x }}` field is what makes every copy
+   * show its own row. Typing over one would write the same words into every copy and drop the field for all of
+   * them, so an edit that removes a field the text started with is refused (`hooks.blocked`). Words around the
+   * fields stay editable, and a field typed in this session can still be removed.
+   */
+  private keepFields() {
+    const session = this;
+    return Extension.create({
+      name: "pagehubKeepRepeatedFields",
+      addProseMirrorPlugins() {
+        return [
+          new Plugin({
+            filterTransaction(tr) {
+              if (session.repeats < 2 || !tr.docChanged) return true;
+              const after = outputCounts(tr.doc);
+              for (const [source, count] of session.pristineOutputs) {
+                if ((after.get(source) ?? 0) < count) {
+                  session.hooks.blocked?.();
+                  return false;
+                }
+              }
+              return true;
+            },
+          }),
+        ];
+      },
+    });
+  }
+
   private mount(el: HTMLElement, content: JsonNode, focus: "end" | { from: number; to: number }) {
     el.setAttribute("data-rt-editing", "");
     this.pristine = { html: el.innerHTML, attrs: Object.fromEntries(EDITOR_ATTRS.map((a) => [a, el.getAttribute(a)])) };
     this.editor = new TipTap({
       element: { mount: el },
-      extensions: [...richTextSchema(), this.keys()],
+      extensions: [...richTextSchema(), this.keys(), this.keepFields()],
       content,
       injectCSS: false,
       autofocus: false,
