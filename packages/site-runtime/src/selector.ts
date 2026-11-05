@@ -1,7 +1,7 @@
 import { CHUNK_SELECTORS } from "./chunks";
 
 /** Attributes the inline behaviours in `src/core/` act on. They have no lazy chunk, so they are not in `CHUNK_SELECTORS`; keep in step with that folder. */
-export const CORE_SELECTORS = ["form[data-autosubmit]", "[data-copy]", "[data-dismiss]", "[data-theme-toggle]", "dialog[closedby]"] as const;
+export const CORE_SELECTORS = ["form[data-form-id]", "form[data-autosubmit]","[data-copy]", "[data-dismiss]", "[data-theme-toggle]", "dialog[closedby]"] as const;
 
 const ALL: readonly string[] = [...Object.values(CHUNK_SELECTORS), ...CORE_SELECTORS];
 

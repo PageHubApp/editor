@@ -1,6 +1,7 @@
 import { CHUNK_SELECTORS, loadChunk, type ChunkModule, type ChunkName } from "./chunks";
 import { readConfig, type RuntimeConfig } from "./config";
 import { attributionSubmit, captureAttribution } from "./core/attribution";
+import { submitStamp } from "./core/submitStamp";
 import { autosubmitChange, autosubmitInput } from "./core/autosubmit";
 import { closedbyClick } from "./core/closedby";
 import { copyClick } from "./core/copy";
@@ -87,6 +88,7 @@ export function start(doc: Document = document, config: RuntimeConfig = readConf
   if (!editing()) {
     captureAttribution(doc);
     doc.addEventListener("submit", attributionSubmit, { capture: true, signal });
+    doc.addEventListener("submit", submitStamp, { capture: true, signal });
   }
   doc.addEventListener("input", autosubmitInput, { signal });
   let mo: MutationObserver | undefined;

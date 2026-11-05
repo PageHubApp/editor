@@ -294,6 +294,12 @@ A `popover` of `manual` never light-dismisses; Escape closes the most recently o
 
 These run from the core script itself (`src/core/`), with no chunk to load.
 
+`data-form-id` marks a PageHub form (`{% form %}` writes it; never author it by hand). On submit the runtime adds two hidden fields: `_ph_attribution` (how the visitor first arrived this session) and `_ph_t` (how long the page has been open, in ms). A post to a release form without `_ph_t`, or sent within 3 seconds, is filed as spam (docs/features/submission-inbox.md §4.2 in the app), so any page with one loads the runtime.
+
+```html
+<form method="post" action="/api/submissions" data-form-id="f0123456789ab"><input name="email"></form>
+```
+
 `data-autosubmit` on a form submits it when a field changes. A value like `300ms` also submits while typing, after that pause.
 
 ```html
