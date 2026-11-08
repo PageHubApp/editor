@@ -1,6 +1,6 @@
 # Site runtime attributes
 
-Reference for every `data-*` attribute that [`@pagehub/site-runtime`](../packages/site-runtime) understands on a published page. For installing and loading the script, see the [package README](../packages/site-runtime/README.md).
+Reference for every `data-*` attribute that `@pagehub/site-runtime` understands on a published page. For installing and loading the script, see the package README.
 
 The runtime is plain HTML attributes plus one small script. A page that uses none of them ships no JavaScript (`needsRuntime(html)` tells a publish step which pages need it).
 
@@ -20,6 +20,7 @@ The script reads an optional `<script type="application/json" id="runtime-config
 | `cart.body` | Your own fields (a site id, a tenant) merged into that post. |
 | `cart.endpoint` | Without `cart.api`: the page checkout goes to, with `?items=priceId:qty,...` (default `/checkout`). |
 | `cart.key` | The localStorage key the cart lines live under (default `cart`). |
+| `cart.agreementApi` | The endpoint a `data-cart-agreement` dialog signs through. Without it, checkout skips the agreement. |
 | `chat.event` | DOM event `data-chat-send` dispatches on `document` (default `site:chat`). |
 | `chat.api` | The site-chat endpoint base (`/api/site-chat/<siteId>`) a `data-chat` widget calls `/history` and `/message` under. Without it a `data-chat` root stays hidden. |
 | `map.leaflet`, `map.tiles`, `map.attribution` | Where Leaflet loads from (default: unpkg) and the default tiles for `{% map %}`. |
@@ -190,7 +191,7 @@ Whatever is already on screen when the animate chunk loads is left as painted (m
 <form method="post" action="/submit"><div data-form-state="idle">…fields…</div><p data-form-state="sent" hidden>Thanks.</p><p data-form-state="error" hidden>Could not send. Try again.</p></form>
 ```
 
-`commandfor` on a button is the native invoker attribute. The runtime only adds a polyfill on browsers without it. On any other element (a card, a gallery tile) the runtime runs the command itself when the element, or something inside it, is clicked; an overlay that commands itself acts only on a click that lands on it, its backdrop. An element with content inside the overlay it names (a drawer or modal panel carrying its overlay's command) is ignored, so a click on blank panel space never closes it; a childless one (a click-away strip) still acts.
+`commandfor` on a button is the native invoker attribute. The runtime only adds a polyfill on browsers without it. On any other element (a card, a gallery tile) the runtime runs the command itself when the element, or something inside it, is clicked (this is in the chunk a `popover="manual"`, `data-show-on` or `data-tab-target` loads, so the page needs one of those); an overlay that commands itself acts only on a click that lands on it, its backdrop. An element with content inside the overlay it names (a drawer or modal panel carrying its overlay's command) is ignored, so a click on blank panel space never closes it; a childless one (a click-away strip) still acts.
 
 ```html
 <button commandfor="menu" command="show-popover">Menu</button>
@@ -294,7 +295,7 @@ A `popover` of `manual` never light-dismisses; Escape closes the most recently o
 
 These run from the core script itself (`src/core/`), with no chunk to load.
 
-`data-form-id` marks a PageHub form (`{% form %}` writes it; never author it by hand). On submit the runtime adds two hidden fields: `_ph_attribution` (how the visitor first arrived this session) and `_ph_t` (how long the page has been open, in ms). A post to a release form without `_ph_t`, or sent within 3 seconds, is filed as spam (docs/features/submission-inbox.md §4.2 in the app), so any page with one loads the runtime.
+`data-form-id` marks a PageHub form (`{% form %}` writes it; never author it by hand). On submit the runtime adds two hidden fields: `_ph_attribution` (how the visitor first arrived this session) and `_ph_t` (how long the page has been open, in ms). A post to a release form without `_ph_t`, or sent within 3 seconds, is filed as spam, so any page with one loads the runtime.
 
 ```html
 <form method="post" action="/api/submissions" data-form-id="f0123456789ab"><input name="email"></form>

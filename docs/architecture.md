@@ -11,7 +11,7 @@ The editor is built around one rule: **the source file is the document.** There'
                              │ uses
                   ┌──────────▼───────────┐        ┌─────────────────────────┐
  your storage ───►│   @pagehub/engine    │◄───────│  @pagehub/dev-server    │ files, CSS, fonts, preview
-                  │ parse · edit · lint  │        │  @pagehub/cli           │ open · check · lint
+                  │ parse · edit · lint  │        │  @pagehub/cli           │ open · check · lint · pull · push
                   │ render · storage     │        └─────────────────────────┘
                   └──────────┬───────────┘
                              │ rendered pages load
@@ -26,7 +26,7 @@ The editor is built around one rule: **the source file is the document.** There'
 | `@pagehub/editor` | The visual editor on top of the engine | Browser (React 19) |
 | `@pagehub/site-runtime` | Behavior for published pages | Visitors' browsers |
 | `@pagehub/dev-server` | Local host: a Vite plugin over a folder of sites | Node |
-| `@pagehub/cli` | `open`, `check`, `lint` | Node |
+| `@pagehub/cli` | `open`, `check`, `lint`, and `login`, `pull`, `status`, `push` for a hosted site | Node |
 
 The engine has no UI and no DOM. The editor never talks to a disk or a URL; it only talks to the engine and to the host you give it.
 
@@ -89,4 +89,4 @@ The dev server does exactly these steps for a local folder (`/~view/<site>/<rout
 - Data-source results must be plain JSON, checked on every call.
 - Tags yield trusted markup; escape visitor data with `ctx.escape`.
 - Editor attributes (`data-edit-*`) are stripped before publishing with `stripEditAttributes`.
-- To report a vulnerability, see [SECURITY.md](../SECURITY.md).
+- To report a vulnerability, email security@pagehub.dev.

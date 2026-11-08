@@ -69,7 +69,7 @@ For any failure that isn't a version conflict, **throw a `StorageError`**. The e
 | `network` | No answer: offline, timeout, bad gateway | 408, 502, 503, 504, or none | Can't reach the server, with Try again. |
 | `unknown` | Anything else | | A generic failure. |
 
-`error.retryable` is true for `network` and `maintenance`. Only retryable errors get **Try again**.
+`error.retryable` is true for `network` and `maintenance`. Those two, and `unknown` failures, get **Try again**; the other codes don't.
 
 Helpers so you don't map statuses yourself:
 

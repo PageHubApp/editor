@@ -137,7 +137,7 @@ With `<Editor storage={...} extensions={[...]} />` the editor opens the core for
 
 ## Testing
 
-`@pagehub/engine/testing` has `createTestEditor`, `CommandTester`, `ElementTester` and `RuleTester`. For a tag or filter, `createRenderer` with a `files` map and a call to `renderer.render(path, data)` is enough.
+`@pagehub/engine/testing` has `createTestEditor`, `CommandTester`, `ElementTester` and `RuleTester`. For a tag or filter, `createRenderer` with a `files` function (`(path) => text`, or `undefined` when the file doesn't exist) and a call to `renderer.render(path, data)` is enough.
 
 ## Elements, commands and rules
 
