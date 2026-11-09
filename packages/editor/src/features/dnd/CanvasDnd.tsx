@@ -3,8 +3,8 @@
  * Drag and drop on the canvas. Mounted once in the canvas overlay layer, it
  * - registers the canvas as the session's drop surface (plans from the pointer, drops by
  *   running the plan's command: one transaction);
- * - starts a move drag from a primary-button press on a rendered element (4px threshold; the
- *   whole element is the handle). Pages (`<main>`), footers and `drag`-locked elements don't
+ * - starts a move drag from a primary-button mouse or pen press on a rendered element (4px
+ *   threshold; the whole element is the handle). A touch press never arms one: it scrolls. Pages (`<main>`), footers and `drag`-locked elements don't
  *   drag. The gesture runs on window listeners (`useDragGesture`); while it runs the frame
  *   ignores the pointer and its own pointer events are forwarded to the host window, so a
  *   release anywhere ends it, and a release outside the canvas drops nothing;
@@ -135,6 +135,9 @@ export function CanvasDnd() {
       return { x: f.left + e.clientX * z, y: f.top + e.clientY * z };
     };
     const onDown = (e: PointerEvent) => {
+      // A finger on the canvas is scrolling the page: arming a move from it turns every swipe that
+      // starts on an element into a drop. Touch moves go through the layers list.
+      if (e.pointerType === "touch") return;
       if (e.button !== 0 || (e.target as Element).closest?.(EDITABLE)) return;
       const h = selectTarget(store, srcOf(e.target as Element));
       if (!isDraggable(h)) return;

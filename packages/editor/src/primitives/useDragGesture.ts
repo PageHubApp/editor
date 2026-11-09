@@ -1,7 +1,7 @@
 /**
  * The one pointer-gesture primitive (drag, resize, sliders). On a primary-button pointerdown it
  * attaches `pointermove` / `pointerup` / `pointercancel` / `blur` to `window` and detaches them
- * on end — never React pointer props, which strand the gesture when the up event is missed.
+ * on end (`pointercancel` and `blur` end it with `null`, so nothing commits) — never React pointer props, which strand the gesture when the up event is missed.
  * A move with no buttons held counts as the end; unmounting mid-gesture ends it too, so
  * side effects set in `onStart` (body cursor) are always undone.
  *
@@ -23,7 +23,7 @@ interface DragGestureOptions {
   /** After the primary-button check. Return false to not start. */
   onStart?(e: ReactPointerEvent): boolean | void;
   onMove?(e: PointerEvent, m: DragMove): void;
-  /** Exactly once: up, cancel, blur, a buttonless move, or unmount. */
+  /** Exactly once: up or a buttonless move (with the event), or cancel, blur, unmount (`null`: abandon, don't commit). */
   onEnd?(e: PointerEvent | null, moved: boolean): void;
   /** Pixels before `moved` turns true. Default 1. */
   threshold?: number;
@@ -59,10 +59,12 @@ export function useDragGesture(options: DragGestureOptions): { onPointerDown(e: 
         opts.current.onMove?.(ev, { dx, dy, clientX: ev.clientX, clientY: ev.clientY });
       };
       const end = (ev: PointerEvent) => finish(ev);
+      // The browser took the pointer (a touch turned into a scroll or zoom): abandon, never commit.
+      const cancel = () => finish(null);
       const blur = () => finish(null);
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", end);
-      window.addEventListener("pointercancel", end);
+      window.addEventListener("pointercancel", cancel);
       window.addEventListener("blur", blur);
       active.current = {
         x: e.clientX,
@@ -72,7 +74,7 @@ export function useDragGesture(options: DragGestureOptions): { onPointerDown(e: 
         detach() {
           window.removeEventListener("pointermove", move);
           window.removeEventListener("pointerup", end);
-          window.removeEventListener("pointercancel", end);
+          window.removeEventListener("pointercancel", cancel);
           window.removeEventListener("blur", blur);
         },
       };

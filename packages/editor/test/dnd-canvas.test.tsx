@@ -92,6 +92,25 @@ describe("canvas drag and drop", () => {
     assert.equal(e.text().match(/<p>B<\/p>/g)?.length, 2, "nothing moved");
   });
 
+  it("a finger on the canvas scrolls: a touch press never arms a move", async () => {
+    const { doc, e } = await mount(PAGE, (d) => stack(d.querySelector("main")!, 10));
+    await fireIn(doc.querySelectorAll("p")[1]!, "pointerdown", { clientX: 400, clientY: 130, button: 0, pointerType: "touch" } as MouseEventInit);
+    await move(400, 15, { pointerType: "touch" });
+    assert.equal(doc.body.hasAttribute("data-is-dragging"), false, "no drag from a swipe");
+    await up(400, 15, { pointerType: "touch" });
+    assert.equal(e.text(), PAGE, "nothing moved");
+  });
+
+  it("a cancelled pointer (the browser took it for a scroll) drops nothing", async () => {
+    const { doc, e } = await mount(PAGE, (d) => stack(d.querySelector("main")!, 10));
+    await fireIn(doc.querySelectorAll("p")[1]!, "pointerdown", { clientX: 400, clientY: 130, button: 0 });
+    await move(400, 15);
+    assert.equal(doc.body.getAttribute("data-is-dragging"), "true");
+    await act(async () => void window.dispatchEvent(new PointerEvent("pointercancel", { clientX: 400, clientY: 15 })));
+    assert.equal(doc.body.hasAttribute("data-is-dragging"), false, "the drag ended");
+    assert.equal(e.text(), PAGE, "nothing moved");
+  });
+
   it("an invalid target (drop-in lock) paints the indicator red and drops nothing", async () => {
     const page = `<main class="p-4">\n  <div data-edit-lock="drop-in" class="box">\n    <span>x</span>\n  </div>\n  <p>B</p>\n</main>\n`;
     const { r, doc, e } = await mount(page, (d) => {
