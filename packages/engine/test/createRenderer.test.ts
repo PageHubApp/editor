@@ -101,6 +101,22 @@ test("built-ins are defined values; map renders [data-map] and parses as a block
   assert.equal(rr.tags.get("map")!.args.check({ lat: 100, lng: 2 }).ok, false);
 });
 
+test("where takes text, a number or true/false as its value; a list is refused", async () => {
+  const rows = [{ t: "a", featured: true, rating: 5 }, { t: "b", featured: false, rating: 3 }, { t: "c", featured: "true", rating: "5" }];
+  const loop = (arg: string) => `{% assign x = rows | where: ${arg} %}{% for i in x %}{{i.t}}{% endfor %}`;
+  const files = { bool: loop(`'featured', true`), no: loop(`'featured', false`), num: loop(`'rating', 5`), v: loop(`'rating', n`), list: loop(`'rating', rows`) };
+  const rr = createRenderer({ files: (p) => files[p as keyof typeof files] });
+  assert.equal(await rr.render("bool", { rows }), "ac");
+  assert.equal(await rr.render("no", { rows }), "b");
+  assert.equal(await rr.render("num", { rows }), "ac");
+  assert.equal(await rr.render("v", { rows, n: 3 }), "b");
+  await assert.rejects(rr.render("list", { rows }), /where" argument 2: expected text, a number or true\/false/);
+  const s = t.scalar();
+  assert.deepEqual([s.parse("true", "arg"), s.parse("5", "arg"), s.parse("'x'", "arg")], [true, 5, "x"]);
+  assert.deepEqual([s.serialize(true, "arg"), s.serialize(5, "arg"), s.serialize("x", "arg")], ["true", "5", `"x"`]);
+  assert.deepEqual(s.toJSONSchema().type, ["string", "number", "boolean"]);
+});
+
 test("host-backed filters register only with their provider; form posts need a handler", async () => {
   const none = createRenderer({ files: (p) => ({ p: `{{ 'a' | file_url }}` })[p] });
   await assert.rejects(none.render("p", {}), /file_url/);

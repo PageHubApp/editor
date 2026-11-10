@@ -50,7 +50,7 @@ const FILTER_ARGS: Record<string, FilterDef["args"]> = {
   handleize: [],
   pluralize: [t.string(), t.string()],
   data_items: [str()],
-  where: [t.string(), str()],
+  where: [t.string(), t.scalar().optional()],
   facets: [t.string()],
   time_tag: [str(), t.hash({ format: str(), class: str(), id: str(), datetime: str() })],
   link_to: [t.string(), t.hash({ title: str(), class: str(), id: str(), target: str(), rel: str() })],

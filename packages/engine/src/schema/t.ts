@@ -9,7 +9,7 @@
 import { liquidString } from "../edit/ops";
 
 export type SourceContext = "attr" | "arg";
-export type SchemaType = "string" | "number" | "boolean" | "enum" | "array" | "object" | "hash" | "handle" | "tokens" | "expression";
+export type SchemaType = "string" | "number" | "boolean" | "scalar" | "enum" | "array" | "object" | "hash" | "handle" | "tokens" | "expression";
 
 export class SchemaError extends Error {
   override name = "SchemaError";
@@ -115,6 +115,9 @@ export class Schema<T> {
         return range(value, "value") ?? { ok: true, value: value as T };
       case "boolean":
         return typeof value === "boolean" ? { ok: true, value: value as T } : fail("expected a boolean");
+      case "scalar":
+        if (typeof value === "string" || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value))) return { ok: true, value: value as T };
+        return fail("expected text, a number or true/false");
       case "enum":
         return typeof value === "string" && s.values!.includes(value) ? { ok: true, value: value as T } : fail(`expected one of ${s.values!.map((v) => JSON.stringify(v)).join(", ")}`);
       case "array": {
@@ -189,6 +192,14 @@ export class Schema<T> {
         else if (text === "false") value = false;
         else throw new SchemaError(`expected true or false, got ${JSON.stringify(text)}`);
         break;
+      case "scalar":
+        // an argument: a quoted string, true/false or a number; an attribute is its text
+        if (ctx === "attr") value = source;
+        else if (text === "true" || text === "false") value = text === "true";
+        else if (unquote(text) !== null) value = unquote(text);
+        else if (text !== "" && !Number.isNaN(Number(text))) value = Number(text);
+        else throw new SchemaError(`expected a string, number or true/false, got ${JSON.stringify(text)}`);
+        break;
       case "array":
       case "object":
         if (ctx === "arg") throw new SchemaError(`${s.type} values can't be written as Liquid arguments`);
@@ -234,6 +245,8 @@ export class Schema<T> {
       case "number":
       case "boolean":
         return String(v);
+      case "scalar":
+        return typeof v === "string" && ctx === "arg" ? liquidString(v) : String(v);
       case "array":
       case "object":
         if (ctx === "arg") throw new SchemaError(`${this.spec.type} values can't be written as Liquid arguments`);
@@ -267,6 +280,9 @@ export class Schema<T> {
         break;
       case "boolean":
         out.type = "boolean";
+        break;
+      case "scalar":
+        out.type = ["string", "number", "boolean"];
         break;
       case "enum":
         out.type = "string";
@@ -316,6 +332,8 @@ export const t = {
   number: (): Schema<number> => new Schema({ type: "number" }),
   int: (): Schema<number> => new Schema({ type: "number", int: true }),
   boolean: (): Schema<boolean> => new Schema({ type: "boolean" }),
+  /** Text, a number or true/false: a value Liquid compares as text (`where: 'featured', true`). */
+  scalar: (): Schema<string | number | boolean> => new Schema({ type: "scalar" }),
   enum: <const V extends string>(values: readonly V[]): Schema<V> => new Schema({ type: "enum", values }),
   array: <S extends Schema<any>>(items: S): Schema<Infer<S>[]> => new Schema({ type: "array", items }),
   object: <S extends Shape>(shape: S): Schema<ObjectOf<S>> => new Schema({ type: "object", shape }),
