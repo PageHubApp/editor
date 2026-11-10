@@ -24,7 +24,21 @@ const cases: Array<[string, string, LintRuleId[]]> = [
   ["Liquid as a tag name", `<{{ tag }} class="a">x</{{ tag }}>`, ["static-tag-name"]],
   ["unclosed HTML", `<div>\n<p>x</div>`, ["parse"]],
   ["the sample page", SAMPLE, []],
+  ["where with a true/false, number or variable value", `{% assign a = rows | where: 'featured', true %}{% assign b = rows | where: 'rating', 5 %}{% assign c = rows | where: 'cat', request.query.cat %}`, []],
+  ["where with no field", `{% assign a = rows | where %}`, ["filter-literal-args"]],
+  ["image_url with a text width", `{{ id | image_url: width: 'big' }}`, ["filter-literal-args"]],
+  ["image_url with a variable width", `{{ id | image_url: width: w | image_tag: alt: 'x' }}`, []],
+  ["image_url with an unknown option", `{{ id | image_url: size: 800 }}`, ["filter-literal-args"]],
+  ["handleize with an argument", `{{ t | handleize: 'x' }}`, ["filter-literal-args"]],
+  ["a filter outside the built-ins", `{{ t | upcase | append: 5 }}`, []],
 ];
+
+test("lint: a filter argument error names the filter and points at the argument", () => {
+  const src = `{{ id | image_url: width: 'big' }}`;
+  const [issue] = lint(src);
+  assert.equal(issue!.message, `filter "image_url" option width: expected a number`);
+  assert.equal(src.slice(issue!.range.start, issue!.range.end), "width: 'big'");
+});
 
 for (const [label, src, expected] of cases) {
   test(`lint: ${label}`, () => {

@@ -2,7 +2,7 @@
  * Editor-safety lint: the structural rules, run through the rules system (`../rules`).
  * The parser accepts every pattern below in both modes and never throws on them, so these
  * rules are what keep stored source editable: Liquid logic wraps whole elements, and names
- * are static. Runs on every write (editor, AI, import, restore). An empty result means editable.
+ * are static. A built-in filter's literal arguments fit its types, so the page renders. Runs on every write (editor, AI, import, restore). An empty result means editable.
  */
 import type { ParseOptions, Range } from "../parse/parse";
 import { lintRules } from "../rules/coreRules";
@@ -14,7 +14,8 @@ export type LintRuleId =
   | "no-dangling-open"
   | "no-dangling-close"
   | "static-attr-name"
-  | "static-tag-name";
+  | "static-tag-name"
+  | "filter-literal-args";
 
 export interface LintIssue {
   rule: LintRuleId;
