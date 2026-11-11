@@ -31,7 +31,22 @@ const cases: Array<[string, string, LintRuleId[]]> = [
   ["image_url with an unknown option", `{{ id | image_url: size: 800 }}`, ["filter-literal-args"]],
   ["handleize with an argument", `{{ t | handleize: 'x' }}`, ["filter-literal-args"]],
   ["a filter outside the built-ins", `{{ t | upcase | append: 5 }}`, []],
+  ["blank or true", `{% if item.inStock == blank or item.inStock == true %}<button>Add</button>{% endif %}`, ["no-blank-or-true"]],
+  ["true or blank", `{% unless p.ok == true or p.ok == blank %}x{% endunless %}`, ["no-blank-or-true"]],
+  ["blank or true in elsif", `{% if a %}x{% elsif item.inStock == blank or item.inStock == true %}y{% endif %}`, ["no-blank-or-true"]],
+  ["blank or true inside an attribute gate", `<button {% if item.inStock == blank or item.inStock == true %}data-cart="add"{% endif %}>x</button>`, ["no-blank-or-true"]],
+  ["!= false", `{% if item.inStock != false %}x{% endif %}{% if item.inStock == false %}y{% endif %}`, []],
+  ["blank or true on two different values", `{% if a == blank or b == true %}x{% endif %}`, []],
+  ["blank on its own", `{% if company.phone == blank %}x{% endif %}`, []],
 ];
+
+test("lint: blank-or-true names the value and its fix is != false", () => {
+  const src = `{% if item.inStock == blank or item.inStock == true %}x{% endif %}`;
+  const issues = lint(src).filter((i) => i.rule === "no-blank-or-true");
+  assert.equal(issues.length, 1);
+  assert.equal(src.slice(issues[0]!.range.start, issues[0]!.range.end), "item.inStock == blank or item.inStock == true");
+  assert.match(issues[0]!.message, /item\.inStock != false/);
+});
 
 test("lint: a filter argument error names the filter and points at the argument", () => {
   const src = `{{ id | image_url: width: 'big' }}`;

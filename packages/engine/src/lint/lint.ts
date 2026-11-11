@@ -15,7 +15,8 @@ export type LintRuleId =
   | "no-dangling-close"
   | "static-attr-name"
   | "static-tag-name"
-  | "filter-literal-args";
+  | "filter-literal-args"
+  | "no-blank-or-true";
 
 export interface LintIssue {
   rule: LintRuleId;

@@ -5,9 +5,10 @@ import { headingOrder, imgAlt, inputLabel, singleH1 } from "./core/a11y";
 import { sectionLiteralArgs, sectionSettingType, sectionUnknownSetting } from "./core/sections";
 import { unknownFilter, unknownTag } from "./core/registryRules";
 import { filterLiteralArgs } from "./core/filterArgs";
+import { noBlankOrTrue } from "./core/conditions";
 import { noDanglingClose, noDanglingOpen, noLiquidInAttrList, parseRule, staticAttrName, staticTagName } from "./core/structural";
 
-export const lintRules: readonly Rule<any>[] = [parseRule, noLiquidInAttrList, noDanglingOpen, noDanglingClose, staticAttrName, staticTagName, filterLiteralArgs];
+export const lintRules: readonly Rule<any>[] = [parseRule, noLiquidInAttrList, noDanglingOpen, noDanglingClose, staticAttrName, staticTagName, filterLiteralArgs, noBlankOrTrue];
 
 /** The shipped rules. A site's own JavaScript is kept: `noInlineJs` is added only for PageHub's catalogs. */
 export const coreRules: readonly Rule<any>[] = [
