@@ -249,6 +249,16 @@ describe("cart", () => {
     assert.equal(assign.mock.calls[0]!.arguments[0], "/pay?items=sku1:4");
   });
 
+  it("a product row with no price id isn't added: its row id is not a price", async () => {
+    const row = { id: "6af32fc4e48f4796801f83b3", title: "Soap", price: { amount: 900, formatted: "$9", currency: "cad" }, metadata: {} };
+    resetDom(`<span data-cart-count>0</span><button data-cart="add" data-cart-item='${JSON.stringify(row)}'>+</button>`);
+    stops.push(cart.init(document, cfg));
+    fire(document.querySelector("button")!, "click");
+    await tick(5);
+    assert.equal(text("[data-cart-count]"), "0");
+    assert.equal(get("cart:error"), "This product isn't for sale yet");
+  });
+
   it("publishes cart:count / cart:total, renders line items and drives qty and remove", async () => {
     resetDom(
       `<button ${priced("a", 1500, ' data-cart-qty="2"')}>a</button><button ${priced("b", 400)}>b</button>` +

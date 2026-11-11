@@ -284,10 +284,16 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
       if (!token) return;
       details = { ...details, agreementToken: token };
     }
-    const item = templated ? { id: templated } : itemOf(el) ?? { id: String(f?.get("id") ?? el.getAttribute("data-cart-id") ?? "") };
+    const row = templated ? null : itemOf(el);
+    const item = templated ? { id: templated } : row ?? { id: String(f?.get("id") ?? el.getAttribute("data-cart-id") ?? "") };
     if (!item.id && !item.metadata?.priceId) return;
-    // A bare `id` (hand-written markup) is its own price id; the title falls back to it.
-    if (!item.metadata?.priceId && !item.priceId) item.priceId = item.id;
+    if (!item.metadata?.priceId && !item.priceId) {
+      // A product row's id is not a price: a row with none (its collection isn't sold, or the markup left out
+      // `metadata.priceId`) can't be bought, and sending the id on would fail at the payment provider.
+      if (row) return void set(ERROR, "This product isn't for sale yet");
+      // A bare `id` (hand-written `data-cart-id`, a form's `id`, an id template) is its own price id.
+      item.priceId = item.id;
+    }
     item.title ??= item.id;
     const picked = withVariant(item, el.getAttribute("data-cart-variant-axes"));
     if (!picked) return void set(ERROR, "Select an option before adding to cart");
