@@ -157,7 +157,7 @@ describe("track", () => {
 describe("track purchase", () => {
   const w = window as any;
   const tag = (kind = "", id = "cs_1", value = "64000", cur = "usd") => `<div hidden data-track-purchase="${kind}" data-id="${id}" data-value="${value}" data-currency="${cur}"></div>`;
-  const run = () => document.querySelectorAll("[data-track-purchase]").forEach((e) => track.mount(e, cfg));
+  const run = () => document.querySelectorAll("[data-track-purchase]").forEach((e) => track.mount(e));
   beforeEach(() => {
     w.localStorage.clear();
     w.gtag = mock.fn();

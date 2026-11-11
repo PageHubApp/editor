@@ -16,7 +16,9 @@ function fieldValue(name: string): string | undefined {
     const on = ticks.find((e) => e.checked);
     return on ? on.value || "true" : undefined;
   }
-  const v = els[0] && ("value" in els[0] ? els[0].value : els[0].textContent);
+  // A `data-anchor` / `id` match can be any element: read its value when it has one, else its text.
+  const first: Element | undefined = els[0];
+  const v = first && ("value" in first ? String(first.value) : first.textContent);
   return v || undefined;
 }
 
