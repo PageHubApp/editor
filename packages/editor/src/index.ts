@@ -26,5 +26,7 @@ export {
 export { DEFAULT_COMPONENTS } from "./shell/defaults";
 export { useEditorStore, useEditorState, useRunCommand } from "./react/bindings";
 export { useUi } from "./react/useUi";
+/** The shell state (side panel shown, preview, …), e.g. for a host bar's own `sidebar.toggle` button. */
+export { chromeOf } from "./shell/chromeState";
 export type { CanvasHost } from "./features/canvas/canvasHost";
 export { defaultCanvasRender, type CanvasRender } from "./features/canvas/canvasContext";

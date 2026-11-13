@@ -6,7 +6,7 @@ import { describe, it } from "node:test";
 const SURFACE = {
   index: {
     load: () => import("../src/index.ts"),
-    names: ["DEFAULT_COMPONENTS", "Editor", "aiChatFacet", "Slot", "defaultCanvasRender", "editorKit", "emailEditorKit", "mountEditor", "useEditorState", "useEditorStore", "useRunCommand", "useSlot", "useUi"],
+    names: ["DEFAULT_COMPONENTS", "Editor", "aiChatFacet", "Slot", "chromeOf", "defaultCanvasRender", "editorKit", "emailEditorKit", "mountEditor", "useEditorState", "useEditorStore", "useRunCommand", "useSlot", "useUi"],
   },
   components: {
     load: () => import("../src/components.entry.ts"),
