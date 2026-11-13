@@ -26,13 +26,13 @@ afterEach(() => {
 const items = (r: ReturnType<typeof render>) => r.all("[data-topbar-item]").map((b) => b.getAttribute("data-topbar-item"));
 
 describe("top bar (3.6)", () => {
-  it("three groups — left: Undo, Redo; centre: the address pill (PageSelector + SaveStatus); right: [BreakpointSwitcher], Preview, More (Insert, Save and the board toggle are not top-bar buttons)", () => {
+  it("three groups — left: panel toggle, Undo, Redo; centre: the address pill (PageSelector + SaveStatus); right: [BreakpointSwitcher], Preview, More (Insert, Save and the board toggle are not top-bar buttons)", () => {
     const r = render(<Editor editor={fixtureEditor()} />);
     const [left, pillWrap, right] = r.all('[data-slot="TopBar"] header > div') as [HTMLElement, HTMLElement, HTMLElement];
     // Insert lives in the Add panel and Save is the pill's status, so neither is a top-bar button.
-    assert.deepEqual(items(r), ["history.undo", "history.redo", "preview.toggle", "menu.more"]);
-    // Left group: the history actions only.
-    assert.deepEqual([...left.children].map((c) => c.getAttribute("data-topbar-item")), ["history.undo", "history.redo"]);
+    assert.deepEqual(items(r), ["sidebar.toggle", "history.undo", "history.redo", "preview.toggle", "menu.more"]);
+    // Left group: the panel toggle, then the history actions.
+    assert.deepEqual([...left.children].map((c) => c.getAttribute("data-topbar-item")), ["sidebar.toggle", "history.undo", "history.redo"]);
     // Centre: the rounded address pill holds the PageSelector (page switcher) and the SaveStatus indicator.
     const pill = pillWrap.firstElementChild!;
     assert.deepEqual([...pill.querySelectorAll("[data-slot]")].map((c) => c.getAttribute("data-slot")), ["PageSelector", "SaveStatus"]);
@@ -88,6 +88,26 @@ describe("top bar (3.6)", () => {
     assert.equal(r.all('aside[data-sidebar-open="true"]').length, 0, "sidebar hidden in preview");
     actRun(e, "preview.exit");
     assert.equal(e.state.selection.primary, sel);
+  });
+
+  it("panel toggle: hides and shows the side panel; from preview it leaves preview and shows the panel", async () => {
+    const e = fixtureEditor();
+    const r = render(<Editor editor={e} />);
+    const btn = () => r.get('[data-topbar-item="sidebar.toggle"]');
+    assert.equal(btn().getAttribute("aria-pressed"), "true");
+    assert.match(btn().getAttribute("data-tooltip-content")!, /^Hide settings panel/);
+    await r.click(btn());
+    assert.equal(r.all('aside[data-sidebar-open="true"]').length, 0, "hidden");
+    assert.match(btn().getAttribute("data-tooltip-content")!, /^Show settings panel/);
+    await r.click(btn());
+    assert.equal(r.all('aside[data-sidebar-open="true"]').length, 1, "shown again");
+    const sel = e.state.selection.primary;
+    actRun(e, "preview.toggle");
+    assert.equal(btn().getAttribute("aria-pressed"), "false", "preview hides the panel");
+    await r.click(btn());
+    assert.equal(chromeOf(e.state).preview, false);
+    assert.equal(e.state.selection.primary, sel, "the selection comes back");
+    assert.equal(r.all('aside[data-sidebar-open="true"]').length, 1);
   });
 
   it("More toggles the drawer: Settings / View / Tools / Preferences, state-titled toggles, click outside closes", async () => {

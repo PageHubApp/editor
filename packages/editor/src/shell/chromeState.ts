@@ -161,6 +161,23 @@ const sidebarClose = defineCommand<{ auto?: boolean } | undefined>({
     return true;
   },
 });
+/** The top bar's panel button: hides the settings panel, or shows it, leaving preview (which hides it too) and restoring that selection. */
+const sidebarToggle = defineCommand({
+  id: "sidebar.toggle",
+  title: "Toggle settings panel",
+  run(ctx) {
+    if (!ctx.state.hasField(chromeField)) return false;
+    const c = ctx.state.field(chromeField);
+    if (c.sidebarOpen && !c.preview) {
+      ctx.tr.effect(setChrome, { sidebarOpen: false, drawer: null, sidebarClosedAt: Date.now() });
+    } else {
+      ctx.tr.effect(setChrome, { sidebarOpen: true, preview: false, previewSelection: [] });
+      if (c.preview) ctx.tr.effect(setSelection, { handles: c.previewSelection.filter((h) => h.alive) });
+    }
+    ctx.dispatch?.(ctx.tr);
+    return true;
+  },
+});
 const sidebarToggleSide = chromeCommand("sidebar.toggleSide", "Move settings panel", (c) => ({ sidebarLeft: !c.sidebarLeft }));
 const moreToggle = chromeCommand("menu.more", "Settings", (c) => ({ drawer: c.drawer === "more" ? null : "more" }));
 const drawerClose = chromeCommand("drawer.close", "Close drawer", (c) => (c.drawer ? { drawer: null } : null));
@@ -212,6 +229,7 @@ const MENUS = contributes({
   menus: {
     [TOPBAR_SLOT]: [
       { command: "insert.toggle", group: "primary@10", when: "role != 'client'" },
+      { command: "sidebar.toggle", group: "panel@40", when: "role != 'viewer'" },
       { command: "history.redo", group: "history@20" },
       { command: "history.undo", group: "history@30" },
       { command: "preview.toggle", group: "view@50" },
@@ -264,6 +282,6 @@ const PREVIEW_ESC = Prec.highest(contributes({ keybindings: [{ command: "preview
 export const CHROME_KIT: Extension = [
   chromeField, paletteToggle, paletteClose, diffToggle, diffClose, contextMenuOpen, contextMenuClose, ...PANEL_COMMANDS, detailOpen, detailClose,
   toggleGridlines, toggleHidden, previewToggle, previewExit, sidebarSearchToggle, zoomIn, zoomOut, zoomReset, zoomSet, zoomFit, zoomFitApply,
-  sidebarOpen, sidebarClose, sidebarToggleSide, moreToggle, drawerClose,
+  sidebarOpen, sidebarClose, sidebarToggle, sidebarToggleSide, moreToggle, drawerClose,
   KEYBINDINGS, PREVIEW_ESC, MEDIA_KEYS, MENUS,
 ];

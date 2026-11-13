@@ -1,8 +1,9 @@
 /**
  * The default `TopBar` slot: the editor's top row, laid out as a browser-style header — three groups.
  *
- * - Left: the edit/history actions (Undo, Redo). A host that registers a back / exit command
- *   lands here too, at the left edge, like the editor's back-to-dashboard arrow.
+ * - Left: the settings-panel toggle (shows / hides the side panel; from preview it leaves preview),
+ *   then the edit/history actions (Undo, Redo). A host that registers a back / exit command lands
+ *   here too, at the left edge, like the editor's back-to-dashboard arrow.
  * - Centre: a wide rounded "address" pill (the surface the editor draws its page URL on) holding
  *   a status dot, the `PageSelector` (page switcher + open-in-new, filling the pill like a browser
  *   address bar) and the `SaveStatus` indicator. On desktop the pill is offset to begin at the
@@ -44,6 +45,7 @@ const CLUSTER_ORDER: Readonly<Record<string, number>> = {
   // left
   "nav.back": 0,
   "editor.exit": 0,
+  "sidebar.toggle": 5,
   "history.undo": 10,
   "history.redo": 20,
   // right (the device switcher is rendered ahead of these)
@@ -72,6 +74,8 @@ export function TopBar({ into }: { into?: TopBarTargets } = {}) {
   useEditorState((s) => s); // enabled flags follow the document
   const preview = useEditorState((s) => chromeOf(s).preview);
   const drawer = useEditorState((s) => chromeOf(s).drawer);
+  const panelShown = useEditorState((s) => chromeOf(s).sidebarOpen && !chromeOf(s).preview);
+  const panelLeft = useEditorState((s) => chromeOf(s).sidebarLeft);
   const typing = useEditorState((s) => !!richTextOf(s).editing);
   const moreBtn = useRef<HTMLButtonElement>(null);
   const commands = editor.state.facet(commandsFacet);
@@ -85,7 +89,12 @@ export function TopBar({ into }: { into?: TopBarTargets } = {}) {
       .map((x) => x.m);
 
   const renderItem = (m: MenuItem) => {
-    const title = m.command === "preview.toggle" ? (preview ? "Exit preview" : "Preview") : commands.get(m.command)!.title;
+    const title =
+      m.command === "preview.toggle"
+        ? preview ? "Exit preview" : "Preview"
+        : m.command === "sidebar.toggle"
+          ? panelShown ? "Hide settings panel" : "Show settings panel"
+          : commands.get(m.command)!.title;
     const shortcut = keyLabel(editor, m.command, platform);
     const label = shortcut ? `${title} (${formatShortcut(shortcut, platform)})` : title;
     const publish = m.command === "site.publish";
@@ -94,6 +103,8 @@ export function TopBar({ into }: { into?: TopBarTargets } = {}) {
         <Icon name="settings" className="size-[18px]" />
       ) : m.command === "preview.toggle" ? (
         <Icon name={preview ? "code" : "eye"} className="size-[18px]" />
+      ) : m.command === "sidebar.toggle" ? (
+        <Icon name={panelLeft ? "layout-sidebar" : "layout-sidebar-right"} className="size-[18px]" />
       ) : publish ? (
         <Icon name="upload" className="size-4" />
       ) : (
@@ -108,7 +119,7 @@ export function TopBar({ into }: { into?: TopBarTargets } = {}) {
         ref={m.command === "menu.more" ? moreBtn : undefined}
         data-topbar-item={m.command}
         aria-label={title}
-        aria-pressed={m.command === "preview.toggle" ? preview : m.command === "menu.more" ? drawer === "more" : undefined}
+        aria-pressed={m.command === "preview.toggle" ? preview : m.command === "menu.more" ? drawer === "more" : m.command === "sidebar.toggle" ? panelShown : undefined}
         disabled={!editor.can(m.command)}
         className={
           publish

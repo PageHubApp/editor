@@ -79,6 +79,7 @@ const PATHS = {
   "align-left": ["M4 6l16 0", "M4 12l10 0", "M4 18l14 0"],
   upload: ["M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2", "M7 9l5 -5l5 5", "M12 4l0 12"],
   rotate: ["M4.05 11a8 8 0 1 1 .5 4m-.5 5v-5h5"],
+  "layout-sidebar": ["M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z", "M9 4l0 16"],
   "layout-sidebar-right": ["M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z", "M15 4l0 16"],
 } as const;
 
