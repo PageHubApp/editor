@@ -13,7 +13,7 @@ import { useEditorState, useEditorStore } from "../../react/bindings";
 import { canvasOf, canvasPage } from "../canvas/canvasState";
 import { mainCanvasDoc, previewTargetFor, isPreviewOpen, togglePreviewTarget } from "../canvas/overlayPreview";
 import { useRenderStatus } from "../canvas/renderStatus";
-import { useLayerDrag } from "../dnd/useLayerDrag";
+import { dropOf, useLayerDrag } from "../dnd/useLayerDrag";
 import { LayerRow, type RowKind } from "./LayerRow";
 import { glyphFor } from "./glyphs";
 import { canMoveRow, type RowMove, canRemove, isGlobalSection, isHidden, isSealed, moveRow, rowChildren, rowIcon, rowLabel, rowRole, topRows } from "./layersKit";
@@ -128,7 +128,6 @@ export function LayerTree() {
       />
       {rows.map(({ h, depth, hasChildren }) => {
         const issues = lint.get(h.range.from);
-        const target = indicator && indicator.target === h ? indicator : null;
         return (
           <LayerRow
             key={keyOf(h)}
@@ -143,8 +142,7 @@ export function LayerTree() {
             expandable={hasChildren}
             expanded={open.has(h)}
             lint={issues ? { error: issues.some((d) => d.severity === "error"), messages: issues.map((d) => d.message) } : null}
-            drop={target ? (target.zone === "inside" ? "inside" : target.zone === "before" ? "before" : "after") : null}
-            dropDepth={target?.depth}
+            {...dropOf(indicator, h)}
             canMove={MOVES.reduce((m, k) => ({ ...m, [k]: canMoveRow(store, h, k, selected === h || armed === h) }), {} as Record<RowMove, boolean>)}
             onHover={() => setArmed(h)}
             canDelete={canRemove(h)}

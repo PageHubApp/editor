@@ -451,6 +451,27 @@ describe("breadcrumb", () => {
     assert.equal(e.state.selection.primary, e.get("h1"));
     assert.deepEqual(chromeOf(e.state).contextMenu, { x: 30, y: 40 });
   });
+
+  it("▾ ancestry rows drag like the layers panel: the current element dropped before an ancestor moves there; the menu stays open meanwhile", async () => {
+    const e = canvasEditor({ "index.liquid": '<section class="a"><div class="b"><h1>Hi</h1></div></section>\n' });
+    const { r, doc } = await mountCanvas(e);
+    cleanup = r.unmount;
+    await fireIn(doc.querySelector("h1")!, "mousedown");
+    await fireIn(r.get("[data-crumb-more]"), "mouseover");
+    const rows = r.all("[data-path-row]");
+    assert.deepEqual(rows.map((x) => x.textContent), ["Page", "Section", "Container", "Heading"]);
+    rows.forEach((el, i) => setRect(el, { left: 0, top: i * 20, width: 300, height: 20 }));
+    const h1 = rows[rows.length - 1]!;
+    await act(async () => void h1.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0, clientX: 150, clientY: 70 })));
+    await act(async () => void window.dispatchEvent(new PointerEvent("pointermove", { buttons: 1, clientX: 150, clientY: 41 })));
+    assert.equal(h1.style.opacity, "0.4");
+    assert.ok(rows[2]!.querySelector('[data-layer-drop-line="before"]'), "drop line before the inner container");
+    await fireIn(r.get("[data-crumb-menu]"), "mouseout");
+    await wait(HOVER_CLOSE_MS + 20);
+    assert.ok(r.container.ownerDocument.querySelector("[data-crumb-menu]"), "still open while dragging");
+    await act(async () => void window.dispatchEvent(new PointerEvent("pointerup", { clientX: 150, clientY: 41 })));
+    assert.equal(e.text(), '<section class="a"><h1>Hi</h1><div class="b"></div></section>\n');
+  });
 });
 
 describe("side-by-side mirror", () => {

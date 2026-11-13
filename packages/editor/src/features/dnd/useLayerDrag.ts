@@ -95,6 +95,12 @@ export function useLayerDrag() {
   return { row, dragging, indicator };
 }
 
+/** A row's drop props (`LayerRow` / `LayerPathRow` `drop` + `dropDepth`) for the current indicator. */
+export function dropOf(ind: LayerIndicator | null, h: NodeHandle): { drop: "before" | "after" | "inside" | null; dropDepth?: number } {
+  if (!ind || ind.target !== h) return { drop: null };
+  return { drop: ind.zone === "inside" ? "inside" : ind.zone === "before" ? "before" : "after", dropDepth: ind.depth };
+}
+
 /** Where the drop line sits for a before / after indicator: the row edge, indented to the depth. */
 export function dropLineStyle(rowRect: { top: number; bottom: number }, ind: LayerIndicator): CSSProperties | null {
   if (ind.zone === "inside") return null;

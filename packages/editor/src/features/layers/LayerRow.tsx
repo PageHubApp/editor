@@ -44,6 +44,14 @@ const MOVES: { move: RowMove; glyph: IconName; label: string }[] = [
 const GUIDE = { color: "inherit" } as const;
 const GUIDE_LINE = "1px solid color-mix(in srgb, currentColor 35%, transparent)";
 
+/** The drag props from `useLayerDrag().row()`. */
+type LayerDragProps = { ref(el: HTMLElement | null): void; style?: CSSProperties; onPointerDown(e: ReactPointerEvent): void; [k: `data-${string}`]: string | undefined };
+
+/** The drop line before / after a row, indented to `depth`. */
+const dropLine = (where: "before" | "after", depth: number) => (
+  <div data-layer-drop-line={where} className="pointer-events-none absolute right-0 h-0.5 bg-blue-500" style={{ left: depth * 12 + 6, [where === "before" ? "top" : "bottom"]: -1 }} />
+);
+
 interface LayerPathRowProps {
   label: string;
   kind: RowKind;
@@ -59,29 +67,42 @@ interface LayerPathRowProps {
   onSelect?(): void;
   onHover?(on: boolean): void;
   onContextMenu?(e: MouseEvent): void;
+  drag?: LayerDragProps;
+  drop?: "before" | "after" | "inside" | null;
+  /** Depth the drop line is indented to (default the row's). */
+  dropDepth?: number;
 }
 
 /**
  * A layers-tree row for a single ancestor path (the ancestors menu): the same role icons, colours,
- * indent, type scale and row height as `LayerRow`, minus the toggle / actions / drag, plus the
- * connector line to its parent.
+ * indent, type scale and row height as `LayerRow`, minus the toggle / actions, plus the
+ * connector line to its parent. `drag` / `drop` work as on `LayerRow`.
  */
 export function LayerPathRow(p: LayerPathRowProps) {
   const role = p.global ? GLOBAL_ICON : p.kind ? ROLE_ICON[p.kind] : null;
   const indent = p.depth * 12 + 6;
   const Tag = p.current ? "div" : "button";
+  const { ref, style, ...drag } = p.drag ?? { ref: undefined };
   return (
     <Tag
+      {...drag}
+      ref={ref as Ref<HTMLButtonElement & HTMLDivElement> | undefined}
       {...(p.current ? { "aria-current": "true" as const } : { type: "button" as const, onClick: p.onSelect, onContextMenu: p.onContextMenu })}
       role="menuitem"
       data-layer-row=""
       data-path-row={p.depth}
       data-selected={p.current ? "" : undefined}
-      className={["relative flex w-full select-none items-center gap-1 py-1.5 pr-3 text-left", p.current ? `${ROW_SELECTED} cursor-default` : `cursor-pointer ${p.hovered ? ROW_HOVERED : ROW_IDLE}`].join(" ")}
-      style={{ paddingLeft: indent }}
+      className={[
+        "relative flex w-full select-none items-center gap-1 py-1.5 pr-3 text-left",
+        p.current ? `${ROW_SELECTED} cursor-default` : `cursor-pointer ${p.hovered ? ROW_HOVERED : ROW_IDLE}`,
+        p.drag?.["data-dragging"] !== undefined ? "cursor-grabbing" : "",
+        p.drop === "inside" ? DROP_INSIDE : "",
+      ].filter(Boolean).join(" ")}
+      style={{ paddingLeft: indent, ...style }}
       onMouseEnter={() => p.onHover?.(true)}
       onMouseLeave={() => p.onHover?.(false)}
     >
+      {p.drop === "before" && dropLine("before", p.dropDepth ?? p.depth)}
       {p.joinsChild && <span aria-hidden className="pointer-events-none absolute" style={{ ...GUIDE, left: p.depth * 12 + 13, top: "70%", bottom: 0, borderLeft: GUIDE_LINE }} />}
       {p.depth > 0 && <span data-path-connector="" aria-hidden className="pointer-events-none absolute" style={{ ...GUIDE, left: (p.depth - 1) * 12 + 13, top: 0, height: "50%", width: 6, borderLeft: GUIDE_LINE, borderBottom: GUIDE_LINE, borderBottomLeftRadius: 3 }} />}
       <span data-layer-icon={role?.glyph ?? p.glyph} className={`shrink-0 ${p.current ? ICON_SELECTED : (role?.color ?? ICON_MUTED)}`}>
@@ -90,6 +111,7 @@ export function LayerPathRow(p: LayerPathRowProps) {
       <span data-layer-label="" className={`block truncate text-xs leading-tight ${p.current ? "font-medium" : ""}`}>
         {p.label}
       </span>
+      {p.drop === "after" && dropLine("after", p.dropDepth ?? p.depth)}
     </Tag>
   );
 }
@@ -114,8 +136,7 @@ interface LayerRowProps {
   dropDepth?: number;
   canMove: Record<RowMove, boolean>;
   canDelete: boolean;
-  /** The drag props from `useLayerDrag().row()`. */
-  drag?: { ref(el: HTMLElement | null): void; style?: CSSProperties; onPointerDown(e: ReactPointerEvent): void; [k: `data-${string}`]: string | undefined };
+  drag?: LayerDragProps;
   onSelect(): void;
   /** The pointer entered the row. */
   onHover?(): void;
@@ -151,9 +172,7 @@ export function LayerRow(p: LayerRowProps) {
   const role = p.global ? GLOBAL_ICON : p.kind ? ROLE_ICON[p.kind] : null;
   const iconColor = p.selected ? ICON_SELECTED : (role?.color ?? ICON_MUTED);
   const indent = p.depth * 12 + 6;
-  const line = (where: "before" | "after") => (
-    <div data-layer-drop-line={where} className="pointer-events-none absolute right-0 h-0.5 bg-blue-500" style={{ left: (p.dropDepth ?? p.depth) * 12 + 6, [where === "before" ? "top" : "bottom"]: -1 }} />
-  );
+  const line = (where: "before" | "after") => dropLine(where, p.dropDepth ?? p.depth);
   const { ref, style, ...drag } = p.drag ?? { ref: undefined };
   return (
     <div

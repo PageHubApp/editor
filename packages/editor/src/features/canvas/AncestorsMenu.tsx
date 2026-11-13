@@ -2,8 +2,9 @@
  * The ancestors menu: a ▾ button that lists the node's path as layers-tree rows (the page, each
  * ancestor outermost first, the node itself last — highlighted, not clickable) joined by connector
  * lines. Picking an ancestor selects it, hovering one lights it on the canvas, right-click opens
- * the canvas context menu for it. Opens on hover and on click. One component for the panel's
- * selection heading and the canvas name tag.
+ * the canvas context menu for it. Opens on hover and on click. Rows drag like the layers panel's
+ * (`useLayerDrag`: drop before / after / inside a row); the menu stays open while one drags. One
+ * component for the panel's selection heading and the canvas name tag.
  *
  *   <AncestorsMenu node={primary} />
  */
@@ -19,6 +20,7 @@ import { glyphFor } from "../layers/glyphs";
 import { LayerPathRow } from "../layers/LayerRow";
 import { isGlobalSection, rowIcon, rowRole } from "../layers/layersKit";
 import { canvasPage } from "./canvasState";
+import { dropOf, useLayerDrag } from "../dnd/useLayerDrag";
 import { nodeName } from "../../state/nodeName";
 
 const SKIPPED = new Set(["html", "body"]);
@@ -45,6 +47,7 @@ export function AncestorsMenu({ node, className = "btn btn-ghost btn-xs" }: { no
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const { row, dragging, indicator } = useLayerDrag();
   const lit = (h: NodeHandle | null) => store.dispatch((tr) => tr.effect(setHover, h));
   const close = () => {
     setOpen(false);
@@ -58,7 +61,7 @@ export function AncestorsMenu({ node, className = "btn btn-ghost btn-xs" }: { no
   const hover = (on: boolean) => {
     clearTimeout(timer.current);
     if (on) setOpen(true);
-    else timer.current = setTimeout(close, HOVER_CLOSE_MS);
+    else if (!dragging) timer.current = setTimeout(close, HOVER_CLOSE_MS);
   };
   const context = (h: NodeHandle) => (e: MouseEvent) => {
     e.preventDefault();
@@ -89,6 +92,8 @@ export function AncestorsMenu({ node, className = "btn btn-ghost btn-xs" }: { no
                 onSelect={() => (store.select(h), close())}
                 onHover={(on) => lit(on ? h : null)}
                 onContextMenu={context(h)}
+                drag={row(h, i + 1)}
+                {...dropOf(indicator, h)}
               />
             );
           })}
