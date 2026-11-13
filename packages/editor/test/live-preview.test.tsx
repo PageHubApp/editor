@@ -120,6 +120,20 @@ describe("live preview: the mode", () => {
     assert.equal(liveFrame(r), null);
   });
 
+  it("a watched AI build's preview ({ watch: true }) has no scripts toggle or live frame; a later preview has them again", async () => {
+    const { e, r } = await mount();
+    actRun(e, "preview.toggle", { watch: true });
+    assert.equal(chromeOf(e.state).preview, true);
+    assert.equal(r.all("[data-live-preview-toggle]").length, 0);
+    assert.ok(r.get("[data-preview-edit]"), "Edit stays");
+    actRun(e, "preview.live");
+    assert.equal(liveFrame(r), null, "not even from the command");
+    actRun(e, "preview.exit");
+    actRun(e, "preview.toggle");
+    assert.equal(chromeOf(e.state).previewWatch, false);
+    assert.ok(r.get("[data-live-preview-toggle]"));
+  });
+
   it("no previewUrl: no toggle and no live frame", async () => {
     const { e, r } = await mount({});
     actRun(e, "preview.toggle");

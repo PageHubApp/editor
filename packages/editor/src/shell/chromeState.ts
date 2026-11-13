@@ -35,6 +35,8 @@ export interface ChromeState {
   gridlines: boolean;
   showHidden: boolean;
   preview: boolean;
+  /** Preview entered by the host to watch an AI build (`preview.toggle` with `{ watch: true }`): no "Run site scripts". */
+  previewWatch: boolean;
   zoom: number;
   /** Zoom follows the canvas box ("Fit to window", the default); any explicit zoom turns it off. */
   fit: boolean;
@@ -53,7 +55,7 @@ export interface ChromeState {
 type ChromeDrawer = "more";
 
 const DEFAULT_CHROME: ChromeState = {
-  paletteOpen: false, contextMenu: null, panel: null, detail: null, sidebarSearch: false, diffOpen: false, gridlines: false, showHidden: false, preview: false, zoom: 1, fit: true,
+  paletteOpen: false, contextMenu: null, panel: null, detail: null, sidebarSearch: false, diffOpen: false, gridlines: false, showHidden: false, preview: false, previewWatch: false, zoom: 1, fit: true,
   sidebarOpen: true, sidebarLeft: true, sidebarClosedAt: 0, drawer: null, previewSelection: [],
 };
 
@@ -130,16 +132,21 @@ export const toggleGridlines = chromeCommand("view.toggleGridlines", "Toggle gri
 export const toggleHidden = chromeCommand("view.toggleHidden", "Toggle hidden components", (c) => ({ showHidden: !c.showHidden }));
 /** Preview turns editing off and clears the selection; leaving it restores that selection. */
 function setPreview(id: string, title: string, next: (c: ChromeState) => boolean | null) {
-  return defineCommand({
+  return defineCommand<{ watch?: boolean } | undefined>({
     id,
     title,
-    run(ctx) {
+    run(ctx, args) {
       if (!ctx.state.hasField(chromeField)) return false;
       const c = ctx.state.field(chromeField);
       const on = next(c);
       if (on === null || on === c.preview) return false;
       const keep = c.previewSelection.filter((h) => h.alive);
-      ctx.tr.effect(setChrome, on ? { preview: true, previewSelection: ctx.selection.handles, contextMenu: null, drawer: null, detail: null } : { preview: false, previewSelection: [] });
+      ctx.tr.effect(
+        setChrome,
+        on
+          ? { preview: true, previewWatch: !!args?.watch, previewSelection: ctx.selection.handles, contextMenu: null, drawer: null, detail: null }
+          : { preview: false, previewWatch: false, previewSelection: [] },
+      );
       ctx.tr.effect(setSelection, on ? { handles: [] } : { handles: keep });
       ctx.dispatch?.(ctx.tr);
       return true;
@@ -171,7 +178,7 @@ const sidebarToggle = defineCommand({
     if (c.sidebarOpen && !c.preview) {
       ctx.tr.effect(setChrome, { sidebarOpen: false, drawer: null, sidebarClosedAt: Date.now() });
     } else {
-      ctx.tr.effect(setChrome, { sidebarOpen: true, preview: false, previewSelection: [] });
+      ctx.tr.effect(setChrome, { sidebarOpen: true, preview: false, previewWatch: false, previewSelection: [] });
       if (c.preview) ctx.tr.effect(setSelection, { handles: c.previewSelection.filter((h) => h.alive) });
     }
     ctx.dispatch?.(ctx.tr);

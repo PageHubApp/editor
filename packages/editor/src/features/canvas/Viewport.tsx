@@ -43,6 +43,7 @@ export function Viewport() {
   const zoom = useEditorState((s) => (locked && !chromeOf(s).fit ? 1 : chromeOf(s).zoom));
   const preview = useEditorState((s) => chromeOf(s).preview);
   const liveOn = useEditorState(livePreviewOf);
+  const watching = useEditorState((s) => chromeOf(s).previewWatch);
   const canvasHost = useCanvasHost();
   const root = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
@@ -84,7 +85,8 @@ export function Viewport() {
 
   // Live preview: a separate sandboxed frame runs the site's scripts; the inert canvas stays mounted (hidden) so
   // leaving is instant and the editor's own frame never runs them.
-  const canLive = !!canvasHost?.previewUrl && !locked;
+  // Not while an AI build is watched: the page changes under it every few seconds.
+  const canLive = !!canvasHost?.previewUrl && !locked && !watching;
   const live = preview && liveOn && canLive;
   const frameClass = frameSpec ? frameSpec.radius.inner : "";
   const frameStyle: CSSProperties = frameSpec ? { width: frameSpec.innerWidth, height: frameSpec.innerHeight } : { minHeight: "100%" };
