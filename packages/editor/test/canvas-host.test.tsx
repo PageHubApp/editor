@@ -76,6 +76,26 @@ describe("canvasHost", () => {
     assert.equal(doc2.getElementById("site-css")?.textContent, ".a{n:1}");
   });
 
+  it("a class an edit adds gets its CSS when the background refresh lands, with no further render (a remote save's last write)", async () => {
+    let release: () => void = () => {};
+    const { e, r, doc } = await mount({
+      siteCss: async (state) => {
+        const css = state.files.get("index.liquid")!.includes("fresh") ? ".fresh{}" : ".old{}";
+        if (css === ".fresh{}") await new Promise<void>((done) => (release = done));
+        return css;
+      },
+    });
+    assert.equal(doc.getElementById("site-css")?.textContent, ".old{}");
+    actRun(e, "attr.set", { name: "alt", value: "fresh", at: e.get("img") });
+    const doc2 = await rendered(r, 2);
+    assert.equal(doc2.getElementById("site-css")?.textContent, ".old{}", "written at once with the cached copy");
+    await act(async () => {
+      release();
+      await new Promise((done) => setTimeout(done, 0));
+    });
+    assert.equal(doc2.getElementById("site-css")?.textContent, ".fresh{}", "swapped in place once the refresh lands");
+  });
+
   it("the site CSS cache belongs to one editor: a second editor with another host never paints the first one's CSS", async () => {
     const a = await mount({ siteCss: async () => ".site-a{}" });
     a.r.unmount();

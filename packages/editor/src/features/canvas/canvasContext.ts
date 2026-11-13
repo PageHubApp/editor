@@ -13,6 +13,7 @@ import { renderCanvas, splitThemeFonts, fontHeadTags, type LocalFonts } from "@p
 import type { CanvasHost } from "./canvasHost";
 import { sampleRequest } from "./sampleParams";
 import { canvasOf } from "./canvasState";
+import { mainCanvasDoc } from "./overlayPreview";
 
 /** Render `path` of `state` to canvas HTML (instrumented with `data-edit-src`). */
 export type CanvasRender = (state: EditorState, path: Path) => Promise<string>;
@@ -134,9 +135,22 @@ export function defaultCanvasRender(store: Store, canvasHost: CanvasHost | null 
     lastData.set(store, data);
     // The site's compiled Tailwind + its theme. INLINE both (not an async <link>), so the page paints
     // styled on the first write — no flash of unstyled content. Await the CSS on first render; after
-    // that use the cached copy and refresh in the background so edits that add classes still land.
-    const css = !canvasHost?.siteCss ? "" : a.css ? (void refreshSiteCss(a, state).catch(() => null), a.css) : await refreshSiteCss(a, state);
+    // that use the cached copy and refresh in the background. Classes an edit added land when the refresh
+    // does: a render still running takes the new CSS, and a canvas already written with the old one has its
+    // stylesheet swapped in place (nothing else may render after the last edit, e.g. a remote save).
+    const cached = a.css;
+    if (canvasHost?.siteCss && cached) {
+      void refreshSiteCss(a, state)
+        .then((next) => {
+          if (next === cached) return;
+          const el = mainCanvasDoc(store)?.getElementById("site-css");
+          if (el && el.textContent === cached) el.textContent = next;
+        })
+        .catch(() => null);
+    }
+    const first = !canvasHost?.siteCss ? "" : cached || (await refreshSiteCss(a, state));
     let html = await renderCanvas(await r, state, path, data);
+    const css = first && a.css;
     // A sample/unset item image resolves to an empty `src` (the `image_url` filter returns "" for an
     // empty id — correct for publish, where the template guards it). In the editor that paints a broken
     // image, so give empty img srcs the neutral placeholder. Editor-only — the published output is unchanged.
