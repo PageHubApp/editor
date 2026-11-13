@@ -27,7 +27,7 @@ import { InspectorIcon } from "./inspectorIcons";
 import { glyphFor } from "../layers/glyphs";
 import { rowIcon } from "../layers/layersKit";
 import { InspectorTabs } from "./InspectorTabs";
-import { inspectorConfigFacet } from "./inspectorState";
+import { elementKey, inspectorConfigFacet } from "./inspectorState";
 
 /** The Component tab's tooltip for an element kind. */
 const KIND_LABELS: Readonly<Record<string, string>> = {
@@ -119,7 +119,7 @@ function Tabs({ handle, view }: { handle: NodeHandle; view: ElementView }) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" onMouseMove={(e) => (pointer.current = { x: e.clientX, y: e.clientY })}>
-      <AccordionProvider forceOpen={searching}>
+      <AccordionProvider forceOpen={searching} resetKey={elementKey(handle)}>
         <InspectorTabs
           tabs={tabs}
           active={active}

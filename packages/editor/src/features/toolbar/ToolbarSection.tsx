@@ -11,6 +11,9 @@
  * - Inside an `AccordionProvider` the open state is shared and persisted by title; outside one
  *   it is local (`defaultOpen`, default true). `nested` sections are smaller and don't follow
  *   collapse-all.
+ * - `filled` (the inspected element has values here): the open state follows the element instead
+ *   of the stored one: open when filled, closed when not; a toggle lasts until another element is
+ *   inspected (`AccordionProvider` `resetKey`).
  * - `overrideDot`: the section's aggregate breakpoint dot (`SectionOverrideDot`).
  * - `disabled`: header dimmed, no body; `onHeaderClick` still runs (an empty section's header opens its "+").
  *
@@ -31,6 +34,8 @@ export interface ToolbarSectionProps {
   columns?: number;
   collapsible?: boolean;
   defaultOpen?: boolean;
+  /** The inspected element has values in this section (see the header comment). */
+  filled?: boolean;
   nested?: boolean;
   disabled?: boolean;
   help?: string;
@@ -55,6 +60,7 @@ export function ToolbarSection({
   columns = 1,
   collapsible = true,
   defaultOpen,
+  filled,
   nested = false,
   disabled = false,
   help,
@@ -77,17 +83,17 @@ export function ToolbarSection({
   const unregister = accordion?.unregister;
   useEffect(() => {
     if (!managed || !register || !unregister) return;
-    register(title, defaultOpen, !nested);
+    register(title, defaultOpen, !nested, filled);
     return () => unregister(title);
-  }, [managed, register, unregister, title, defaultOpen, nested]);
+  }, [managed, register, unregister, title, defaultOpen, nested, filled]);
 
-  const open = !disabled && (managed ? accordion.isOpen(title, defaultOpen) : localOpen);
+  const open = !disabled && (managed ? accordion.isOpen(title, defaultOpen, filled) : localOpen);
 
   const activate = (e: MouseEvent | KeyboardEvent) => {
     onHeaderClick?.(e);
     if (disabled) return;
     if (e.defaultPrevented || !collapsible) return;
-    if (managed) accordion.toggle(title, defaultOpen);
+    if (managed) accordion.toggle(title, defaultOpen, filled);
     else setLocalOpen((o) => !o);
   };
 

@@ -106,8 +106,8 @@ describe("inspector: tabs", () => {
     Object.defineProperty(panel, "offsetTop", { value: 900, configurable: true });
     await r.click(r.get('[data-inspector-tab="design"]'));
     assert.equal(r.get("[data-inspector-scroll]").scrollTop, 893);
-    assert.equal(stored().Styles, true);
-    assert.equal(stored().Size, false);
+    assert.equal(header(r, "background").getAttribute("aria-expanded"), "true");
+    assert.notEqual(header(r, "alignment").getAttribute("aria-expanded"), "true");
     r.unmount();
   });
 
@@ -173,10 +173,27 @@ describe("inspector: tabs", () => {
   });
 
   it("collapse-all shows 'Expand all' before any section is open (recomputed on registration)", () => {
-    const e = pageEditor();
+    const e = pageEditor({ "index.liquid": "<section>x</section>" });
     select(e, "section");
     const r = inspector(e);
     assert.equal(r.get("[data-collapse-all]").getAttribute("aria-label"), "Expand all");
+    r.unmount();
+  });
+
+  it("a section with values opens when its element is selected; a toggle lasts until another element is", async () => {
+    const e = pageEditor();
+    select(e, "section");
+    const r = inspector(e);
+    const bg = () => header(r, "background").getAttribute("aria-expanded");
+    assert.equal(bg(), "true", "bg-primary → Background open");
+    assert.notEqual(header(r, "typography").getAttribute("aria-expanded"), "true", "no text classes → Typography closed");
+    await r.click(header(r, "background"));
+    assert.equal(bg(), "false");
+    select(e, "h1");
+    assert.equal(header(r, "typography").getAttribute("aria-expanded"), "true", "text-xl → Typography open");
+    select(e, "section");
+    assert.equal(bg(), "true", "the toggle was for that selection only");
+    assert.equal(stored().Background, undefined, "never persisted");
     r.unmount();
   });
 
@@ -318,7 +335,7 @@ describe("inspector: pins and the Pinned dock", () => {
     const r = inspector(e);
     assert.equal(r.container.querySelector("[data-pin-dock]"), null, "no dock without pins");
     await r.click(r.get('[data-pin="alignment"]'));
-    await r.click(header(r, "alignment"));
+    // Layout is open on selection (p-4)
     assert.ok(section(r, "alignment")!.querySelector("[data-pinned-note]")!.textContent!.includes("Properties for this section are pinned below."));
     assert.ok(r.get('[data-pinned-section="alignment"] [data-row="padding"]'));
     await r.click(r.get('[aria-label="Unpin Layout"]'));

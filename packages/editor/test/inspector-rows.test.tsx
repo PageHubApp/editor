@@ -174,7 +174,7 @@ describe("Inspector rows rendered", () => {
     await r.click(apply());
     assert.equal(e.get("section").attr("data-edit-preview"), "");
     assert.ok(section(r, "effects")!.querySelector('[data-row="previewInEditor"]'));
-    assert.equal(JSON.parse(localStorage.getItem("pagehub-editor:accordion-state")!).Effects, true);
+    assert.equal(header(r, "effects").getAttribute("aria-expanded"), "true");
     r.unmount();
   });
 
@@ -223,7 +223,7 @@ describe("Inspector rows rendered", () => {
     const e = pageEditor();
     select(e, "section");
     const r = inspector(e);
-    await r.click(header(r, "background"));
+    // open on selection: the section has a background
     const chip = () => section(r, "background")!.querySelector<HTMLElement>('[data-row="background"]');
     assert.ok(chip());
     await r.click(chip()!.querySelector('[aria-label="Clear Background"]')!);

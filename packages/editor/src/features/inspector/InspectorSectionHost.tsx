@@ -123,6 +123,7 @@ export function InspectorSectionHost({ id, handle, view, mode = "stack", only }:
         id={id}
         title={model.title}
         collapsible
+        filled={set}
         actions={
           <>
             {set && <span data-section-set="" className="bg-primary size-1.5 rounded-full" aria-label={`${model.title} set`} />}
@@ -165,6 +166,8 @@ export function InspectorSectionHost({ id, handle, view, mode = "stack", only }:
         title={model.title}
         props={model.rows.filter((r) => r.entry.home === "tailwind-class").map((r) => r.id)}
         collapsible={!popoverOnly}
+        // a section with values on this element opens when it is selected (inline panels keep their own state)
+        filled={results || model.inline ? undefined : model.filled}
         disabled={empty && !popoverOnly}
         onHeaderClick={(e) => {
           if (popoverOnly) {

@@ -28,6 +28,8 @@ export interface InspectorSectionProps {
   disabled?: boolean;
   /** False: header only (a popover-only section). */
   collapsible?: boolean;
+  /** Open state follows the inspected element: open when true (it has values here). See `ToolbarSection`. */
+  filled?: boolean;
   onHeaderClick?(e: { preventDefault(): void }): void;
 }
 export interface ValuePickerProps<T = string> {

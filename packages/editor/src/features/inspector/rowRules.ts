@@ -42,6 +42,8 @@ interface SectionModel {
   inline: boolean;
   /** The section's only row is a popover: header only, a click opens it. */
   popoverOnly: RowDef | null;
+  /** The element has a value in this section, or a row was added to it this session. */
+  filled: boolean;
 }
 
 export function rowEligible(row: RowDef, el: ElementView): boolean {
@@ -78,6 +80,7 @@ export function sectionModel(id: string, el: ElementView, added: readonly string
     hidden: rows.length === 0,
     inline,
     popoverOnly: rows.length === 1 && rows[0]!.popover ? rows[0]! : null,
+    filled: extra.length > 0 || rows.some((r) => el.hasValue(r)),
   };
 }
 

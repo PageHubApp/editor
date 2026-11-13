@@ -77,13 +77,13 @@ test("txt: Font panel — presets + level/size controls; the family reuses the s
   const list = () => r.all('[role="listbox"][aria-label="Fonts"] [role="option"]').map((o) => o.textContent!.replace("Preview", ""));
   assert.deepEqual(list(), ["Roboto", "Open Sans", "Lora", "Lobster", "Fira Code"]);
   // category dropdown carries counts and filters the list
-  await r.click(r.get('button[aria-haspopup="listbox"]'));
+  await r.click(r.get('[data-slot="FontPicker"] button[aria-haspopup="listbox"]'));
   await wait(5);
   const cats = r.all('[role="option"]').map((o) => o.textContent);
   assert.ok(cats.includes("All Fonts (5)") && cats.includes("Serif (1)") && cats.includes("Monospace (1)"), cats.join(","));
   await r.click(r.all('[role="option"]').find((o) => o.textContent === "Serif (1)")!);
   assert.deepEqual(list(), ["Lora"]);
-  await r.click(r.get('button[aria-haspopup="listbox"]'));
+  await r.click(r.get('[data-slot="FontPicker"] button[aria-haspopup="listbox"]'));
   await wait(5);
   await r.click(r.all('[role="option"]').find((o) => o.textContent === "All Fonts (5)")!);
   await r.type(r.get('input[aria-label="Search fonts"]'), "lo");

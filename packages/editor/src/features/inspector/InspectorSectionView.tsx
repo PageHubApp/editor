@@ -34,7 +34,7 @@ const SECTION_ICONS: Record<string, InspectorIconName> = {
   permissions: "lock",
 };
 
-export function InspectorSectionView({ id, title, props, children, actions, disabled, collapsible = true, onHeaderClick }: InspectorSectionProps) {
+export function InspectorSectionView({ id, title, props, children, actions, disabled, collapsible = true, filled, onHeaderClick }: InspectorSectionProps) {
   const icon = id ? SECTION_ICONS[id] : undefined;
   return (
     <div data-slot="InspectorSection" data-section-id={id}>
@@ -45,6 +45,7 @@ export function InspectorSectionView({ id, title, props, children, actions, disa
         actions={actions}
         disabled={disabled}
         collapsible={collapsible}
+        filled={filled}
         {...(collapsible ? {} : { defaultOpen: false, className: "cursor-pointer!" })}
         onHeaderClick={onHeaderClick}
       >

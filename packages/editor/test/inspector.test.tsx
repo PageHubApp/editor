@@ -37,9 +37,9 @@ describe("Inspector shell", () => {
     await r.click(r.get('[data-inspector-tab="layout"]'));
     assert.equal(e.state.field(uiField).inspectorTab, "layout");
     assert.equal(r.get('[data-inspector-tab="layout"]').getAttribute("aria-selected"), "true");
-    const stored = JSON.parse(localStorage.getItem("pagehub-editor:accordion-state")!);
-    assert.equal(stored.Size, true);
-    assert.equal(stored.Background, false);
+    const open = (title: string) => r.get(`[data-section="${title}"] [role="button"]`).getAttribute("aria-expanded");
+    for (const h of r.all('[data-inspector-panel="layout"] [data-section] > div > [role="button"][tabindex="0"]')) assert.equal(h.getAttribute("aria-expanded"), "true");
+    assert.notEqual(open("Background"), "true");
     assert.ok(r.all('[data-inspector-panel="layout"] [role="group"]').length > 0);
     r.unmount();
   });
@@ -69,13 +69,14 @@ describe("Inspector shell", () => {
     const e = fixtureEditor();
     const r = render(withEditor(e, <Inspector />));
     const btn = () => r.get("[data-collapse-all]");
-    // no inspector section is titled "Content", so nothing starts open
+    // the sections with values on this element start open
+    assert.equal(btn().getAttribute("aria-label"), "Collapse all");
+    await r.click(btn());
+    assert.equal(r.all('[data-inspector-scroll] [role="group"]').length, 0);
     assert.equal(btn().getAttribute("aria-label"), "Expand all");
     await r.click(btn());
     assert.ok(r.all('[data-inspector-scroll] [role="group"]').length > 10);
     assert.equal(btn().getAttribute("aria-label"), "Collapse all");
-    await r.click(btn());
-    assert.equal(r.all('[data-inspector-scroll] [role="group"]').length, 0);
     r.unmount();
   });
 });
