@@ -23,3 +23,4 @@ export { matchRoute, normalizeRoutePath, type RouteMatch } from "./runtime/match
 export { pageReads, type PageReads, type PageReadsOptions } from "./runtime/pageReads";
 export { classesInMarkup } from "./runtime/classesInMarkup";
 export { ENGINE_VERSION } from "./version";
+export { DEFAULT_LIMITS, type RenderLimits } from "./liquid/engine";
