@@ -6,14 +6,14 @@
  * - the Background image row: the arbitrary background-image url class (the converter writes the
  *   file's URL there, since a class can't hold Liquid) plus its size, position, repeat and
  *   attachment classes.
- * - inside a list of a collection's entries, an image's "From" row picks one of the collection's
- *   photo fields (written `{{ item.photo | image_url: width: 800 }}`, the bound form) or goes
- *   back to a fixed image.
+ * - inside a list of a collection's entries, an image's Source switches between "Each entry" (one of
+ *   the collection's photo fields, written `{{ item.photo | image_url: width: 800 }}`, the bound form)
+ *   and "Same for all" (the picker).
  *
  *   <BgImageControl handle={h} />
  *   <ImageSrcControl handle={h} />
  */
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { NodeHandle } from "@pagehub/engine";
 import { boundSrc, mediaSrc, parseMediaSrc, type MediaRef } from "../../media/mediaRef";
 import { classGroupsFacet, readClass } from "@pagehub/engine/kits";
@@ -109,10 +109,12 @@ export function ImageSrcControl({ handle }: { handle: NodeHandle }) {
     if (v.includes("{{") || /^(https?:|\/|data:)/.test(v)) return write("src", v);
     return write("src", mediaSrc(v, args));
   };
+  const picker = (value: string, label = "Source") => (
+    <MediaInput label={label} value={value} boundLabel={ref.kind === "bound" && value ? (fieldLabel(loop, `{{ ${ref.path} }}`) ?? undefined) : undefined} onChange={pick} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
+  );
   return (
     <div data-image-src-control="" className="flex flex-col gap-1">
-      <MediaInput label="Source" value={pickerValue(ref)} boundLabel={ref.kind === "bound" ? (fieldLabel(loop, `{{ ${ref.path} }}`) ?? undefined) : undefined} onChange={pick} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
-      <FieldSource loop={loop} ref_={ref} onPick={(path) => write("src", path ? boundSrc(path, args || FIELD_ARGS) : null)} />
+      {imageFields(loop).length ? <LoopImageSource loop={loop!} ref_={ref} src={src} picker={picker} onField={(path) => write("src", boundSrc(path, args || FIELD_ARGS))} /> : picker(pickerValue(ref))}
       <ExpressionToggle id="image-src-expression" value={src} onCommit={(v) => write("src", v || null)} />
     </div>
   );
@@ -120,32 +122,58 @@ export function ImageSrcControl({ handle }: { handle: NodeHandle }) {
 
 /** The size a field image is first written at (the converter's card size). */
 const FIELD_ARGS = ": width: 800";
-const FIXED = "__fixed__";
 
-/** "From": a fixed image, or one of the photo fields of the collection the image repeats over. Shown only inside such a list. */
-function FieldSource({ loop, ref_, onPick }: { loop: LoopCollection | null; ref_: MediaRef; onPick(path: string | null): void }) {
+type LoopMode = "field" | "fixed";
+
+/**
+ * An image inside a list of a collection's entries: "Each entry" shows every entry's own photo (a photo field of the
+ * collection, the bound `image_url` form), "Same for all" one picture on every entry. Switching to "Same for all"
+ * writes nothing until a picture is picked, so the entries' photos stay on the canvas meanwhile.
+ */
+function LoopImageSource({ loop, ref_, src, picker, onField }: { loop: LoopCollection; ref_: MediaRef; src: string; picker(value: string, label?: string): ReactNode; onField(path: string): void }) {
   const photos = imageFields(loop);
-  if (!loop || !photos.length) return null;
   const prefix = `${loop.item}.`;
   const key = ref_.kind === "bound" && ref_.path.startsWith(prefix) ? ref_.path.slice(prefix.length) : "";
-  const current = photos.some((f) => f.key === key) ? key : FIXED;
+  const bound = photos.some((f) => f.key === key);
+  // "Same for all" picked while still bound: held until the src changes (a pick, an undo, another element).
+  const [fixedFor, setFixedFor] = useState<string | null>(null);
+  const mode: LoopMode = bound && fixedFor !== src ? "field" : "fixed";
   const choose = (v: string) => {
-    if (v === current) return;
-    if (v !== FIXED) return onPick(`${prefix}${v}`);
-    if (ref_.kind === "bound") onPick(null);
+    if (v === mode) return;
+    if (v === "fixed") return setFixedFor(src);
+    setFixedFor(null);
+    onField(`${prefix}${photos[0]!.key}`);
   };
   return (
-    <div data-image-field-source="">
-      <ToolbarItemView type="select" inputId="image-src-field" label="From" value={current} onChange={choose}>
-        <option value={FIXED}>A fixed image</option>
-        <optgroup label={`${loop.collection.name} fields`}>
-          {photos.map((f) => (
-            <option key={f.key} value={f.key}>
-              {f.label}
-            </option>
-          ))}
-        </optgroup>
-      </ToolbarItemView>
-    </div>
+    <>
+      <ToolbarItemView
+        type="radio"
+        inputId="image-src-mode"
+        label="Source"
+        value={mode}
+        onChange={choose}
+        options={[
+          { value: "field", label: "Each entry", hint: `Each ${loop.collection.name} entry shows its own photo` },
+          { value: "fixed", label: "Same for all", hint: "One picture on every entry" },
+        ]}
+      />
+      {mode === "field" ? (
+        <>
+          <ToolbarItemView type="select" inputId="image-src-field" label="Field" value={key} onChange={(v) => v && v !== key && onField(`${prefix}${v}`)}>
+            {photos.map((f) => (
+              <option key={f.key} value={f.key}>
+                {f.label}
+              </option>
+            ))}
+          </ToolbarItemView>
+          <PanelNote>To change one entry's photo, use the button on its card in the canvas.</PanelNote>
+        </>
+      ) : (
+        <>
+          {picker(bound ? "" : pickerValue(ref_), "Image")}
+          {bound && <PanelNote>Pick a picture to show on every entry.</PanelNote>}
+        </>
+      )}
+    </>
   );
 }

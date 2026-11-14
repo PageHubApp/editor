@@ -158,29 +158,34 @@ test("fields: alt text offers the collection's fields by name (no entries needed
   assert.match(e.text(), /alt="Photo of {{ item\.title }}{{ item\.price }}"/);
 });
 
-test("fields: an image in a repeated card picks a photo field (the bound image_url form) and goes back to a fixed image", async () => {
+const modeTab = (text: string) => [...document.querySelectorAll<HTMLElement>("[role=tab]")].find((t) => t.textContent?.trim() === text)!;
+const mode = () => [...document.querySelectorAll<HTMLElement>("[role=tab]")].find((t) => t.getAttribute("aria-selected") === "true")?.textContent?.trim();
+
+test("fields: an image in a repeated card switches between Each entry (a photo field, the bound image_url form) and Same for all", async () => {
   const e = inspect(IMG_CARD, (ed) => <ImageSrcControl handle={ed.get("img")} />);
   await settle();
-  const from = () => document.getElementById("input-image-src-field")!;
-  assert.ok(from(), "the From row is offered inside the loop");
-  assert.match(from().textContent!, /A fixed image/);
-  await mounted!.click(from());
-  assert.deepEqual(options(), ["A fixed image", "Photo", "Cover"], "only photo / file fields");
-  await mounted!.click(option("Photo"));
-  assert.match(e.text(), /src="{{ item\.photo \| image_url: width: 600 }}"/, "keeps the size already written");
-  const bound = document.querySelector("[data-media-bound]")!;
-  assert.equal(bound.textContent, "Photo", "the Source chip reads as the field's name");
-  assert.equal(bound.getAttribute("data-tooltip-content"), "{{ item.photo }}");
-  assert.match(from().textContent!, /Photo/);
+  assert.equal(mode(), "Same for all", "a library image is the same on every entry");
+  assert.equal(document.getElementById("input-image-src-field"), null);
+  await mounted!.click(modeTab("Each entry"));
+  assert.match(e.text(), /src="{{ item\.photo \| image_url: width: 600 }}"/, "binds the first photo field, keeping the size already written");
+  assert.equal(mode(), "Each entry");
+  const field = () => document.getElementById("input-image-src-field")!;
+  await mounted!.click(field());
+  assert.deepEqual(options(), ["Photo", "Cover"], "only photo / file fields");
+  await mounted!.click(option("Cover"));
+  assert.match(e.text(), /src="{{ item\.cover \| image_url: width: 600 }}"/);
+  assert.match(field().textContent!, /Cover/);
 
-  await mounted!.click(from());
-  await mounted!.click(option("A fixed image"));
-  assert.doesNotMatch(e.text(), /item\.photo/, "back to a fixed image: the binding is gone");
+  await mounted!.click(modeTab("Same for all"));
+  assert.equal(mode(), "Same for all");
+  assert.match(e.text(), /item\.cover/, "nothing is written until a picture is picked: the entries keep their photos");
+  assert.equal(document.querySelector("[data-media-bound]"), null, "the picker starts empty");
 });
 
-test("fields: a new field image is written at the card size; no From row outside a collection loop", async () => {
+test("fields: a new field image is written at the card size; no Each entry / Same for all outside a collection loop", async () => {
   const e = inspect(`<main>{% for item in collections.products %}<img src="" alt="x">{% endfor %}</main>`, (ed) => <ImageSrcControl handle={ed.get("img")} />);
   await settle();
+  await mounted!.click(modeTab("Each entry"));
   await mounted!.click(document.getElementById("input-image-src-field")!);
   await mounted!.click(option("Cover"));
   assert.match(e.text(), /src="{{ item\.cover \| image_url: width: 800 }}"/);
@@ -188,5 +193,6 @@ test("fields: a new field image is written at the card size; no From row outside
   mounted = null;
   inspect(`<main><img src="a.png" alt="x"></main>`, (ed) => <ImageSrcControl handle={ed.get("img")} />);
   await settle();
-  assert.equal(document.getElementById("input-image-src-field"), null);
+  assert.equal(document.getElementById("input-image-src-mode"), null);
+  assert.equal(document.querySelectorAll("[role=tab]").length, 0);
 });
