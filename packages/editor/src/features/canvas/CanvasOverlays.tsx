@@ -193,6 +193,7 @@ function RepeatedChip({ count, copy, handle }: { count: number; copy: HTMLElemen
   const list = cols?.rows.createEntry ? hostCollection(cols.list, loopCollection(handle, cols.list, source)?.collection.slug ?? null, link?.label.collection) : null;
   return (
     <span ref={keep} className="pointer-events-none absolute z-40 flex items-center gap-1" style={at(rect, "top-start")}>
+      <ConditionBadge handle={handle} />
       <span data-repeated={count} className={`${CHIP} static! bg-primary! text-primary-content!`}>
         repeated ×{count}
       </span>
@@ -212,8 +213,12 @@ function IncludeChip({ path, rect }: { path: string; rect: Rect }) {
   );
 }
 
-/** "Conditional" inside `{% if %}` / `{% unless %}` / `{% case %}`, "Hidden" with the `hidden` class; click toggles `hidden`. */
-function ConditionBadge({ handle, rect }: { handle: NodeHandle; rect: Rect }) {
+/**
+ * "Conditional" inside `{% if %}` / `{% unless %}` / `{% case %}`, "Hidden" with the `hidden` class; click toggles `hidden`.
+ * With a `rect` it sits at that element's top-start; without one it flows inline (the repeated chip's row, so it
+ * follows the clicked copy rather than the first).
+ */
+function ConditionBadge({ handle, rect }: { handle: NodeHandle; rect?: Rect }) {
   const run = useRunCommand();
   const hidden = useEditorState(() => handle.alive && handle.classes().includes("hidden"));
   const keep = useKeepInView<HTMLButtonElement>(rect);
@@ -222,11 +227,11 @@ function ConditionBadge({ handle, rect }: { handle: NodeHandle; rect: Rect }) {
   if (!hidden && !conditional) return null;
   return (
     <button
-      ref={keep}
+      ref={rect ? keep : undefined}
       type="button"
       data-condition-badge={hidden ? "hidden" : "conditional"}
-      className={`pointer-events-auto absolute z-40 rounded px-1.5 text-[10px] font-semibold text-white ${hidden ? "bg-red-500" : "bg-amber-500"}`}
-      style={at(rect, "top-start")}
+      className={`pointer-events-auto z-40 rounded px-1.5 text-[10px] font-semibold text-white ${rect ? "absolute" : "static"} ${hidden ? "bg-red-500" : "bg-amber-500"}`}
+      style={rect ? at(rect, "top-start") : undefined}
       {...tooltip(hidden ? "Hidden — click to show" : "Shown only when its condition holds — click to hide")}
       onClick={() => run("classes.set", { group: "display", token: hidden ? null : "hidden", at: handle })}
     >
@@ -312,7 +317,7 @@ export function CanvasOverlays() {
           <NameChip key={editSrcOf(g.handle)} handle={g.handle} rect={g.rect} place={NAME_CHIP_TAGS[g.handle.tag] ? "top-end" : "top-start"} />
         )
       )}
-      {g && !g.include && <ConditionBadge handle={g.handle} rect={g.rect} />}
+      {g && !g.include && g.elements.length <= 1 && <ConditionBadge handle={g.handle} rect={g.rect} />}
       <EmptyListLayer />
       <LintDots />
       <MeasurementLines />

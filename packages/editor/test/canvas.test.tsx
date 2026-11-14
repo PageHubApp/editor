@@ -172,6 +172,16 @@ describe("canvas: repeated rows and includes", () => {
     assert.equal(r.get("[data-repeated]").textContent, "repeated ×3");
   });
 
+  it("a repeated row inside {% if %} shows 'Conditional' in the repeated chip's row (the clicked copy), not at the first copy", async () => {
+    const page = `<ul>{% if show %}{% for item in items %}<li class="row">{{ item }}</li>{% endfor %}{% endif %}</ul>\n`;
+    const { r, doc } = await mountCanvas(canvasEditor({ "index.liquid": page }));
+    cleanup = r.unmount;
+    await fireIn(doc.querySelectorAll("li.row")[2]!, "mousedown");
+    const badges = r.all("[data-condition-badge]");
+    assert.equal(badges.length, 1);
+    assert.equal(badges[0]!.parentElement, r.get("[data-repeated]").parentElement);
+  });
+
   it("a click inside an include selects the {% render %} tag and offers 'Edit header'; after it, clicks select inside the partial", async () => {
     const { r, doc, e } = await mountCanvas();
     cleanup = r.unmount;
