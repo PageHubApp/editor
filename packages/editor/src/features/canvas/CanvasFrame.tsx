@@ -114,7 +114,7 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
     };
     const run = () => {
       if (!readOnly) setRenderStatus(store, { pending: true });
-      timer = setTimeout(() => !cancelled && !readOnly && fail(`Rendering ${page} is taking too long.`), RENDER_TIMEOUT_MS);
+      timer = setTimeout(() => !cancelled && !readOnly && fail("It's taking too long to load."), RENDER_TIMEOUT_MS);
       return render(store.state, page).then(
       (html) => {
         clearTimeout(timer);
@@ -289,7 +289,7 @@ export function CanvasFrame({ className = "", style, onRendered, readOnly = fals
       {refreshing && <div role="progressbar" aria-label="Rendering page" data-render-pending="" className="bg-primary pointer-events-none absolute inset-x-0 top-0 z-40 h-0.5 animate-pulse" />}
       {renderError && (
         <div data-render-error className="absolute inset-x-2 top-2 z-50" style={{ zoom: "var(--device-zoom-inverse, 1)" }}>
-          <InlineError variant="banner" message={`Render failed: ${renderError}`} onRetry={() => setStale((n) => n + 1)} />
+          <InlineError variant="banner" message={`Couldn't show this page. ${renderError}`} onRetry={() => setStale((n) => n + 1)} />
         </div>
       )}
     </>

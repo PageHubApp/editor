@@ -6,7 +6,7 @@ import { createEditor, memoryStorage, prepareWrite, StorageError } from "@pagehu
 import { htmlKit, tailwindKit } from "@pagehub/engine/kits";
 import { createTestEditor } from "@pagehub/engine/testing";
 import { Editor, editorKit } from "../src/index.ts";
-import { FAILED_MS, SAVED_MS, describeSaveError, saveSession } from "../src/features/save/saveSession.ts";
+import { SAVED_MS, describeSaveError, saveSession } from "../src/features/save/saveSession.ts";
 import { SAVE_LABELS } from "../src/features/save/SaveStatus.tsx";
 import { fixtureEditor, render } from "./harness.tsx";
 
@@ -41,7 +41,7 @@ describe("save status and banner (1.6, 3.6)", () => {
     r.unmount();
   });
 
-  it("failed: amber warning read out assertively, idle after 5000ms; the banner says why and dismisses", async () => {
+  it("failed: amber warning read out assertively, and it stays (the edits are unsaved); the banner says why and dismisses", async () => {
     const e = createTestEditor({ files: { "index.liquid": "<h1>Hi</h1>" }, extensions: [htmlKit(), tailwindKit(), editorKit(), prepareWrite("lint", () => ({ errors: ["unclosed tag"] }))] });
     const r = render(<Editor editor={e} />);
     act(() => void e.dispatch((tr) => tr.setText(e.get("h1"), "X")));
@@ -52,10 +52,10 @@ describe("save status and banner (1.6, 3.6)", () => {
       assert.equal(status().getAttribute("aria-live"), "assertive");
       assert.match(status().querySelector("svg")!.getAttribute("class")!, /text-warning/);
       const banner = r.get('[data-slot="SaveBanner"][role="alert"]');
-      assert.equal(banner.textContent, "Couldn't save index.liquid: lint: unclosed tag");
+      assert.equal(banner.textContent, "This change wasn't saved because of a problem in the page: lint: unclosed tag");
       assert.equal(r.get(".pagehub-editor").firstElementChild, banner, "across the top");
-      act(() => mock.timers.tick(FAILED_MS));
-      assert.equal(status().getAttribute("data-save-status"), "idle");
+      act(() => mock.timers.tick(60_000));
+      assert.equal(status().getAttribute("data-save-status"), "failed", "never reverts to looking saved");
     } finally {
       mock.timers.reset();
     }
@@ -64,7 +64,7 @@ describe("save status and banner (1.6, 3.6)", () => {
     r.unmount();
   });
 
-  it("out of date: a conflict shows the banner with Reload theirs / Keep mine (resolveConflict)", async () => {
+  it("out of date: a conflict shows the banner with Use the other version / Keep my changes (resolveConflict)", async () => {
     const e = fixtureEditor();
     e.destroy();
     const r = render(<Editor editor={e} />);
@@ -72,7 +72,7 @@ describe("save status and banner (1.6, 3.6)", () => {
     edit(e, "Mine");
     await act(async () => void (await e.save()));
     const banner = r.get('[data-save-banner="conflict"]');
-    assert.match(banner.textContent!, /index\.liquid changed somewhere else/);
+    assert.match(banner.textContent!, /This page changed somewhere else/);
     await act(async () => void (await r.click(r.get("[data-conflict-keep]"))));
     await act(async () => void (await new Promise((res) => setTimeout(res, 10))));
     assert.match(e.memory.snapshot()["index.liquid"]!, /Mine/);

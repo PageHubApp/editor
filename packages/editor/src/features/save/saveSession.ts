@@ -2,7 +2,7 @@
  * What the top bar's save icon and the save banner show, per editor, from the core's events:
  * - `saving` → status "saving";
  * - `saved` → "saved", back to "idle" after 3000ms;
- * - `saveFailed` / `conflict` → "failed", back to "idle" after 5000ms; the banner explains it
+ * - `saveFailed` / `conflict` → "failed", until a save works (the edits are still unsaved); the banner explains it
  *   (blocked by rule errors, a storage error, or a file that changed elsewhere — the last one
  *   offers Reload / Keep mine through `resolveConflict`).
  * - a `StorageError` says why in its own words (`describeSaveError`); `maintenance` is "paused" — the host froze
@@ -15,7 +15,6 @@ import { isCore } from "../../react/events";
 
 export type SaveStatus = "idle" | "saving" | "saved" | "failed" | "paused";
 export const SAVED_MS = 3000;
-export const FAILED_MS = 5000;
 
 type SaveBannerState =
   | { kind: "error"; message: string; retry: boolean }
@@ -78,8 +77,8 @@ function createSession(core: Core | null): SaveSession {
   const settle = (status: "saved" | "failed" | "paused") => {
     clearTimeout(timer);
     set({ status });
-    if (status === "paused") return; // stays until a save works
-    timer = globalThis.setTimeout(() => set({ status: "idle" }), status === "saved" ? SAVED_MS : FAILED_MS);
+    if (status !== "saved") return; // "failed" / "paused" stay until a save works: the edits are still unsaved
+    timer = globalThis.setTimeout(() => set({ status: "idle" }), SAVED_MS);
     (timer as { unref?: () => void }).unref?.();
   };
   const conflictBanner = () => (core && core.conflicts.size ? { kind: "conflict" as const, paths: [...core.conflicts.keys()] } : null);
@@ -105,7 +104,7 @@ function createSession(core: Core | null): SaveSession {
       const blocked = e.blocked[0];
       if (blocked) {
         settle("failed");
-        return set({ banner: { kind: "error", message: `Couldn't save ${blocked.path}: ${blocked.errors[0] ?? "it has errors"}`, retry: false } });
+        return set({ banner: { kind: "error", message: `This change wasn't saved because of a problem in the page: ${blocked.errors[0] ?? "it has errors"}`, retry: false } });
       }
       const d = describeSaveError(e.error);
       settle(d.kind === "paused" ? "paused" : "failed");

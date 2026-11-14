@@ -18,7 +18,7 @@ export function SaveBanner() {
   const session = saveSession(editor);
   const message =
     banner.kind === "conflict"
-      ? `${banner.paths.length === 1 ? banner.paths[0] : `${banner.paths.length} files`} changed somewhere else since you opened ${banner.paths.length === 1 ? "it" : "them"}. Your edits aren't saved.`
+      ? `${banner.paths.length === 1 ? "This page" : `${banner.paths.length} pages`} changed somewhere else since you opened ${banner.paths.length === 1 ? "it" : "them"}. Your edits aren't saved.`
       : banner.message;
   const retry = banner.kind === "paused" || (banner.kind === "error" && banner.retry);
   return (
@@ -38,10 +38,10 @@ export function SaveBanner() {
       {banner.kind === "conflict" && (
         <>
           <button type="button" data-conflict-reload="" className={ACTION} onClick={() => void session.resolve("reload")}>
-            Reload theirs
+            Use the other version
           </button>
           <button type="button" data-conflict-keep="" className={ACTION} onClick={() => void session.resolve("override")}>
-            Keep mine
+            Keep my changes
           </button>
         </>
       )}
