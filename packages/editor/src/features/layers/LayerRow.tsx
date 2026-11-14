@@ -19,7 +19,7 @@ const DROP_INSIDE = "ring-1 ring-blue-500 ring-inset";
 const ICON_SELECTED = "text-white";
 const ICON_MUTED = "text-gray-500 dark:text-gray-400";
 const RENAME_INPUT = "w-full rounded border border-blue-500 bg-white px-0.5 py-0 text-xs leading-none text-gray-900 outline-none dark:bg-gray-800 dark:text-gray-100";
-const ACTION = "rounded p-0.5 transition-colors hover:bg-black/10 dark:hover:bg-white/10";
+const ACTION = "rounded p-1 transition-colors hover:bg-black/10 dark:hover:bg-white/10";
 
 export type RowKind = "page" | "header" | "footer" | "section" | null;
 
@@ -36,8 +36,8 @@ const GLOBAL_TIP = "Sits outside the page, so it shows on every page. Edit it on
 const MOVES: { move: RowMove; glyph: IconName; label: string }[] = [
   { move: "up", glyph: "arrow-up", label: "Move up" },
   { move: "down", glyph: "arrow-down", label: "Move down" },
-  { move: "out", glyph: "arrow-left", label: "Move out" },
-  { move: "in", glyph: "arrow-right", label: "Move in" },
+  { move: "out", glyph: "arrow-left", label: "Move out of this group" },
+  { move: "in", glyph: "arrow-right", label: "Move into the group above" },
 ];
 
 /** Connector-line style (inline: it must read on both the idle and the selected row, in either theme). */

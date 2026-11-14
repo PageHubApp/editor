@@ -17,8 +17,8 @@ import { TabStrip } from "./panelParts";
 import { useAddPanelUrl } from "./useAddPanelUrl";
 
 const TABS: readonly { id: AddTab; label: string }[] = [
-  { id: "components", label: "Components" },
-  { id: "blocks", label: "Blocks" },
+  { id: "components", label: "Elements" },
+  { id: "blocks", label: "Sections" },
 ];
 
 export function AddPanel() {

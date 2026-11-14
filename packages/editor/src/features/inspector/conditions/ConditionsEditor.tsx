@@ -83,7 +83,7 @@ export function ConditionsEditor({ handle, browserOnly = false }: { handle: Node
 
       {hasServer && (
         <section data-condition-part="server" className="flex flex-col gap-1.5">
-          <PartTitle title="When the page renders" hint={`Decided on the server: {% ${wrapper!.tag} %} around the element.`} />
+          <PartTitle title="When the page renders" hint="Decided when the page loads." />
           {server ? (
             <>
               <ServerGroupCards id="server" group={server} keys={names} onChange={writeServer} />
@@ -91,7 +91,7 @@ export function ConditionsEditor({ handle, browserOnly = false }: { handle: Node
           ) : (
             <>
               <ExpressionField id="show-when" label={wrapper!.tag === "unless" ? "Hide when" : "Show when"} value={markup} completions={names} onCommit={(v) => commit("liquid.setMarkup", { markup: v, at: wrapper! })} />
-              <PanelNote>This expression has parts the builder can't show (brackets, mixed and / or, filters), so it's edited as Liquid.</PanelNote>
+              <PanelNote>This condition is too complex for the builder, so it's edited as text.</PanelNote>
               <button type="button" onClick={() => commit("liquid.unwrap", { at: wrapper! })} className="text-error self-start text-[11px] hover:underline">
                 Remove condition
               </button>
@@ -102,7 +102,7 @@ export function ConditionsEditor({ handle, browserOnly = false }: { handle: Node
 
       {hasBrowser && (
         <section data-condition-part="browser" className="flex flex-col gap-1.5">
-          <PartTitle title="Live in the browser" hint="Re-checked whenever state changes: data-state-show." />
+          <PartTitle title="Live in the browser" hint="Updates as visitors click and choose things." />
           {browser ? (
             <StateGroupsEditor id="show" groups={browser} onChange={writeShow} keys={stateKeys} />
           ) : (
@@ -113,7 +113,7 @@ export function ConditionsEditor({ handle, browserOnly = false }: { handle: Node
 
       {hasDevice && (
         <section data-condition-part="device" className="flex flex-col gap-1.5">
-          <PartTitle title="Device" hint={`Hidden by width: ${DEVICE_CLASS[device as "mobile" | "desktop"]}.`} />
+          <PartTitle title="Device" hint="Phones are under 768px wide." />
           <ToolbarItemView type="radio" inputId="condition-device" label="Show on" value={device} onChange={(v) => writeDevice(v as Device)} options={[{ value: "mobile", label: "Phone" }, { value: "desktop", label: "Desktop" }, { value: "all", label: "Both" }]} />
         </section>
       )}

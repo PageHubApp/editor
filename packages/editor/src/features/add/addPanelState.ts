@@ -82,7 +82,7 @@ const insertSectionDialogClose = patch("insert.sectionDialogClose", "Close Add s
 const blockAt = (position: "above" | "below") =>
   defineCommand({
     id: position === "above" ? "insert.blockAbove" : "insert.blockBelow",
-    title: position === "above" ? "Add block above" : "Add block below",
+    title: position === "above" ? "Add section above" : "Add section below",
     run(ctx) {
       const anchor = ctx.selection.primary;
       if (!ctx.state.hasField(addPanelField) || !anchor?.alive || !ctx.state.facet(blockSourceFacet)) return false;

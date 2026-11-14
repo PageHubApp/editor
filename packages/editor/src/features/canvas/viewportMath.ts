@@ -220,15 +220,15 @@ export function scopeBand(view: View, multiScope: readonly Breakpoint[], bp: Rea
     };
   }
   if (view === "desktop" || view === "mobile") {
-    return { color: BAND_COLOR.base!, text: textOn(BAND_COLOR.base!), head: "Editing Base", detail: "changes apply to all sizes", label: "Editing Base — applies to all sizes. Override per breakpoint with S, M, L, XL, or 2XL.", clearable: false };
+    return { color: BAND_COLOR.base!, text: textOn(BAND_COLOR.base!), head: "Editing all screen sizes", detail: "changes apply everywhere", label: "Editing all screen sizes — changes apply everywhere. Override a size with S, M, L, XL, or 2XL.", clearable: false };
   }
   const size = `${bp[view]}px and up`;
   return {
     color: BAND_COLOR[view]!,
     text: textOn(BAND_COLOR[view]!),
-    head: `Editing ${bpLabel(view)}`,
-    detail: `${size} · changes here override Base`,
-    label: `Editing ${bpLabel(view)} breakpoint — ${size}. Overrides Base from this width and up.`,
+    head: `Editing ${bpLabel(view)} and wider`,
+    detail: `${size} · changes apply on screens this wide and wider`,
+    label: `Editing ${bpLabel(view)} and wider — ${size}. Changes apply on screens this wide and wider.`,
     clearable: false,
   };
 }

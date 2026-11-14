@@ -62,7 +62,7 @@ describe("an action's 'only fire when' gate uses the condition builder", () => {
 
   it("a parseable gate shows condition cards; changing one rewrites the {% if %}, removing the last ungates", async () => {
     const e = open(BTN, "button", (ed) => <ActionConditionsEditor handle={ed.get("button")} />);
-    assert.ok(button("Add to Cart: only fire when…"), "an ungated action offers the builder, not a Liquid field");
+    assert.ok(button("Add to cart: only fire when…"), "an ungated action offers the builder, not a Liquid field");
     assert.equal(document.querySelector("[id^=input-action-if-add-to-cart]"), null);
     await act(async () => void setActionGate(e, e.get("button"), "add-to-cart", "customer"));
     assert.ok(document.querySelector('[data-condition="auth"]'), "the gate reads back as a signed-in customer condition");
@@ -78,7 +78,7 @@ describe("an action's 'only fire when' gate uses the condition builder", () => {
     const e = open(BTN, "button", (ed) => <ActionsEditor handle={ed.get("button")} />);
     await act(async () => void setActionGate(e, e.get("button"), "add-to-cart", "customer"));
     assert.ok(document.querySelector('[data-action-card="add-to-cart"] [data-action-gated]'), "still listed, marked gated");
-    await r!.click(button("Remove Add to Cart"));
+    await r!.click(button("Remove Add to cart"));
     assert.doesNotMatch(e.text(), /data-cart|\{% if/);
   });
 

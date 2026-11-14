@@ -57,7 +57,7 @@ function ActionGateRow({ handle, type }: { handle: NodeHandle; type: string }) {
       ) : (
         <>
           <ExpressionField id={`action-if-${type}`} label="Only if" value={gate.condition} completions={names} onCommit={(c) => setActionGate(store, handle, type, c)} />
-          <PanelNote>This expression has parts the builder can't show (brackets, mixed and / or, filters), so it's edited as Liquid.</PanelNote>
+          <PanelNote>This condition is too complex for the builder, so it's edited as text.</PanelNote>
         </>
       )}
     </BranchRow>

@@ -36,7 +36,7 @@ function LiquidFallback({ folded, children }: { folded: boolean; children: React
   if (!folded) return <>{children}</>;
   return (
     <details data-ds-advanced="" className="group">
-      <summary className="text-base-content/60 hover:text-base-content cursor-pointer text-[11px] select-none">Edit as Liquid</summary>
+      <summary className="text-base-content/60 hover:text-base-content cursor-pointer text-[11px] select-none">Edit as text</summary>
       <div className="mt-1.5 flex flex-col gap-1.5">{children}</div>
     </details>
   );
@@ -55,7 +55,7 @@ function SourcePicker({ handle }: { handle: NodeHandle }) {
       {host?.loaded && !host.list.length && <PanelNote>This site has no collections yet.</PanelNote>}
       <SourceSelect sources={sources} value="" onPick={start} />
       <LiquidFallback folded={!!host}>
-        <ExpressionField id="ds-custom" label="Liquid" value="" placeholder="collections.team" completions={names} onCommit={(v) => (v ? start(v) : true)} />
+        <ExpressionField id="ds-custom" label="Collection or data name" value="" placeholder="collections.team" completions={names} onCommit={(v) => (v ? start(v) : true)} />
       </LiquidFallback>
     </div>
   );
@@ -78,7 +78,7 @@ function BoundPanel({ handle, wrapper }: { handle: NodeHandle; wrapper: NodeHand
   const [draft, setDraft] = useState<WhereClause[]>(ds?.where ?? []);
   const draftFilled = draft.filter((w) => w.prop.trim());
   if (ds && JSON.stringify(draftFilled) !== JSON.stringify(ds.where)) setDraft(ds.where);
-  if (!ds) return <PanelNote>This loop is written in a form the panel can't edit; use the code view.</PanelNote>;
+  if (!ds) return <PanelNote>This can only be changed with Edit code.</PanelNote>;
 
   const varName = (base: string) => {
     // `collections.team` → teamRows; `products` → productsRows

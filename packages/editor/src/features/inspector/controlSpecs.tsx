@@ -414,7 +414,7 @@ export const CONTROL_SPECS: Readonly<Record<string, ControlSpec>> = {
     kind: "bundle",
     items: [
       { group: "leading", label: "Line height", control: "value", prefix: "leading", options: LEADING_OPTS, allowedTypes: ["tailwind", "px", "rem", "em"] },
-      { group: "tracking", label: "Tracking", control: "value", prefix: "tracking", options: TRACKING_OPTS, allowedTypes: ["tailwind", "px", "rem", "em"] },
+      { group: "tracking", label: "Letter spacing", control: "value", prefix: "tracking", options: TRACKING_OPTS, allowedTypes: ["tailwind", "px", "rem", "em"] },
       { group: "indent", label: "Indent", control: "value", prefix: "indent", options: INDENT_OPTS, allowedTypes: ["tailwind", "px", "rem", "em"] },
     ],
   },
@@ -422,7 +422,7 @@ export const CONTROL_SPECS: Readonly<Record<string, ControlSpec>> = {
     kind: "bundle",
     items: [
       { group: "text-wrap", label: "Wrap", control: "value", prefix: "text", options: TEXT_WRAP_OPTS, allowedTypes: TW_ONLY },
-      { group: "whitespace", label: "White space", control: "value", prefix: "whitespace", options: WHITESPACE_OPTS, allowedTypes: TW_ONLY },
+      { group: "whitespace", label: "Line breaks", control: "value", prefix: "whitespace", options: WHITESPACE_OPTS, allowedTypes: TW_ONLY },
       { group: "text-overflow", label: "Overflow", control: "value", prefix: "text", options: TEXT_OVERFLOW_OPTS, allowedTypes: TW_ONLY },
       { group: "break", label: "Word break", control: "value", prefix: "break", options: BREAK_OPTS, allowedTypes: TW_ONLY },
     ],

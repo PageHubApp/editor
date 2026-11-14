@@ -1,5 +1,5 @@
 /**
- * Media row: a thumbnail of the picked file (or "Pick media") that opens the `MediaManager`
+ * Media row: a thumbnail of the picked file (or "Choose an image") that opens the `MediaManager`
  * slot in pick mode, with the extra sources "Site logo" (when the site has one) and "Dynamic"
  * (a Liquid expression such as `{{ product.image }}`). `value` is a media id or an expression.
  *
@@ -33,7 +33,7 @@ function DynamicSource({ pick }: { pick(v: string): void }) {
   return (
     <form className="flex flex-col gap-2 p-3" onSubmit={(e) => (e.preventDefault(), expr.trim() && pick(expr.trim()))}>
       <p className="text-neutral-content text-xs">Use a value from the page's data, like {"{{ product.image }}"}.</p>
-      <input value={expr} onChange={(e) => setExpr(e.target.value)} placeholder="{{ product.image }}" aria-label="Dynamic value" className="border-base-300 bg-base-200 text-base-content h-8 rounded-md border px-2 font-mono text-xs" />
+      <input value={expr} onChange={(e) => setExpr(e.target.value)} placeholder="{{ product.image }}" aria-label="Data value" className="border-base-300 bg-base-200 text-base-content h-8 rounded-md border px-2 font-mono text-xs" />
       <button type="submit" className="btn btn-primary btn-sm self-end" disabled={!expr.trim()}>Use value</button>
     </form>
   );
@@ -92,12 +92,12 @@ export function MediaInput({ label, labelWidth, adornment, value, onChange, kind
         open={open}
         onTriggerClick={() => hasManager && setOpen(true)}
         onClear={() => onChange("")}
-        triggerAriaLabel={value ? "Change media" : "Pick media"}
+        triggerAriaLabel={value ? "Change media" : "Choose an image"}
         clearAriaLabel="Clear media"
         leading={url ? <img src={url} alt="" className="size-4 rounded-sm object-cover" /> : undefined}
         summary={
           !value ? (
-            "Pick media"
+            "Choose an image"
           ) : bound ? (
             <span data-media-bound="" {...(boundLabel ? { "data-media-field": boundLabel, ...tooltip(`{{ ${bound} }}`, "top") } : {})} className={`bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[11px] ${boundLabel ? "" : "font-mono"}`}>
               {boundLabel ?? bound}

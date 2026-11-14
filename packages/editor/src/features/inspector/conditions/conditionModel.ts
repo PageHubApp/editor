@@ -51,19 +51,19 @@ export const PLACE_OF: Record<CondType, Place> = {
 export const SERVER_TYPES: CondType[] = ["auth", "url-param", "item", "company", "connector"];
 
 export const TYPE_LABELS: Record<CondType, string> = {
-  "url-param": "URL parameter",
+  "url-param": "Web address option",
   "form-field": "Form field",
-  connector: "Connector data",
+  connector: "Connected data",
   company: "Company info",
   device: "Device",
-  auth: "Signed-in customer",
+  auth: "Signed-in visitor",
   item: "Current item",
-  localStorage: "Local storage",
+  localStorage: "Saved in the visitor's browser",
   state: "State",
 };
 
 export const TYPE_HELP: Record<CondType, string> = {
-  "url-param": "A query-string value, e.g. ?ref=templates",
+  "url-param": "A value in the web address, like ?ref=templates",
   "form-field": "What the visitor has typed or picked in another field, e.g. topic",
   connector: "A connector or collection value, e.g. collections.plants.size",
   company: "A site setting, e.g. logo or phone",

@@ -67,10 +67,10 @@ export function LinkedInstance({ handle, name }: { handle: NodeHandle; name: str
     unlink: !!tag && store.can("component.unlink", { at: tag }),
   }), (a, b) => a.style === b.style && a.content === b.content && a.unlink === b.unlink);
   const actions: LinkedAction[] = [
-    { id: "edit", title: "Edit Linked Instance", description: "Change the main component", icon: "box-model", variant: "primary", run: () => void (store.run("component.edit", { path: handle.path }) || set({ componentEditor: handle.path })) },
-    { id: "style", title: "Style Only Mode", description: "Keep the content linked; style this instance", icon: "brush", disabled: !can.style, run: () => store.run("component.styleOnly", { at: handle }) },
-    { id: "content", title: "Content Only Mode", description: "Keep the style linked; edit this instance's content", icon: "forms", disabled: !can.content, run: () => store.run("component.contentOnly", { at: handle }) },
-    { id: "unlink", title: "Unlink Component", description: "Turn this instance into regular elements", icon: "unlink", variant: "destructive", disabled: !can.unlink, run: () => tag && store.run("component.unlink", { at: tag }) },
+    { id: "edit", title: "Edit the shared component", description: "Change the main component", icon: "box-model", variant: "primary", run: () => void (store.run("component.edit", { path: handle.path }) || set({ componentEditor: handle.path })) },
+    { id: "style", title: "Change only this copy's look", description: "Keep the content linked; style this instance", icon: "brush", disabled: !can.style, run: () => store.run("component.styleOnly", { at: handle }) },
+    { id: "content", title: "Change only this copy's text", description: "Keep the style linked; edit this instance's content", icon: "forms", disabled: !can.content, run: () => store.run("component.contentOnly", { at: handle }) },
+    { id: "unlink", title: "Make this copy independent", description: "Turn this instance into regular elements", icon: "unlink", variant: "destructive", disabled: !can.unlink, run: () => tag && store.run("component.unlink", { at: tag }) },
   ];
   return <LinkedInstanceBar name={name} actions={actions} />;
 }

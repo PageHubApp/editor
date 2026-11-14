@@ -66,8 +66,8 @@ function Branches({ handle, kind }: { handle: NodeHandle; kind: "elsif" | "when"
   return (
     <>
       {branches.map((name, i) => (i === 0 ? null : <BranchRowFor key={`${i}:${name}`} handle={handle} index={i} name={name} completions={names} />))}
-      <PendingAdd label={kind === "when" ? "Add when" : "Add elsif"} field={kind === "when" ? "When" : "Else if"} completions={names} onAdd={(v) => commit("liquid.addBranch", { branch: kind, markup: v })} />
-      {!branches.includes("else") && <AddBranchButton onClick={() => commit("liquid.addBranch", { branch: "else" })}>Add else</AddBranchButton>}
+      <PendingAdd label={kind === "when" ? "Add another choice" : "Add another condition"} field={kind === "when" ? "When" : "Otherwise, if"} completions={names} onAdd={(v) => commit("liquid.addBranch", { branch: kind, markup: v })} />
+      {!branches.includes("else") && <AddBranchButton onClick={() => commit("liquid.addBranch", { branch: "else" })}>Add otherwise</AddBranchButton>}
     </>
   );
 }
@@ -77,7 +77,7 @@ function BranchRowFor({ handle, index, name, completions }: { handle: NodeHandle
   const markup = useMarkup(handle, index);
   return (
     <BranchRow title={name} onRemove={() => commit("liquid.removeBranch", { index })} removeLabel={`Remove ${name} branch`}>
-      {name !== "else" && <ExpressionField id={`branch-${index}`} label={name === "when" ? "When" : "Else if"} value={markup} completions={completions} onCommit={(v) => commit("liquid.setMarkup", { branch: index, markup: v })} />}
+      {name !== "else" && <ExpressionField id={`branch-${index}`} label={name === "when" ? "When" : "Otherwise, if"} value={markup} completions={completions} onCommit={(v) => commit("liquid.setMarkup", { branch: index, markup: v })} />}
     </BranchRow>
   );
 }
@@ -113,18 +113,18 @@ export function ForPanel({ handle }: BlockPanelProps) {
   const branches = useBranches(handle);
   const names = useCompletions(handle);
   const parts = parseFor(markup);
-  if (!parts) return <PanelNote>This loop is written in a form the panel can't edit; use the code view.</PanelNote>;
+  if (!parts) return <PanelNote>This can only be changed with Edit code.</PanelNote>;
   const head = (patch: Partial<typeof parts>) => commit("liquid.setMarkup", { markup: buildFor({ ...parts, ...patch }) });
   const arg = (name: string) => (v: string) => commit("liquid.setArg", { name, value: v });
   return (
     <div className="flex flex-col gap-1.5" data-liquid-panel="for">
       <ExpressionField id="for-collection" label="List" value={parts.collection} completions={names} onCommit={(v) => head({ collection: v })} />
-      <ExpressionField id="for-item" label="Item name" value={parts.item} onCommit={(v) => head({ item: v })} />
+      <ExpressionField id="for-item" label="Name for each entry" value={parts.item} onCommit={(v) => head({ item: v })} />
       <ExpressionField id="for-limit" label="Limit" value={args.limit ?? ""} placeholder="All" onCommit={arg("limit")} />
       <ExpressionField id="for-offset" label="Skip" value={args.offset ?? ""} placeholder="0" onCommit={arg("offset")} />
-      <ToolbarItemView key={String(parts.reversed)} label="Reversed" inputId="for-reversed" type="toggle" on="on" value={parts.reversed ? "on" : ""} onChange={(v) => head({ reversed: !!v })} />
+      <ToolbarItemView key={String(parts.reversed)} label="Reverse order" inputId="for-reversed" type="toggle" on="on" value={parts.reversed ? "on" : ""} onChange={(v) => head({ reversed: !!v })} />
       {branches.includes("else") ? (
-        <BranchRow title="else" onRemove={() => commit("liquid.removeBranch", { index: branches.indexOf("else") })} removeLabel="Remove else branch">
+        <BranchRow title="Otherwise" onRemove={() => commit("liquid.removeBranch", { index: branches.indexOf("else") })} removeLabel="Remove else branch">
           <PanelNote>Shown when the list is empty.</PanelNote>
         </BranchRow>
       ) : (
@@ -139,13 +139,13 @@ export function PaginatePanel({ handle }: BlockPanelProps) {
   const markup = useMarkup(handle);
   const names = useCompletions(handle);
   const parts = parsePaginate(markup);
-  if (!parts) return <PanelNote>This pagination is written in a form the panel can't edit; use the code view.</PanelNote>;
+  if (!parts) return <PanelNote>This can only be changed with Edit code.</PanelNote>;
   const set = (patch: Partial<typeof parts>) => commit("liquid.setMarkup", { markup: buildPaginate({ ...parts, ...patch }) });
   return (
     <div className="flex flex-col gap-1.5" data-liquid-panel="paginate">
       <ExpressionField id="paginate-list" label="List" value={parts.list} completions={names} onCommit={(v) => set({ list: v })} />
       <ExpressionField id="paginate-by" label="Per page" value={parts.by} onCommit={(v) => set({ by: v })} />
-      <PanelNote>Inside, `paginate.pages` and `paginate.next` describe the pages.</PanelNote>
+      <PanelNote>Page numbers and Next / Previous links go inside this block.</PanelNote>
     </div>
   );
 }
@@ -172,7 +172,7 @@ export function FormPanel({ handle }: BlockPanelProps) {
   return (
     <div className="flex flex-col gap-1.5" data-liquid-panel="form">
       <NameField handle={handle} label="Form" />
-      <PanelNote>The site handles the submission: `contact`, `customer_login`, a collection's slug …</PanelNote>
+      <PanelNote>The form's name. Submissions go to your inbox, or to the collection with that name.</PanelNote>
     </div>
   );
 }

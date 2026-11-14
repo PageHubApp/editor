@@ -233,7 +233,7 @@ describe("MediaInput", () => {
     await r.click(r.get("button[aria-haspopup]"));
     await ready();
     await r.click(r.all("[role=tab]").find((t) => t.textContent === "Dynamic")!);
-    await r.type(r.get("input[aria-label='Dynamic value']"), "{{ product.image }}");
+    await r.type(r.get("input[aria-label='Data value']"), "{{ product.image }}");
     await r.click(r.all("button").find((b) => b.textContent === "Use value")!);
     assert.equal(out.at(-1), "{{ product.image }}");
   });

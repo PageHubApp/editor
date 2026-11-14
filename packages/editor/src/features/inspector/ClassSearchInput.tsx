@@ -70,7 +70,7 @@ export function ClassSearchInput({ present, onAdd, scopeLabel }: { present: read
             value={input}
             onChange={(e) => (setInput(e.target.value), setSel(0))}
             onKeyDown={onKeyDown}
-            placeholder="Add a class…"
+            placeholder="Add a style class…"
             aria-label="Add a class"
             role="searchbox"
             data-class-input=""
@@ -115,7 +115,7 @@ export function ClassSearchInput({ present, onAdd, scopeLabel }: { present: read
             <span>
               <kbd className="bg-base-200 border-base-300 rounded border px-1">↵</kbd> add
             </span>
-            <span className="w-full">Prefix with sm: md: lg: xl: 2xl: for a breakpoint.</span>
+            <span className="w-full">Start with sm: md: or lg: to apply only on wider screens.</span>
           </div>
         </div>
       </AnchoredPopover>

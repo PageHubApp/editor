@@ -79,7 +79,7 @@ export function CodeEditor({ handle, path, language = "liquid", nonEmpty }: Code
   return (
     <div className="flex flex-col gap-1.5" data-code-editor={file}>
       <Slot name="CodeView" {...props} />
-      {failed && <PanelNote>{nonEmpty && !draft.trim() ? "A script can't be empty. Delete it instead." : "This code can't be applied: it doesn't parse, or it breaks a tag. Fix it and apply again."}</PanelNote>}
+      {failed && <PanelNote>{nonEmpty && !draft.trim() ? "A script can't be empty. Delete it instead." : "These changes can't be applied: the code has a mistake, like a missing closing tag. Fix it and try again."}</PanelNote>}
       {draft === source && diagnostics.length > 0 && (
         <ul className="flex flex-col gap-0.5 text-[11px]" data-code-diagnostics="">
           {diagnostics.map((d, i) => (

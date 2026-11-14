@@ -134,7 +134,7 @@ const LABELS: Readonly<Record<string, string>> = {
   formName: "Name",
   "image.src": "Source", alt: "Alt text",
   "effects.transform": "Transform", "hover.background": "Background", "hover.textColor": "Text color", "hover.border": "Border",
-  layoutPreset: "Layout", typographyPreset: "Text style", "preset-items": "Items", zIndex: "Z-index",
+  layoutPreset: "Layout", typographyPreset: "Text style", "preset-items": "Items", zIndex: "Stack order",
   "state.text": "State text", "details.open": "Open by default",
   dataSource: "Source", // the group is already "Data source"; don't repeat it on the primary field
 };

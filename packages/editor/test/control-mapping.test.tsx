@@ -17,7 +17,7 @@ const row = (id: string) => inspectorRows().find((r) => r.id === id)!;
 const cls = (e: ReturnType<typeof fixtureEditor>, sel = "h1") => e.get(sel).attr("class") ?? "";
 
 describe("row → control mapping", () => {
-  it("Text style is the text-style picker and Spacing a three-part bundle (Line height, Tracking, Indent)", () => {
+  it("Text style is the text-style picker and Spacing a three-part bundle (Line height, Letter spacing, Indent)", () => {
     assert.equal(controlSpecFor("typographyPreset")?.kind, "textStyle");
     const s = CONTROL_SPECS.spacing;
     assert.equal(s?.kind, "bundle");
@@ -91,7 +91,7 @@ describe("Spacing bundle", () => {
     act(() => e.select(e.get("h1")));
     const r = mount(withEditor(e, <RowControl row={row("spacing")} handle={e.get("h1")} />));
     assert.equal(r.all("[data-bundle-control] input[type=text]").length, 3);
-    const tracking = r.get<HTMLInputElement>("input[aria-label='Tracking']");
+    const tracking = r.get<HTMLInputElement>("input[aria-label='Letter spacing']");
     await act(async () => void tracking.dispatchEvent(new FocusEvent("focusin", { bubbles: true })));
     await r.type(tracking, "tracking-wide");
     await act(async () => void tracking.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })));
@@ -105,7 +105,7 @@ describe("colour popover", () => {
     const { ColorPanelBody } = await import("../src/features/pickers/ColorPanelBody.tsx");
     const r = mount(<ColorPanelBody value="" onChange={() => {}} theme={{ light: () => [{ name: "primary", color: "#336699" }] }} />);
     const text = r.container.textContent ?? "";
-    assert.ok(text.indexOf("Design System") >= 0 && text.indexOf("Design System") < text.indexOf("Tailwind Colors"), "palette before the Tailwind shades");
+    assert.ok(text.indexOf("Design System") >= 0 && text.indexOf("Design System") < text.indexOf("More colors"), "palette before the Tailwind shades");
     const palette = [...r.container.querySelectorAll("span")].find((s) => s.textContent === "Design System")!;
     const picker = r.container.querySelector(".flexbox-fix, .sketch-picker, [class*=sketch]");
     if (picker) assert.ok(palette.compareDocumentPosition(picker) & Node.DOCUMENT_POSITION_FOLLOWING, "palette before the Sketch picker");

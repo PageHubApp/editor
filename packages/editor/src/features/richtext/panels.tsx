@@ -118,7 +118,7 @@ export function MorePanel({ session, onClose, openPanel }: PanelProps & { openPa
       </div>
       <div className="flex items-center gap-1 px-1 pb-1">
         <Icon name="braces" className="text-base-content/60 size-4" />
-        <input aria-label="Insert output" className={`${INPUT} flex-1`} placeholder="product.title" value={expr} onChange={(e) => setExpr(e.target.value)} onKeyDown={(e) => void (e.key === "Enter" && (e.preventDefault(), insertOutput()))} />
+        <input aria-label="Insert a value" className={`${INPUT} flex-1`} placeholder="product.title" value={expr} onChange={(e) => setExpr(e.target.value)} onKeyDown={(e) => void (e.key === "Enter" && (e.preventDefault(), insertOutput()))} />
       </div>
     </div>
   );

@@ -42,29 +42,29 @@ interface ActionSpec {
 
 const CART_FIELD: ActionField = { attr: "data-cart", label: "Cart", kind: "enum", options: ["add", "open", "checkout"], optionLabels: { add: "Add to cart", open: "Open cart", checkout: "Check out" } };
 /** Open in the same tab or a new one (`target` + implicit `rel=noopener`). */
-const TARGET_FIELD: ActionField = { attr: "target", label: "Open in", kind: "enum", options: ["_self", "_blank", "_parent", "_top"], optionLabels: { _self: "Same tab", _blank: "New tab", _parent: "Parent frame", _top: "Top frame" } };
-const REL_FIELD: ActionField = { attr: "rel", label: "Rel", kind: "string", placeholder: "noopener, nofollow…" };
+const TARGET_FIELD: ActionField = { attr: "target", label: "Open in", kind: "enum", options: ["_self", "_blank"], optionLabels: { _self: "Same tab", _blank: "New tab" } };
+const REL_FIELD: ActionField = { attr: "rel", label: "Link relationship (advanced)", kind: "string", placeholder: "noopener, nofollow…" };
 
 /** Action type id → its label, category and source form. Order = the picker's order. */
 export const ACTION_SPECS: Record<string, ActionSpec> = {
-  link: { label: "Link", group: "", attrs: [["href", ""]], fields: [{ attr: "href", label: "Link", kind: "string", placeholder: "/page, #anchor, https://…" }, TARGET_FIELD, REL_FIELD] },
-  "open-modal": { label: "Open Modal", group: "Open", attrs: [["command", "show-modal"]], fields: [{ attr: "commandfor", label: "Modal", kind: "string", placeholder: "dialog id" }, { attr: "command", label: "Command", kind: "enum", options: ["show-modal", "close"], optionLabels: { "show-modal": "Open", close: "Close" } }], preview: true },
+  link: { label: "Link", group: "", attrs: [["href", ""]], fields: [{ attr: "href", label: "Link", kind: "string", placeholder: "Page, web address, email or phone" }, TARGET_FIELD, REL_FIELD] },
+  "open-modal": { label: "Open popup", group: "Open", attrs: [["command", "show-modal"]], fields: [{ attr: "commandfor", label: "Popup", kind: "string", placeholder: "Popup name" }, { attr: "command", label: "Command", kind: "enum", options: ["show-modal", "close"], optionLabels: { "show-modal": "Open", close: "Close" } }], preview: true },
   "show-hide": { label: "Show / Hide", group: "Open", attrs: [["command", "toggle-popover"]], fields: [{ attr: "commandfor", label: "Target", kind: "string", placeholder: "element id" }, { attr: "command", label: "Direction", kind: "enum", options: ["toggle-popover", "show-popover", "hide-popover"], optionLabels: { "toggle-popover": "Toggle", "show-popover": "Show", "hide-popover": "Hide" } }, { attr: "data-state-on", label: "Trigger", kind: "enum", options: ["click", "hover", "load"], optionLabels: { click: "Click", hover: "Hover", load: "Page load" } }], preview: true },
-  "add-to-cart": { label: "Add to Cart", group: "Commerce", attrs: [["data-cart", "add"]], fields: [CART_FIELD] },
-  "toggle-cart": { label: "Toggle Cart", group: "Commerce", attrs: [["data-cart", "open"]], fields: [CART_FIELD], preview: true },
-  "cart-checkout": { label: "Checkout Cart", group: "Commerce", attrs: [["data-cart", "checkout"]], fields: [CART_FIELD] },
-  "manage-subscription": { label: "Manage Subscription", group: "Commerce", attrs: [["action", ""]], fields: [{ attr: "action", label: "Portal URL", kind: "string", placeholder: "account portal route" }] },
+  "add-to-cart": { label: "Add to cart", group: "Commerce", attrs: [["data-cart", "add"]], fields: [CART_FIELD] },
+  "toggle-cart": { label: "Toggle cart", group: "Commerce", attrs: [["data-cart", "open"]], fields: [CART_FIELD], preview: true },
+  "cart-checkout": { label: "Check out cart", group: "Commerce", attrs: [["data-cart", "checkout"]], fields: [CART_FIELD] },
+  "manage-subscription": { label: "Manage subscription", group: "Commerce", attrs: [["action", ""]], fields: [{ attr: "action", label: "Portal URL", kind: "string", placeholder: "account portal route" }] },
   "toggle-theme": { label: "Toggle light / dark", group: "System", attrs: [["data-theme-toggle", ""]], fields: [] },
-  "copy-to-clipboard": { label: "Copy to Clipboard", group: "System", attrs: [["data-copy", ""]], fields: [{ attr: "data-copy", label: "Text to copy", kind: "string" }] },
-  "download-file": { label: "Download File", group: "System", attrs: [["download", ""], ["href", ""]], fields: [{ attr: "href", label: "File URL", kind: "string" }, { attr: "download", label: "File name", kind: "string", placeholder: "report.pdf" }] },
-  "agent-send": { label: "Send Agent Message", group: "System", attrs: [["data-chat-send", ""]], fields: [{ attr: "data-chat-send", label: "Field name", kind: "string" }] },
-  "set-local-storage": { label: "Set Local Storage", group: "Storage", attrs: [["data-state-set", "local:"]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "local:key:value" }] },
-  "remove-local-storage": { label: "Remove Local Storage", group: "Storage", attrs: [["data-state-clear", "local:"]], fields: [{ attr: "data-state-clear", label: "Remove", kind: "string", placeholder: "local:key" }] },
-  "set-state": { label: "Set State", group: "State", attrs: [["data-state-set", ""]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "key:value" }], preview: true },
-  "toggle-state": { label: "Toggle State", group: "State", attrs: [["data-state-toggle", ""]], fields: [{ attr: "data-state-toggle", label: "Toggle", kind: "string", placeholder: "key or key:a|b" }], preview: true },
-  "clear-state": { label: "Clear State", group: "State", attrs: [["data-state-clear", ""]], fields: [{ attr: "data-state-clear", label: "Clear", kind: "string", placeholder: "key" }], preview: true },
-  "increment-state": { label: "Increment State", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:+1" }], preview: true },
-  "decrement-state": { label: "Decrement State", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:-1" }], preview: true },
+  "copy-to-clipboard": { label: "Copy to clipboard", group: "System", attrs: [["data-copy", ""]], fields: [{ attr: "data-copy", label: "Text to copy", kind: "string" }] },
+  "download-file": { label: "Download file", group: "System", attrs: [["download", ""], ["href", ""]], fields: [{ attr: "href", label: "File URL", kind: "string" }, { attr: "download", label: "File name", kind: "string", placeholder: "report.pdf" }] },
+  "agent-send": { label: "Send agent message", group: "System", attrs: [["data-chat-send", ""]], fields: [{ attr: "data-chat-send", label: "Field name", kind: "string" }] },
+  "set-local-storage": { label: "Save in the visitor's browser", group: "Storage", attrs: [["data-state-set", "local:"]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "local:key:value" }] },
+  "remove-local-storage": { label: "Remove from the visitor's browser", group: "Storage", attrs: [["data-state-clear", "local:"]], fields: [{ attr: "data-state-clear", label: "Remove", kind: "string", placeholder: "local:key" }] },
+  "set-state": { label: "Set a value", group: "State", attrs: [["data-state-set", ""]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "key:value" }], preview: true },
+  "toggle-state": { label: "Switch a value", group: "State", attrs: [["data-state-toggle", ""]], fields: [{ attr: "data-state-toggle", label: "Toggle", kind: "string", placeholder: "key or key:a|b" }], preview: true },
+  "clear-state": { label: "Clear a value", group: "State", attrs: [["data-state-clear", ""]], fields: [{ attr: "data-state-clear", label: "Clear", kind: "string", placeholder: "key" }], preview: true },
+  "increment-state": { label: "Add 1 to a value", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:+1" }], preview: true },
+  "decrement-state": { label: "Subtract 1 from a value", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:-1" }], preview: true },
 };
 
 /** The action types in picker order (keys of `ACTION_SPECS`). */
@@ -80,19 +80,19 @@ interface HandlerEvent {
 
 /** Events the Handlers "+" lists, in picker order. The id (`event`) is the `data-on` name. */
 export const HANDLER_EVENTS: readonly HandlerEvent[] = [
-  { event: "click", label: "On Click" },
-  { event: "dblclick", label: "On Double Click" },
-  { event: "mouseenter", label: "On Mouse Enter" },
-  { event: "mouseleave", label: "On Mouse Leave" },
-  { event: "mousedown", label: "On Mouse Down" },
-  { event: "mouseup", label: "On Mouse Up" },
-  { event: "focus", label: "On Focus" },
-  { event: "blur", label: "On Blur" },
-  { event: "keydown", label: "On Key Down" },
-  { event: "keyup", label: "On Key Up" },
-  { event: "submit", label: "On Submit" },
-  { event: "change", label: "On Change" },
-  { event: "input", label: "On Input" },
+  { event: "click", label: "On click" },
+  { event: "dblclick", label: "On double click" },
+  { event: "mouseenter", label: "On mouse enter" },
+  { event: "mouseleave", label: "On mouse leave" },
+  { event: "mousedown", label: "On mouse down" },
+  { event: "mouseup", label: "On mouse up" },
+  { event: "focus", label: "On focus" },
+  { event: "blur", label: "On blur" },
+  { event: "keydown", label: "On key down" },
+  { event: "keyup", label: "On key up" },
+  { event: "submit", label: "On submit" },
+  { event: "change", label: "On change" },
+  { event: "input", label: "On input" },
 ];
 
 /** The handler options the site runtime recognises as a `data-on` suffix (`chunks/on.ts`). */

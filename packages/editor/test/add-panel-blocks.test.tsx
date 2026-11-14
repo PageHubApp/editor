@@ -176,7 +176,7 @@ describe("add panel: block insert", () => {
     assert.equal(e.text(), PAGE);
   });
 
-  it("'Add block above / below' (canvas context menu) opens Blocks; the next double-click lands there once", async () => {
+  it("'Add section above / below' (canvas context menu) opens Sections; the next double-click lands there once", async () => {
     const e = editor();
     assert.ok((e.state.facet(menusFacet)["canvas/context"] ?? []).some((m) => m.command === "insert.blockAbove"));
     e.select(e.get("p"));

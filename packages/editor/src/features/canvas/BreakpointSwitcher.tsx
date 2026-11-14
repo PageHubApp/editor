@@ -75,7 +75,7 @@ export function BreakpointSwitcher() {
   const chip = chips.find((c) => c.view === view);
   return (
     <div data-slot="BreakpointSwitcher" onMouseEnter={enter} onMouseLeave={leave}>
-      <button ref={trigger} type="button" data-bp-trigger="" aria-label="Breakpoints and zoom" aria-haspopup="menu" aria-expanded={open} className="btn btn-ghost btn-sm gap-1" onClick={() => setOpen((o) => !o)} {...tooltip("Breakpoints and zoom", "bottom")}>
+      <button ref={trigger} type="button" data-bp-trigger="" aria-label="Screen size and zoom" aria-haspopup="menu" aria-expanded={open} className="btn btn-ghost btn-sm gap-1" onClick={() => setOpen((o) => !o)} {...tooltip("Screen size and zoom", "bottom")}>
         {!fit && zoom !== 1 ? (
           <span data-bp-zoom="">{pct(zoom)}</span>
         ) : chip ? (
@@ -87,7 +87,7 @@ export function BreakpointSwitcher() {
         )}
       </button>
       <AnchoredPopover open={open} onOpenChange={setOpen} anchor={trigger} placement="bottom-start" className="bg-base-100 border-base-300 w-64 rounded-xl border p-2 shadow-lg">
-        <div role="menu" aria-label="Breakpoints" data-bp-menu="" onMouseEnter={enter} onMouseLeave={leave} className="flex flex-col gap-1">
+        <div role="menu" aria-label="Screen sizes" data-bp-menu="" onMouseEnter={enter} onMouseLeave={leave} className="flex flex-col gap-1">
           <label className={TOGGLE}>
             Responsive
             <input type="checkbox" className="toggle toggle-xs" checked={responsive} onChange={() => run("canvas.set", { responsive: !responsive })} />
@@ -96,7 +96,7 @@ export function BreakpointSwitcher() {
             Device
             <input type="checkbox" className="toggle toggle-xs" checked={device} onChange={() => run("canvas.toggleDevice")} />
           </label>
-          <div className="text-neutral-content mt-1 px-0.5 text-[10px] font-semibold tracking-wide uppercase">Breakpoints</div>
+          <div className="text-neutral-content mt-1 px-0.5 text-[10px] font-semibold tracking-wide uppercase">Screen sizes</div>
           <div className="grid grid-cols-3 gap-1 py-1">
             {chips.map((c) => (
               <button

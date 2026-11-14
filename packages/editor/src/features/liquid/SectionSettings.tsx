@@ -74,8 +74,8 @@ export function SectionSettingsPanel({ handle }: { handle: NodeHandle }) {
   const name = parseNamed(useMarkup(handle))?.name ?? "";
   const file = useEditorState((s) => s.files.get(`sections/${name}.liquid`));
   const args = useEditorState(() => Object.fromEntries(handle.alive ? handle.args().map((a) => [a.name, a.source]) : []), (a, b) => JSON.stringify(a) === JSON.stringify(b));
-  const { schema, errors } = file === undefined ? { schema: null, errors: [`sections/${name}.liquid not found`] } : readSchema(file);
-  if (!schema) return <PanelNote>{errors[0] ?? "This section has no {% schema %}, so it has no settings."}</PanelNote>;
+  const { schema, errors } = file === undefined ? { schema: null, errors: ["This section's file is missing."] } : readSchema(file);
+  if (!schema) return <PanelNote>{errors[0] ?? "This section has no settings to change here."}</PanelNote>;
   const settings = schema.settings ?? [];
   if (!settings.length) return <PanelNote>{schema.name} has no settings.</PanelNote>;
   return (

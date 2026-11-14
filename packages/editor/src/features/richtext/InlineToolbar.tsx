@@ -65,7 +65,7 @@ export function InlineToolbar({ session, panel, openPanel }: InlineToolbarProps)
           <Divider />
           <ToolButton icon="font" label="Font" onClick={() => openPanel("font")} />
           <Divider />
-          <ToolButton icon="link" label="Insert Link (⌘K)" tint={ed.isActive("link")} onClick={() => openPanel("link")} />
+          <ToolButton icon="link" label="Link (⌘K)" tint={ed.isActive("link")} onClick={() => openPanel("link")} />
           <Divider />
           <div className="flex items-center gap-1 px-1">
             <Swatch active={panel === "textcolor"} token={color} label={color ? "Text color" : "Text color (inherited)"} onClick={() => openPanel("textcolor")}>

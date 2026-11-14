@@ -77,10 +77,10 @@ export function BgImageControl() {
 function ExpressionToggle({ id, value, onCommit }: { id: string; value: string; onCommit(v: string): void }) {
   const [open, setOpen] = useState(false);
   return open ? (
-    <ExpressionField id={id} label="Expression" value={value} autoFocus onCommit={(v) => (onCommit(v), setOpen(false))} />
+    <ExpressionField id={id} label="Web address or data value" value={value} autoFocus onCommit={(v) => (onCommit(v), setOpen(false))} />
   ) : (
     <button type="button" onClick={() => setOpen(true)} className="text-base-content/55 hover:text-base-content self-end text-[11px]">
-      Edit as expression
+      Use a web address or data value
     </button>
   );
 }

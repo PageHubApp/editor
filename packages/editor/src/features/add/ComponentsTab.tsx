@@ -141,7 +141,7 @@ export function ComponentsTab() {
   return (
     <div data-add-components="" className="flex flex-1 flex-col overflow-hidden">
       <PanelHeaderRow>
-        <SearchInput ref={input} value={query} onChange={(q) => run("insert.set", { query: q })} placeholder="Search components..." />
+        <SearchInput ref={input} value={query} onChange={(q) => run("insert.set", { query: q })} placeholder="Search elements..." />
         <FilterDropdown label="Category" icon="category" value={filter} open={filterOpen} onOpenChange={setFilterOpen} items={cats.map((c) => ({ name: c.title, count: c.tiles.length }))} onSelect={(n) => (setFilter(n), setFilterOpen(false))} onClear={() => setFilter(null)} />
       </PanelHeaderRow>
       <div className="scrollbar flex-1 overflow-y-auto">

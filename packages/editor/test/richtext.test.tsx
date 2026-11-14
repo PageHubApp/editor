@@ -153,8 +153,8 @@ test("txt: main toolbar row only with a non-empty selection: Bold, Italic, Under
   assert.equal(r.container.querySelector("[data-rt-toolbar-row]"), null, "collapsed caret: no row");
   act(() => void ed.commands.setTextSelection({ from: 7, to: 9 })); // inside the link
   const labels = r.all("[data-rt-toolbar-row] button").map((b) => b.getAttribute("aria-label"));
-  assert.deepEqual(labels, ["Bold (⌘B)", "Italic (⌘I)", "Underline (⌘U)", "Font", "Insert Link (⌘K)", "Text color (inherited)", "Highlight (none)", "More"]);
-  assert.match(r.get('[aria-label="Insert Link (⌘K)"]').className, /text-primary/, "tinted inside a link");
+  assert.deepEqual(labels, ["Bold (⌘B)", "Italic (⌘I)", "Underline (⌘U)", "Font", "Link (⌘K)", "Text color (inherited)", "Highlight (none)", "More"]);
+  assert.match(r.get('[aria-label="Link (⌘K)"]').className, /text-primary/, "tinted inside a link");
   assert.equal(r.get('[aria-label="Bold (⌘B)"]').getAttribute("data-tooltip-content"), "Bold (⌘B)");
   assert.equal(r.get('[aria-label="Bold (⌘B)"]').hasAttribute("title"), false);
 });
@@ -251,8 +251,8 @@ test("txt: More panel — strike / superscript / subscript, clear formatting, in
   assert.ok(ed.isActive("strike") && ed.isActive("subscript") && !ed.isActive("superscript"), "sub excludes sup");
   await r.click(r.get('[aria-label="Clear formatting"]'));
   assert.ok(!ed.isActive("strike"));
-  await r.type(r.get('input[aria-label="Insert output"]'), "shop.name");
-  await act(async () => void r.get('input[aria-label="Insert output"]').dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
+  await r.type(r.get('input[aria-label="Insert a value"]'), "shop.name");
+  await act(async () => void r.get('input[aria-label="Insert a value"]').dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
   await act(async () => void e.select(e.get("main")));
   assert.match(e.text(), /<h1 class="text-xl">{{ shop.name }} <a href="\/old">/);
   e.select(e.get("h1"));

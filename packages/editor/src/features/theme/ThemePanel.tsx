@@ -47,7 +47,7 @@ export function ThemePanel({ open, onClose }: ThemePanelProps) {
           })}
         </Section>
 
-        <Section title="Spacing" hint="Scales the spacing tokens (py-space-lg, gap-space-sm); fixed paddings like p-4 stay put.">
+        <Section title="Spacing" hint="Makes all padding and gaps on the site bigger or smaller.">
           {(() => {
             const density = values.density ?? DENSITY_DEFAULT;
             return <SliderRow label="Density" value={density} min={0.5} max={2} step={0.1} suffix={`×${density.toFixed(2)}`} onChange={(v) => setVar(DENSITY_VAR, String(Math.round(v * 100) / 100))} />;

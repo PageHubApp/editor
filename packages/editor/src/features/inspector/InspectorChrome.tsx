@@ -65,8 +65,8 @@ export function InspectorEmptyState(p: InspectorEmptyStateProps) {
         )}
         {p.mode === "page" && (
           <div className="flex w-full max-w-md flex-col gap-1 text-sm">
-            {p.blocks && <ActionRow icon={glyph("blocks")} title="Add Blocks" description="Like heroes, CTAs, cards, and more…" onClick={p.onAddBlocks} />}
-            <ActionRow icon={<Icon name="plus" className="size-6" />} title="Add Components" description="Like buttons, images, and text..." onClick={p.onAddComponents} />
+            {p.blocks && <ActionRow icon={glyph("blocks")} title="Add sections" description="Like heroes, CTAs, cards, and more…" onClick={p.onAddBlocks} />}
+            <ActionRow icon={<Icon name="plus" className="size-6" />} title="Add elements" description="Like buttons, images, and text..." onClick={p.onAddComponents} />
             {p.reusable && <ActionRow icon={glyph("box-model")} title="Reusable components" description="Save a layout once, drop it on every page…" onClick={p.onNewReusable} />}
             {p.aiCard}
           </div>
@@ -109,7 +109,7 @@ export function LinkedInstanceBar({ name, actions }: { name: string; actions: re
           <InspectorIcon name="link" className="size-5" />
         </div>
         <div className="flex flex-col text-left">
-          <span className="text-base-content/60 text-[11px]">Linked instance of</span>
+          <span className="text-base-content/60 text-[11px]">Copy of component</span>
           <span className="text-base-content text-sm font-medium">{name}</span>
         </div>
       </div>

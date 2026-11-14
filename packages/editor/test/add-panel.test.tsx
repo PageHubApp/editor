@@ -188,7 +188,7 @@ describe("add panel: shell", () => {
     assert.equal(addPanelOf(e.state).open, false, "popping out the layers closes it");
   });
 
-  it("tabs Components | Blocks; ←/→ cycle; without a block source (or enabled: false) the strip is dropped", async () => {
+  it("tabs Elements | Sections; ←/→ cycle; without a block source (or enabled: false) the strip is dropped", async () => {
     const e = addEditor(PAGE, [blockSourceFacet.of({ blocks: () => [] })]);
     const r = mount(e);
     const comp = r.get('[data-add-tab="components"]');

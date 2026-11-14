@@ -39,12 +39,12 @@ describe("inspector: empty state and element swap", () => {
     const e = pageEditor(undefined, [inspectorConfig({ blocks: false, closable: true, aiCard: <div data-ai-card="" /> })]);
     const r = inspector(e);
     const rows = r.all("[data-action-row]").map((b) => b.getAttribute("data-action-row"));
-    assert.deepEqual(rows, ["Add Components", "Reusable components"]);
+    assert.deepEqual(rows, ["Add elements", "Reusable components"]);
     assert.ok(r.container.querySelector("[data-ai-card]"));
     assert.ok(r.all("button").some((b) => b.textContent === "close sidebar"));
     r.unmount();
     const plain = inspector(pageEditor());
-    assert.deepEqual(plain.all("[data-action-row]").map((b) => b.getAttribute("data-action-row")), ["Add Blocks", "Add Components", "Reusable components"]);
+    assert.deepEqual(plain.all("[data-action-row]").map((b) => b.getAttribute("data-action-row")), ["Add sections", "Add elements", "Reusable components"]);
     assert.ok(!plain.all("button").some((b) => b.textContent === "close sidebar"));
     plain.unmount();
   });
@@ -68,8 +68,8 @@ describe("inspector: empty state and element swap", () => {
     const r = inspector(e);
     assert.equal(r.container.querySelector('[role="tablist"]'), null);
     assert.equal(r.get("[data-linked-instance]").getAttribute("data-linked-instance"), "header");
-    assert.deepEqual(r.all("[data-action-row]").map((b) => b.getAttribute("data-action-row")), ["Edit Linked Instance", "Style Only Mode", "Content Only Mode", "Unlink Component"]);
-    await r.click(r.get('[data-action-row="Edit Linked Instance"]'));
+    assert.deepEqual(r.all("[data-action-row]").map((b) => b.getAttribute("data-action-row")), ["Edit the shared component", "Change only this copy's look", "Change only this copy's text", "Make this copy independent"]);
+    await r.click(r.get('[data-action-row="Edit the shared component"]'));
     assert.equal(inspectorUi(e).componentEditor, "partials/header.liquid");
     assert.ok(r.get('[role="tablist"]'), "inside the component editor the tabs show");
     r.unmount();

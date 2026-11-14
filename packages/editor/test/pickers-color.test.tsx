@@ -95,7 +95,7 @@ describe("ColorInput (connector → classes.set)", () => {
     assert.equal(frame.style.width, "280px");
     assert.equal(frame.style.height, "540px");
     assert.equal(r.all("[data-resize-edge]").length, 3);
-    for (const t of ["Design System", "Special", "Tailwind Colors"]) assert.match(panel.textContent ?? "", new RegExp(t));
+    for (const t of ["Design System", "Special", "More colors"]) assert.match(panel.textContent ?? "", new RegExp(t));
     assert.equal(r.all("[role=dialog]").length, 1);
     await r.click(trigger(r));
     assert.equal(r.all("[role=dialog]").length, 0);

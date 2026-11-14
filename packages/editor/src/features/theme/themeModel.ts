@@ -33,17 +33,17 @@ interface PaletteToken {
 /** The palette rows the panel shows, paired content colours next to their surface. */
 export const PALETTE_TOKENS: readonly PaletteToken[] = [
   { name: "primary", label: "Primary" },
-  { name: "primary-content", label: "On primary" },
+  { name: "primary-content", label: "Text on primary" },
   { name: "secondary", label: "Secondary" },
   { name: "secondary-content", label: "On secondary" },
   { name: "accent", label: "Accent" },
   { name: "accent-content", label: "On accent" },
   { name: "neutral", label: "Neutral" },
   { name: "neutral-content", label: "On neutral" },
-  { name: "base-100", label: "Base 100" },
-  { name: "base-200", label: "Base 200" },
-  { name: "base-300", label: "Base 300" },
-  { name: "base-content", label: "Base content" },
+  { name: "base-100", label: "Page background" },
+  { name: "base-200", label: "Card background" },
+  { name: "base-300", label: "Borders and dividers" },
+  { name: "base-content", label: "Text" },
 ];
 
 interface RadiusKey {

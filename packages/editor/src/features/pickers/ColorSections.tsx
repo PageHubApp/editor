@@ -220,7 +220,7 @@ export function RecentSection({ recent, onClear, p }: { recent: readonly string[
 export function TailwindSection({ p }: { p: Pick }) {
   return (
     <div>
-      <span className="text-base-content mb-1.5 block text-xs font-medium">Tailwind Colors</span>
+      <span className="text-base-content mb-1.5 block text-xs font-medium">More colors</span>
       <div className="space-y-3">
         {TAILWIND_COLOR_GROUPS.map((g) => (
           <div key={g}>
