@@ -9,6 +9,7 @@ import { HOVER_CLOSE_MS } from "../src/features/canvas/BreakpointSwitcher.tsx";
 import { RENAME_DEBOUNCE_MS } from "../src/features/canvas/CanvasOverlays.tsx";
 import { DEVICE_GUIDES, defaultView, deviceFrame, fitModeFor, fitZoom, scopeBand, viewWidth, canvasBoxStyle, edgeDragWidth } from "../src/features/canvas/viewportMath.ts";
 import { canvasEditor, fireIn, mountCanvas, rendered, setRect, wait } from "./canvasHarness.tsx";
+import { until } from "./keys.ts";
 import { actRun } from "./harness.tsx";
 
 let cleanup: (() => void) | null = null;
@@ -488,10 +489,11 @@ describe("side-by-side mirror", () => {
     await fireIn(mirror.contentDocument!.querySelector("h1")!, "mousedown");
     assert.equal(e.state.selection.primary, null, "read-only: clicks select nothing");
     actRun(e, "attr.set", { name: "alt", value: "Z", at: e.get("img") });
-    await wait(20);
-    assert.notEqual(mirror.contentDocument!.querySelector("img")!.getAttribute("alt"), "Z", "not yet");
-    await wait(80);
-    assert.equal((r.get("[data-mirror-frame]") as HTMLIFrameElement).contentDocument!.querySelector("img")!.getAttribute("alt"), "Z");
+    const mirrorAlt = () => (r.get("[data-mirror-frame]") as HTMLIFrameElement).contentDocument!.querySelector("img")?.getAttribute("alt");
+    assert.notEqual(mirrorAlt(), "Z", "not yet: the mirror waits out its delay");
+    const t0 = Date.now();
+    await until(() => mirrorAlt() === "Z", "the mirror to re-render");
+    assert.ok(Date.now() - t0 >= 50, "re-rendered after the ~60ms delay, not at once");
     actRun(e, "canvas.toggleDevice");
     assert.equal(r.all("[data-mirror]").length, 0);
   });

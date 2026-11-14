@@ -10,7 +10,7 @@ import { chromeOf } from "../src/shell/chromeState.ts";
 import { fuzzyScore, searchEntries, type PaletteEntry } from "../src/features/palette/paletteSearch.ts";
 import { resetOverlaysForTests } from "../src/primitives/overlayStack.ts";
 import { FIXTURE, fixtureEditor, render, type Rendered } from "./harness.tsx";
-import { press, wait } from "./keys.ts";
+import { press, until, wait } from "./keys.ts";
 
 let e: ReturnType<typeof fixtureEditor>;
 let r: Rendered;
@@ -32,7 +32,8 @@ const active = () => document.body.querySelector('[role="option"][aria-selected=
 
 async function openPalette() {
   press("ctrl+k");
-  await wait(300);
+  // Open once the fade-in has run (the backdrop's blur goes on two frames after mount).
+  await until(() => [...document.body.querySelectorAll<HTMLElement>("[data-modal-backdrop]")].some((b) => b.style.backdropFilter.includes("2px")), "the palette to open");
 }
 
 beforeEach(() => {

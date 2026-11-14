@@ -16,3 +16,12 @@ export function press(spec: string, target: EventTarget = document.body): boolea
 }
 
 export const wait = (ms: number) => act(() => new Promise<void>((r) => setTimeout(r, ms)));
+
+/** Poll (10ms steps, inside `act`) until `cond` holds; throws after `timeout` ms. For waits that a busy test run can stretch. */
+export async function until(cond: () => boolean, what = "the condition", timeout = 3000): Promise<void> {
+  const end = Date.now() + timeout;
+  while (!cond()) {
+    if (Date.now() > end) throw new Error(`timed out waiting for ${what}`);
+    await wait(10);
+  }
+}
