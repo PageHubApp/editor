@@ -26,7 +26,7 @@ export const insertRowApplies = (command: string, h: Selected): boolean => !INSE
 /** Opens the Add panel's components tab; runnable on a section, container or page (the flyout's targets). */
 const insertComponentMenu = defineCommand({
   id: "insert.component",
-  title: "Insert component",
+  title: "Insert element",
   run(ctx) {
     if (!isCanvasTarget(ctx.selection.primary as Selected)) return false;
     return !!ctx.state.facet(commandsFacet).get("insert.open")?.run(ctx, { tab: "components" });

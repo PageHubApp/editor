@@ -46,7 +46,7 @@ describe("context menu: clipboard rows", () => {
     await openAt();
     assert.deepEqual(
       items().map((i) => i.dataset.command ?? `${i.dataset.submenuTrigger}▸`),
-      ["selection.clear", "element.copy", "classes.copy", "element.selectParent", "element.moveUp", "element.moveDown", "element.duplicate", "element.remove"],
+      ["selection.clear", "element.cut", "element.copy", "classes.copy", "element.selectParent", "element.moveUp", "element.moveDown", "element.duplicate", "element.wrap", "element.remove"],
     );
     assert.equal([...menu()!.children].filter((c) => !c.hasAttribute("role")).length, 3, "dividers between the four groups");
   });
@@ -60,7 +60,7 @@ describe("context menu: clipboard rows", () => {
     await openAt();
     assert.deepEqual(
       items().map((i) => i.dataset.command ?? `${i.dataset.submenuTrigger}▸`),
-      ["selection.clear", "element.copy", "classes.copy", "element.paste", "classes.paste", "element.selectParent", "element.moveUp", "element.moveDown", "element.duplicate", "element.remove"],
+      ["selection.clear", "element.cut", "element.copy", "classes.copy", "element.paste", "classes.paste", "element.selectParent", "element.moveUp", "element.moveDown", "element.duplicate", "element.wrap", "element.remove"],
     );
     const seq = [...menu()!.children].map((c) => (c.getAttribute("role") === "menuitem" ? (c as HTMLElement).dataset.command : c.hasAttribute("data-submenu") ? "insert▸" : "|"));
     assert.deepEqual(seq.filter((x) => x === "|").length, 3);

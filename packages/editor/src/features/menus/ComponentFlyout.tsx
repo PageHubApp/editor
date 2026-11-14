@@ -27,8 +27,8 @@ export function ComponentFlyout({ onPicked }: { onPicked(): void }) {
         ref={input}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search components"
-        aria-label="Search components"
+        placeholder="Search elements"
+        aria-label="Search elements"
         className="border-base-300 bg-base-100 m-2 shrink-0 rounded-md border px-2 py-1 text-xs outline-none"
       />
       <div className="min-h-0 flex-1 overflow-y-auto pb-1">

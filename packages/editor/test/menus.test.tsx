@@ -33,7 +33,7 @@ describe("context menu", () => {
     assert.equal(m.style.left, "120px");
     assert.equal(m.style.top, "80px");
     assert.ok(m.className.includes("fixed") && m.className.includes("min-w-[12rem]") && m.className.includes("rounded-xl"));
-    assert.deepEqual(items().map((i) => i.dataset.command ?? `${i.dataset.submenuTrigger}▸`), ["selection.clear", "element.copy", "classes.copy", "element.moveUp", "element.moveDown", "insert▸", "element.duplicate", "element.remove"]);
+    assert.deepEqual(items().map((i) => i.dataset.command ?? `${i.dataset.submenuTrigger}▸`), ["selection.clear", "element.cut", "element.copy", "classes.copy", "element.moveUp", "element.moveDown", "insert▸", "element.duplicate", "element.wrap", "element.remove"]);
     assert.equal(m.querySelectorAll(".border-t").length, 4, "dividers between the groups");
   });
 

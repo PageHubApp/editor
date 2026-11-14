@@ -45,14 +45,14 @@ describe("context menu: Insert ▸ submenu", () => {
     const seq = () => [...menu()!.children].map((c) => (c.getAttribute("role") === "menuitem" ? ((c as HTMLElement).dataset.command ?? (c as HTMLElement).dataset.submenuTrigger) : c.getAttribute("data-submenu") ? "insert▸" : "|"));
     e.select(e.get("section"));
     await open();
-    assert.deepEqual(seq(), ["selection.clear", "|", "element.copy", "classes.copy", "|", "element.selectParent", "element.moveUp", "element.moveDown", "|", "insert▸", "|", "element.duplicate", "element.remove"]);
+    assert.deepEqual(seq(), ["selection.clear", "|", "element.cut", "element.copy", "classes.copy", "|", "element.selectParent", "element.moveUp", "element.moveDown", "|", "insert▸", "|", "element.duplicate", "element.wrap", "element.remove"]);
     await act(async () => void e.run("contextMenu.close"));
     e.select(e.get("h1"));
     await open();
-    assert.deepEqual(seq(), ["selection.clear", "|", "element.copy", "classes.copy", "|", "element.selectParent", "element.moveUp", "element.moveDown", "|", "element.duplicate", "element.remove"], "a text element has no Insert ▸");
+    assert.deepEqual(seq(), ["selection.clear", "|", "element.cut", "element.copy", "classes.copy", "|", "element.selectParent", "element.moveUp", "element.moveDown", "|", "element.duplicate", "element.wrap", "element.remove"], "a text element has no Insert ▸");
   });
 
-  it("opens on hover (right of the row) with the rows that apply (Insert component ▸, Add container on a section)", async () => {
+  it("opens on hover (right of the row) with the rows that apply (Insert element ▸, Add container on a section)", async () => {
     mount();
     e.select(e.get("section"));
     await open();
@@ -108,7 +108,7 @@ describe("context menu: Insert ▸ submenu", () => {
   });
 });
 
-describe("context menu: Insert component flyout", () => {
+describe("context menu: Insert element flyout", () => {
   const openFlyout = async () => {
     e.select(e.get("section"));
     await open();
@@ -122,7 +122,7 @@ describe("context menu: Insert component flyout", () => {
     const f = flyout()!;
     assert.equal(f.style.width, "280px");
     assert.equal(f.style.height, "360px");
-    assert.ok(f.querySelector('input[aria-label="Search components"]'));
+    assert.ok(f.querySelector('input[aria-label="Search elements"]'));
     assert.ok([...f.querySelectorAll("div")].some((d) => d.textContent === "Layout"), "category header");
     assert.ok(f.querySelector('[data-tile="html.heading"]'));
     assert.ok(f.querySelector("[data-flyout-open-tab]"));

@@ -38,12 +38,14 @@ export const HTML_KEYBINDINGS = contributes({
   menus: {
     "canvas/context": [
       { command: "selection.clear", group: "1_selection@1" },
+      { command: "element.cut", group: "2_clipboard@0" },
       { command: "element.copy", group: "2_clipboard@1" },
       { command: "element.paste", group: "2_clipboard@2" },
       { command: "element.selectParent", group: "3_navigate@1" },
       { command: "element.moveUp", group: "3_navigate@2" },
       { command: "element.moveDown", group: "3_navigate@3" },
       { command: "element.duplicate", group: "5_edit@1" },
+      { command: "element.wrap", group: "5_edit@2" },
       { command: "element.remove", group: "5_edit@3" },
     ],
   },
