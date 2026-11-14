@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from "react";
 import { EDIT_ATTRIBUTES } from "@pagehub/engine";
 import { collectionRowsFacet, type CollectionRowLabel, type CollectionRows } from "@pagehub/engine/host";
 import { useEditorState } from "../../react/bindings";
+import { humanize } from "../../state/nodeName";
 import { tooltip } from "../../primitives/tooltip";
 import { Icon } from "../../primitives/icons";
 
@@ -27,10 +28,7 @@ export function entryOf(el: Element | null | undefined): EntryRef | null {
 }
 
 /** `product_type` → "Product type". */
-export const fieldLabel = (field: string): string => {
-  const words = field.replace(/[_-]+/g, " ").trim();
-  return words.charAt(0).toUpperCase() + words.slice(1);
-};
+export const fieldLabel = humanize;
 
 export interface EntryLink {
   rows: CollectionRows;

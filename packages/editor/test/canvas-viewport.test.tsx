@@ -212,10 +212,10 @@ describe("viewport", () => {
     assert.equal(chromeOf(e.state).zoom, 0.5);
   });
 
-  it("scope band (22px): Base slate 'Editing Base · applies to all sizes'; breakpoints sky / emerald / violet / pink / rose; multi-scope amber with Clear", async () => {
-    assert.deepEqual([scopeBand("desktop", []).head, scopeBand("desktop", []).detail], ["Editing Base", "changes apply to all sizes"]);
+  it("scope band (22px): Base slate 'Editing all screen sizes · changes apply everywhere'; breakpoints sky / emerald / violet / pink / rose; multi-scope amber with Clear", async () => {
+    assert.deepEqual([scopeBand("desktop", []).head, scopeBand("desktop", []).detail], ["Editing all screen sizes", "changes apply everywhere"]);
     assert.equal(scopeBand("desktop", []).color, "#64748b");
-    assert.deepEqual([scopeBand("md", []).head, scopeBand("md", []).detail], ["Editing MD", "768px and up · changes here override Base"]);
+    assert.deepEqual([scopeBand("md", []).head, scopeBand("md", []).detail], ["Editing MD and wider", "768px and up · changes apply on screens this wide and wider"]);
     assert.deepEqual(["sm", "md", "lg", "xl", "2xl"].map((v) => scopeBand(v as any, []).color), ["#0ea5e9", "#10b981", "#8b5cf6", "#ec4899", "#f43f5e"]);
     assert.equal(scopeBand("desktop", ["md", "lg"]).color, "#f59e0b");
     assert.equal(scopeBand("desktop", ["md"]).color, "#10b981");
@@ -225,7 +225,7 @@ describe("viewport", () => {
     actRun(e, "ui.set", { multiScope: ["md", "lg"] });
     assert.match(r.get("[data-scope-band]").textContent!, /Editing MD \+ LG/);
     await r.click(r.get("[data-scope-band] button"));
-    assert.equal(r.get("[data-scope-band]").textContent, "Editing Basechanges apply to all sizes");
+    assert.equal(r.get("[data-scope-band]").textContent, "Editing all screen sizeschanges apply everywhere");
     for (const v of ["sm", "md", "lg", "xl", "2xl", "desktop"] as const) {
       const b = scopeBand(v, []);
       const lum = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)).reduce((a, c, i) => a + c * [0.2126, 0.7152, 0.0722][i]!, 0);
@@ -419,7 +419,7 @@ describe("breadcrumb", () => {
     const rows = r.all("[data-path-row]");
     const labels = rows.map((x) => x.textContent);
     assert.equal(labels[0], "Page");
-    assert.deepEqual(labels.slice(1, 4), ["Container", "List", "for"]);
+    assert.deepEqual(labels.slice(1, 4), ["Container", "List", "Repeat"]);
     assert.deepEqual(rows.map((x) => x.getAttribute("data-path-row")), rows.map((_, i) => String(i)), "one level per row");
     const last = rows[rows.length - 1]!;
     assert.equal(last.getAttribute("aria-current"), "true");

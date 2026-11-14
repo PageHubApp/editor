@@ -21,7 +21,7 @@ const PANELS: Readonly<Record<string, { title: string; Panel: ComponentType<Bloc
   case: { title: "Case", Panel: CasePanel },
   paginate: { title: "Pagination", Panel: PaginatePanel },
   form: { title: "Form", Panel: FormPanel },
-  render: { title: "Partial", Panel: RenderPanel },
+  render: { title: "Component", Panel: RenderPanel },
   section: { title: "Section settings", Panel: SectionSettingsPanel },
 };
 

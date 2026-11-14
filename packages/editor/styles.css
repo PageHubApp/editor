@@ -232,6 +232,12 @@
   --color-base-content: hsl(0 0% 6%);
   --color-neutral: hsl(0 0% 96%);
   --color-neutral-content: hsl(0 0% 45%);
+  /* The chrome's own accent (the selection / focus blue), so a `btn-primary` or `bg-primary` in the chrome never
+   * picks up the host site's brand colour; flat buttons (no daisyUI depth shadow or noise). */
+  --color-primary: hsl(217.2 91.2% 59.8%);
+  --color-primary-content: hsl(0 0% 100%);
+  --depth: 0;
+  --noise: 0;
 }
 
 [data-ph-editor-scope][data-theme="dark"],
@@ -242,6 +248,8 @@
   --color-base-content: hsl(0 0% 93%);
   --color-neutral: hsl(0 0% 20%);
   --color-neutral-content: hsl(0 0% 68%);
+  --color-primary: hsl(213.1 93.9% 67.8%);
+  --color-primary-content: hsl(222 47% 11%);
 }
 
 /* ─── Styled select dropdown — ToolbarDropdown's Headless UI Listbox panel ────

@@ -62,7 +62,8 @@ function NodeBreadcrumb({ partial }: { partial: string | null }) {
   }
   const crumbs = crumbsOf(primary);
   const name = stripPrefix(nodeName(primary), crumbs.length > 1 ? nodeName(crumbs[crumbs.length - 2]!) : null);
-  const type = primary.tag.toLowerCase() === name.toLowerCase() ? "" : primary.tag;
+  // The HTML tag beside an element's name ("h1"); a Liquid node's name already says what it is.
+  const type = primary.kind !== "element" || primary.tag.toLowerCase() === name.toLowerCase() ? "" : primary.tag;
   const context = (e: MouseEvent) => {
     e.preventDefault();
     store.select(primary);

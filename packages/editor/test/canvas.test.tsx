@@ -182,13 +182,13 @@ describe("canvas: repeated rows and includes", () => {
     assert.equal(badges[0]!.parentElement, r.get("[data-repeated]").parentElement);
   });
 
-  it("a click inside an include selects the {% render %} tag and offers 'Edit header'; after it, clicks select inside the partial", async () => {
+  it("a click inside an include selects the {% render %} tag and offers 'Edit Header'; after it, clicks select inside the partial", async () => {
     const { r, doc, e } = await mountCanvas();
     cleanup = r.unmount;
     await fireIn(doc.querySelector("header a")!, "mousedown");
     assert.equal(e.state.selection.primary?.text(), "{% render 'header' %}");
     const btn = r.get("[data-edit-include]");
-    assert.equal(btn.textContent, "Edit header");
+    assert.equal(btn.textContent, "Edit Header");
     assert.ok(r.get("[data-include-ring]"));
     await r.click(btn);
     assert.deepEqual(canvasOf(e.state).includes, ["partials/header.liquid"]);

@@ -11,7 +11,7 @@ import { useEditorState, useEditorStore, useRunCommand } from "../../react/bindi
 import { chromeOf } from "../../shell/chromeState";
 import { Icon } from "../../primitives/icons";
 import { tooltip } from "../../primitives/tooltip";
-import { nodeName } from "../../state/nodeName";
+import { humanize, nodeName } from "../../state/nodeName";
 import { AncestorsMenu, crumbsOf } from "./AncestorsMenu";
 import { editSrcOf } from "@pagehub/engine/canvas";
 import { useCanvasFrame } from "./canvasContext";
@@ -208,7 +208,7 @@ function IncludeChip({ path, rect }: { path: string; rect: Rect }) {
   const keep = useKeepInView<HTMLButtonElement>(rect);
   return (
     <button ref={keep} type="button" data-edit-include={path} className={`${CHIP} cursor-pointer font-medium`} style={at(rect, "top-start")} onClick={() => run("canvas.editInclude", { path })}>
-      Edit {path.replace(/^.*\/|\.liquid$/g, "")}
+      Edit {humanize(path.replace(/^.*\/|\.liquid$/g, ""))}
     </button>
   );
 }

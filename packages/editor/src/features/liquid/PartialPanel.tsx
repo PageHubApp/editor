@@ -20,6 +20,7 @@ import { buildNamed, parseNamed } from "./markup";
 import { isValueName, partialVariables, valueRows } from "./partialVars";
 import { dataSourceGlobals } from "./completions";
 import { useCommitAt } from "./useCommit";
+import { humanize } from "../../state/nodeName";
 
 const partialPath = (name: string) => `partials/${name}.liquid`;
 const ADD = "text-base-content/70 hover:text-base-content hover:bg-base-200 flex items-center gap-1 self-start rounded-md px-1.5 py-1 text-[11px] transition-colors";
@@ -36,7 +37,7 @@ function PartialSelect({ handle, name, tail, names }: { handle: NodeHandle; name
   return (
     <ToolbarItemView
       key={name}
-      label="Show"
+      label="Component"
       inputId="render-partial"
       type="select"
       value={name}
@@ -47,7 +48,7 @@ function PartialSelect({ handle, name, tail, names }: { handle: NodeHandle; name
     >
       {options.map((n) => (
         <option key={n} value={n}>
-          {names.includes(n) ? n : `${n} (not found)`}
+          {names.includes(n) ? humanize(n) : `${humanize(n)} (missing)`}
         </option>
       ))}
     </ToolbarItemView>
@@ -96,7 +97,7 @@ function AddValue({ handle, taken, completions }: { handle: NodeHandle; taken: r
   };
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)} className={ADD} data-render-add-value="" {...tooltip('Pass the partial a value, like title: "Welcome"', "top")}>
+      <button type="button" onClick={() => setOpen(true)} className={ADD} data-render-add-value="" {...tooltip('Give the component a value, like title: "Welcome"', "top")}>
         <Icon name="plus" className="size-3.5" />
         Add value
       </button>
@@ -138,7 +139,7 @@ function Values({ handle, name }: { handle: NodeHandle; name: string }) {
       {rows.length > 0 && (
         <>
           <h4 className="text-base-content mt-1 text-xs font-semibold">Values</h4>
-          <PanelNote>What this partial shows here. Text goes in quotes, like "Welcome".</PanelNote>
+          <PanelNote>What this component shows here. Text goes in quotes, like "Welcome".</PanelNote>
           {rows.map((r) => (
             <ValueRow key={r.name} handle={handle} name={r.name} source={r.source} custom={r.custom} completions={completions} />
           ))}
@@ -155,7 +156,7 @@ export function RenderPanel({ handle }: { handle: NodeHandle }) {
   const names = usePartialNames();
   const name = parts?.name ?? "";
   const exists = names.includes(name);
-  if (!parts) return <PanelNote>This partial is picked by a variable, so the panel can't change it. Use Edit code.</PanelNote>;
+  if (!parts) return <PanelNote>Which component shows here depends on a variable, so it can only be changed with Edit code.</PanelNote>;
   return (
     <div className="flex flex-col gap-1.5" data-liquid-panel="render">
       <button
@@ -164,12 +165,12 @@ export function RenderPanel({ handle }: { handle: NodeHandle }) {
         onClick={() => set({ componentEditor: partialPath(name) })}
         className="btn btn-sm btn-primary w-full gap-1.5 text-xs"
         data-liquid-edit-partial=""
-        {...tooltip(exists ? undefined : `This site has no ${partialPath(name)}`, "top")}
+        {...tooltip(exists ? undefined : `The ${humanize(name)} component no longer exists. Pick another below.`, "top")}
       >
         <Icon name="box" className="size-3.5" />
-        Edit partial
+        Edit {humanize(name)}
       </button>
-      <PanelNote>Changes show up everywhere this partial is used.</PanelNote>
+      <PanelNote>Shared: a change shows on every page that uses it.</PanelNote>
       <PartialSelect handle={handle} name={name} tail={parts.tail} names={names} />
       <Values handle={handle} name={name} />
     </div>

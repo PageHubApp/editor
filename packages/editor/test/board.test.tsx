@@ -329,10 +329,10 @@ describe("board view", () => {
     assert.match(sel.textContent!, /Components/);
     await r.click(r.get('[aria-label="Component selector"]'));
     const rows = r.all('[role="option"]').map((o) => o.textContent);
-    assert.deepEqual(rows, ["Create component", "headerComponent"], "Create component first; rows: name + 'Component'");
+    assert.deepEqual(rows, ["Create component", "HeaderComponent"], "Create component first; rows: name + 'Component'");
     await r.fire(r.all('[role="option"]')[1]!, "mousedown");
     assert.equal(boardOf(e.state).isolated, true);
-    assert.match(r.get("[data-component-selector]").textContent!, /header/);
+    assert.match(r.get("[data-component-selector]").textContent!, /Header/);
     act(() => void e.run("component.toggleEditor"));
     assert.equal(r.container.querySelector("[data-component-selector]"), null, "page mode: the node breadcrumb again");
     r.unmount();

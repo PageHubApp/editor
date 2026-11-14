@@ -74,8 +74,8 @@ describe("Liquid block panels: each edit is one command and one undo step", () =
     await setField("condition", "customer.plans contains 'pro'");
     const one = src.replace("{% if customer %}", "{% if customer.plans contains 'pro' %}");
     expectEdit(e, src, one);
-    await r!.click(button("Add elsif"));
-    await setField("pending-Add elsif", "customer");
+    await r!.click(button("Add another condition"));
+    await setField("pending-Add another condition", "customer");
     const two = one.replace("  {% else %}", "  {% elsif customer %}\n  {% else %}");
     assert.equal(e.text(), two);
     await r!.click(button("Remove else branch"));
@@ -125,7 +125,7 @@ describe("Partial panel: pick the partial, set the values it reads", () => {
   it("the partial select rewrites the name and keeps the values", async () => {
     const e = open(src, "%render", files);
     await r!.click(document.getElementById("input-render-partial")!);
-    await r!.click([...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.textContent === "header")!);
+    await r!.click([...document.querySelectorAll<HTMLElement>('[role="option"]')].find((o) => o.textContent === "Header")!);
     assert.equal(e.text(), `{% render 'header', title: "Hi", tone: "dark" %}\n`);
   });
 

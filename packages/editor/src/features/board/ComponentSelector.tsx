@@ -4,6 +4,7 @@
  * searches the partials ("Search components..."), starts with "Create component", and picking
  * a row isolates that partial (`component.edit`).
  */
+import { humanize } from "../../state/nodeName";
 import { useEditorState, useEditorStore } from "../../react/bindings";
 import { SearchableMenuPopover, type SearchableMenuItem } from "../../primitives/SearchableMenuPopover";
 import { activePartial, boardNames } from "./boardState";
@@ -18,7 +19,7 @@ export function ComponentSelector({ className = "" }: { className?: string }) {
   const current = nameOf(useEditorState(activePartial));
   const items: SearchableMenuItem<string>[] = [
     { id: NEW, label: "Create component", keywords: ["new", "add"] },
-    ...names.map((n) => ({ id: n, label: n, hint: "Component", data: `partials/${n}.liquid` })),
+    ...names.map((n) => ({ id: n, label: humanize(n), keywords: [n], hint: "Component", data: `partials/${n}.liquid` })),
   ];
   return (
     <div data-component-selector="" className={`flex min-w-0 items-center ${className}`}>
@@ -34,8 +35,8 @@ export function ComponentSelector({ className = "" }: { className?: string }) {
         trigger={
           <>
             <BoardIcon name={current ? "boxModel" : "gridAdd"} className="size-4 shrink-0 opacity-70" />
-            <span className="min-w-0 flex-1 truncate text-left font-mono text-xs">{current ?? (names.length ? "Components" : "No Components")}</span>
-            <span className="text-base-content/60 shrink-0 font-mono text-[10px]">{names.length}</span>
+            <span className="min-w-0 flex-1 truncate text-left text-xs">{current ? humanize(current) : names.length ? "Components" : "No components"}</span>
+            <span className="text-base-content/60 shrink-0 text-[10px] tabular-nums">{names.length}</span>
             <BoardIcon name="chevronDown" className="size-3.5 shrink-0" />
           </>
         }
