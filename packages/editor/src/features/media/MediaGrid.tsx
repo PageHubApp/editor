@@ -4,6 +4,7 @@
  * empty states; and the floating "Select" button in pick mode.
  */
 import { useState } from "react";
+import { AutoHideScrollbar } from "../../primitives/AutoHideScrollbar";
 import { InlineError } from "../../primitives/InlineError";
 import { Skeleton, SkeletonRegion } from "../../primitives/Skeleton";
 import { MediaIcon } from "./mediaIcons";
@@ -102,8 +103,8 @@ export function MediaGrid(p: MediaGridProps) {
   const [over, setOver] = useState(false);
   const drop = !p.readOnly;
   return (
-    <div
-      className="scrollbar bg-base-100 relative h-full overflow-y-auto"
+    <AutoHideScrollbar
+      className="bg-base-100 relative h-full"
       role="region"
       aria-label="Media library"
       onDragOver={(e) => drop && e.dataTransfer?.types?.includes("Files") && (e.preventDefault(), setOver(true))}
@@ -172,6 +173,6 @@ export function MediaGrid(p: MediaGridProps) {
           <button type="button" className="btn btn-primary shadow-lg" onClick={p.onPick}>Select</button>
         </div>
       )}
-    </div>
+    </AutoHideScrollbar>
   );
 }

@@ -11,6 +11,7 @@
  * In pick mode: double-click picks and closes, and a "Select" button picks the selected item.
  */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AutoHideScrollbar } from "../../primitives/AutoHideScrollbar";
 import { FloatingPanel } from "../../primitives/FloatingPanel";
 import { Modal } from "../../primitives/Modal";
 import { useConfirm } from "../../primitives/ConfirmDialog";
@@ -127,14 +128,14 @@ export function MediaManagerView(p: MediaManagerViewProps) {
             </div>
           )}
           {tab !== "library" ? (
-            <div className="min-h-0 flex-1 overflow-y-auto">{sources.find((s) => s.id === tab)?.render((v) => (p.onPick?.(v), p.onClose()))}</div>
+            <AutoHideScrollbar className="min-h-0 flex-1">{sources.find((s) => s.id === tab)?.render((v) => (p.onPick?.(v), p.onClose()))}</AutoHideScrollbar>
           ) : p.unavailable ? (
             <p className="text-neutral-content p-8 text-center text-sm">No media library is connected. Ask your host to provide one.</p>
           ) : (
             <>
-              <div role="tablist" aria-label="Folders" className="border-base-300 flex shrink-0 gap-3 overflow-x-auto border-b px-3">
+              <div role="tablist" aria-label="Folders" className="border-base-300 flex shrink-0 gap-3 overflow-x-auto overflow-y-hidden border-b px-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {tabs.map((t) => (
-                  <button key={t.id} type="button" role="tab" aria-selected={b.folder === t.id} onClick={() => b.setFolder(t.id)} className={`relative shrink-0 cursor-pointer py-2 text-xs font-medium ${b.folder === t.id ? "text-base-content after:bg-base-content after:absolute after:inset-x-0 after:-bottom-px after:h-px after:content-['']" : "text-neutral-content hover:text-base-content"}`}>
+                  <button key={t.id} type="button" role="tab" aria-selected={b.folder === t.id} onClick={() => b.setFolder(t.id)} className={`relative shrink-0 cursor-pointer py-2 text-xs font-medium ${b.folder === t.id ? "text-base-content after:bg-base-content after:absolute after:inset-x-0 after:bottom-0 after:h-px after:content-['']" : "text-neutral-content hover:text-base-content"}`}>
                     {t.label}
                   </button>
                 ))}
