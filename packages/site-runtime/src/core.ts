@@ -2,6 +2,7 @@ import { CHUNK_SELECTORS, loadChunk, type ChunkModule, type ChunkName } from "./
 import { readConfig, type RuntimeConfig } from "./config";
 import { attributionSubmit, captureAttribution } from "./core/attribution";
 import { submitStamp } from "./core/submitStamp";
+import { lockSubmit, openPostedForm, unlockSubmits } from "./core/nativePost";
 import { autosubmitChange, autosubmitInput } from "./core/autosubmit";
 import { closedbyClick } from "./core/closedby";
 import { copyClick } from "./core/copy";
@@ -89,12 +90,15 @@ export function start(doc: Document = document, config: RuntimeConfig = readConf
     captureAttribution(doc);
     doc.addEventListener("submit", attributionSubmit, { capture: true, signal });
     doc.addEventListener("submit", submitStamp, { capture: true, signal });
+    doc.addEventListener("submit", lockSubmit, { signal });
+    win?.addEventListener("pageshow", (e) => (e as PageTransitionEvent).persisted && unlockSubmits(doc), { signal });
   }
   doc.addEventListener("input", autosubmitInput, { signal });
   let mo: MutationObserver | undefined;
 
   const run = () => {
     scan(doc);
+    if (!editing()) openPostedForm(doc);
     if (win?.MutationObserver) {
       mo = new win.MutationObserver((ms) => {
         for (const m of ms) m.addedNodes.forEach((n) => n.nodeType === 1 && scan(n as Element));

@@ -297,6 +297,8 @@ These run from the core script itself (`src/core/`), with no chunk to load.
 
 `data-form-id` marks a PageHub form (`{% form %}` writes it; never author it by hand). On submit the runtime adds two hidden fields: `_ph_attribution` (how the visitor first arrived this session) and `_ph_t` (how long the page has been open, in ms). A post to a release form without `_ph_t`, or sent within 3 seconds, is filed as spam, so any page with one loads the runtime.
 
+A native post (no fetch path took it) marks the form `aria-busy` and drops further submits for 10 seconds, so a double click sends one submission. The page answering the post marks the posted form `data-form-posted` (server side); the runtime opens the closed `<dialog>`, popover or `<details>` around it, so a form in a modal shows its thank-you or errors instead of coming back closed. Of two copies of one form, the one the URL's `#anchor` names is opened.
+
 ```html
 <form method="post" action="/api/submissions" data-form-id="f0123456789ab"><input name="email"></form>
 ```
