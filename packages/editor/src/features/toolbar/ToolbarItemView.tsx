@@ -99,7 +99,7 @@ function TextField({ p, multiline }: { p: ToolbarItemViewProps; multiline?: bool
 function Toggle({ value, onChange, inputId, on = "", option }: ToolbarItemViewProps) {
   return (
     <label className={`relative flex h-8 w-full cursor-pointer items-center transition-transform active:scale-[0.98] ${option ? "flex-row justify-between gap-3" : "justify-end"}`}>
-      {option && <span className="text-base-content min-w-0 flex-1 text-left text-xs font-medium">{option}</span>}
+      {option && <span className="text-base-content min-w-0 flex-1 text-left text-xs">{option}</span>}
       <div className="relative inline-flex w-fit shrink-0">
         <input type="checkbox" id={inputId ? `input-${inputId}` : undefined} defaultChecked={!!value} onChange={() => onChange(value ? "" : on)} className="peer sr-only" />
         <div className="bg-neutral text-neutral-content after:border-base-300 after:bg-base-100 peer-checked:bg-primary peer-checked:after:border-base-100 peer-focus:ring-ring h-4 w-8 rounded-full peer-focus:ring-2 after:absolute after:top-[2px] after:left-[2px] after:size-3 after:rounded-full after:border after:transition-all after:content-[''] peer-checked:after:translate-x-full"></div>
@@ -178,9 +178,11 @@ function Input(p: ToolbarItemViewProps) {
 }
 
 export function ToolbarItemView(p: ToolbarItemViewProps) {
+  // A switch is narrow, so a toggle's label takes the whole row instead of the clipped gutter.
+  const inline = (p.type === "toggle" || p.type === "checkbox") && !p.option && !p.adornment && !p.labelHide && !!p.label;
   return (
-    <Chip label={p.labelHide ? undefined : p.label} adornment={p.adornment} labelWidth={p.labelWidth} passthrough={!!p.wrap} frame="bare">
-      <Input {...p} />
+    <Chip label={p.labelHide || inline ? undefined : p.label} adornment={p.adornment} labelWidth={p.labelWidth} passthrough={!!p.wrap} frame="bare">
+      <Input {...p} option={inline ? p.label : p.option} />
     </Chip>
   );
 }
