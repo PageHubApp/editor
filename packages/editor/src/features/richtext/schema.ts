@@ -92,7 +92,31 @@ export function chipLabel(source: string, named: string | null): { text: string;
   return named ? { text: named, attrs: { "data-rt-field": named, ...tooltip(source.trim(), "top") } } : { text: source, attrs: {} };
 }
 
-function atom(name: string, label: (source: string) => { text: string; attrs: Record<string, string | undefined> }) {
+/** Icon ref → its SVG markup (the canvas host's `icon` provider), or undefined when unknown. */
+export type IconSvg = (ref: string) => string | undefined;
+
+/** The icon ref a `{{ 'tb/TbPhone' | icon }}` output prints, or null for any other output. */
+export function iconRefOf(source: string): string | null {
+  return /^\{\{-?\s*(['"])([a-z0-9]+\/[A-Za-z0-9]+)\1\s*\|\s*icon\b[^}]*-?\}\}$/.exec(source.trim())?.[2] ?? null;
+}
+
+/** An icon output drawn as the icon itself (not its source); null when it isn't one or the icon is unknown. */
+function iconChip(source: string, iconSvg: IconSvg | undefined, attrs: Record<string, unknown>): HTMLElement | null {
+  const ref = iconRefOf(source);
+  const svg = ref && iconSvg?.(ref);
+  if (!ref || !svg || typeof document === "undefined") return null;
+  const span = document.createElement("span");
+  for (const [k, v] of Object.entries(attrs)) if (v != null) span.setAttribute(k, String(v));
+  span.setAttribute(`data-rt-${NODE.output}`, source);
+  span.setAttribute("data-rt-icon", ref);
+  span.setAttribute("class", "ph-rt-icon");
+  span.setAttribute("contenteditable", "false");
+  span.setAttribute("aria-label", ref);
+  span.innerHTML = svg;
+  return span;
+}
+
+function atom(name: string, label: (source: string) => { text: string; attrs: Record<string, string | undefined> }, iconSvg?: IconSvg) {
   return Node.create({
     name,
     group: "inline",
@@ -102,19 +126,24 @@ function atom(name: string, label: (source: string) => { text: string; attrs: Re
     addAttributes: () => ({ source: { default: "", rendered: false } }),
     parseHTML: () => [{ tag: `span[data-rt-${name}]`, getAttrs: (el) => ({ source: (el as HTMLElement).getAttribute(`data-rt-${name}`) }) }],
     renderHTML: ({ node, HTMLAttributes }) => {
+      const icon = iconSvg ? iconChip(node.attrs.source as string, iconSvg, HTMLAttributes) : null;
+      if (icon) return icon;
       const { text, attrs } = label(node.attrs.source as string);
       return ["span", mergeAttributes(HTMLAttributes, { [`data-rt-${name}`]: node.attrs.source, class: "ph-rt-chip", contenteditable: "false", ...attrs }), text];
     },
   });
 }
 
-/** Every extension a rich-text leaf uses (plus the host's keyboard extension). `outputLabel` names field chips; the stored source never changes. */
-export function richTextSchema(outputLabel?: OutputLabel): Extensions {
+/**
+ * Every extension a rich-text leaf uses (plus the host's keyboard extension). `outputLabel` names field chips;
+ * `iconSvg` draws `{{ '…' | icon }}` outputs as the icon. The stored source never changes.
+ */
+export function richTextSchema(outputLabel?: OutputLabel, iconSvg?: IconSvg): Extensions {
   return [
     Doc,
     Text,
     HardBreak,
-    atom(NODE.output, (s) => chipLabel(s, outputLabel?.(s) ?? null)),
+    atom(NODE.output, (s) => chipLabel(s, outputLabel?.(s) ?? null), iconSvg),
     atom(NODE.raw, (s) => ({ text: `<${/^<\s*([a-z0-9-]+)/i.exec(s)?.[1] ?? "?"}>`, attrs: {} })),
     ...(Object.keys(MARK_TAGS) as SimpleMark[]).map(simpleMark),
     Link,

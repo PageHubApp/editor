@@ -36,6 +36,8 @@ interface SessionHooks {
   changed(): void;
   /** An edit was refused because it removed a `{{ … }}` field from text that repeats (`repeats` > 1). */
   blocked?(): void;
+  /** Icon ref → SVG (the canvas host's `icon` provider), so `{{ '…' | icon }}` shows as the icon while editing. */
+  iconSvg?(ref: string): string | undefined;
 }
 
 /** How many times each `{{ … }}` field occurs in a TipTap document, by its source. */
@@ -171,7 +173,7 @@ export class RichTextSession {
     this.pristine = { html: el.innerHTML, attrs: Object.fromEntries(EDITOR_ATTRS.map((a) => [a, el.getAttribute(a)])) };
     this.editor = new TipTap({
       element: { mount: el },
-      extensions: [...richTextSchema((source) => fieldLabel(sessionLoop(this, this.collectionsLoaded), source)), this.keys(), this.keepFields()],
+      extensions: [...richTextSchema((source) => fieldLabel(sessionLoop(this, this.collectionsLoaded), source), this.hooks.iconSvg), this.keys(), this.keepFields()],
       content,
       injectCSS: false,
       autofocus: false,
@@ -224,7 +226,7 @@ export class RichTextSession {
     const ed = this.editor;
     if (!ed || ed.isDestroyed) return;
     const loop = sessionLoop(this);
-    for (const chip of (ed.view.dom as HTMLElement).querySelectorAll<HTMLElement>(`[data-rt-${NODE.output}]`)) {
+    for (const chip of (ed.view.dom as HTMLElement).querySelectorAll<HTMLElement>(`[data-rt-${NODE.output}]:not([data-rt-icon])`)) {
       const source = chip.getAttribute(`data-rt-${NODE.output}`) ?? "";
       const { text, attrs } = chipLabel(source, fieldLabel(loop, source));
       chip.textContent = text;

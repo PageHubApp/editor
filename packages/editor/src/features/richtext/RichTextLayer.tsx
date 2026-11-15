@@ -16,6 +16,7 @@ import { editSrcOf, handleForSrc } from "@pagehub/engine/canvas";
 import { useEditorState, useEditorStore } from "../../react/bindings";
 import { useOverlay } from "../../primitives/overlayStack";
 import { useCanvasFrame } from "../canvas/canvasContext";
+import { useCanvasHost } from "../canvas/canvasHost";
 import { copyOf, elementsFor, hostRect, srcOf, toRect } from "../canvas/frameDom";
 import { clickedCopyIndex } from "../canvas/canvasState";
 import { chromeOf } from "../../shell/chromeState";
@@ -99,6 +100,7 @@ function textBlockOf(target: Element, store: ReturnType<typeof useEditorStore>):
 export function RichTextLayer() {
   const store = useEditorStore();
   const { doc, frame, host, version } = useCanvasFrame();
+  const canvasHost = useCanvasHost();
   const { editing, panel } = useEditorState(richTextOf);
   const primary = useEditorState((s) => s.selection.primary);
   const zoom = useEditorState((s) => chromeOf(s).zoom) || 1;
@@ -182,6 +184,7 @@ export function RichTextLayer() {
           escape: () => void (richTextOf(store.state).panel ? openPanel() : store.run("richtext.exit")),
           changed: () => setTick((n) => n + 1),
           blocked: () => setBlocked(true),
+          iconSvg: (ref) => canvasHost?.host?.icon?.(ref),
         },
         copies.length,
       );

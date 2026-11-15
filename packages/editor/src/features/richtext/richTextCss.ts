@@ -9,6 +9,9 @@ export const RICHTEXT_CSS = `
 [data-rt-editing][data-rt-blank]{outline:1px dashed currentColor;outline-offset:2px;min-width:1ch;min-height:1em}
 .ph-rt-chip{display:inline-block;padding:0 .3em;margin:0 .1em;border-radius:.3em;font:inherit;font-size:.85em;line-height:1.3;background:color-mix(in srgb,currentColor 12%,transparent);outline:1px solid color-mix(in srgb,currentColor 25%,transparent);user-select:all}
 .ph-rt-chip.ProseMirror-selectednode{outline:2px solid #3b82f6}
+.ph-rt-icon{display:inline-flex;vertical-align:middle;user-select:all;border-radius:.2em}
+.ph-rt-icon>svg:not([width]):not([class]){width:1em;height:1em}
+.ph-rt-icon.ProseMirror-selectednode{outline:2px solid #3b82f6;outline-offset:1px}
 [data-rt-empty]::before{content:"Empty text";display:inline-block;padding:0 .4em;opacity:.5;outline:1px dashed currentColor;font-size:.85em}
 [data-rt-empty][data-selected]::before{content:"Click to edit"}
 `;
