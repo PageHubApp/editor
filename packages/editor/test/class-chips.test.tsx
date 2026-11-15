@@ -4,7 +4,7 @@ import { afterEach, describe, it } from "node:test";
 import { act } from "react";
 import { htmlKit, liquidKit, tailwindKit } from "@pagehub/engine/kits";
 import { createTestEditor } from "@pagehub/engine/testing";
-import { header, inspector, pageEditor, section, select } from "./inspectorFixture.tsx";
+import { header, inspector, openAdvanced, pageEditor, section, select } from "./inspectorFixture.tsx";
 
 afterEach(() => localStorage.clear());
 
@@ -38,6 +38,7 @@ describe("Classes row chips", () => {
     const e = pageEditor({ "index.liquid": `<section class="flex p-4 md:p-8">x</section>\n` });
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     await r.click(header(r, "custom-css"));
     const chips = () => [...section(r, "custom-css")!.querySelectorAll<HTMLElement>("[data-class-chip]")].map((c) => c.dataset.classChip);
     assert.deepEqual(chips(), ["flex", "p-4", "md:p-8"]);
@@ -55,6 +56,7 @@ describe("Classes row chip gestures", () => {
     const e = pageEditor({ "index.liquid": src });
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     await r.click(header(r, "custom-css"));
     const host = () => section(r, "custom-css")!;
     const chip = (t: string) => host().querySelector<HTMLElement>(`[data-class-chip="${t}"]`)!;
@@ -169,6 +171,7 @@ describe("Classes add-class input", () => {
     const e = pageEditor({ "index.liquid": src });
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     await r.click(header(r, "custom-css"));
     const host = () => section(r, "custom-css")!;
     const input = () => host().querySelector<HTMLInputElement>("[data-class-input]")!;

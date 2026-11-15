@@ -13,7 +13,7 @@ import { rowMatches } from "../src/features/inspector/rowRules.ts";
 import { AccordionProvider } from "../src/features/toolbar/AccordionContext.tsx";
 import { ToolbarSection } from "../src/features/toolbar/ToolbarSection.tsx";
 import { render } from "./harness.tsx";
-import { header, inspector, inspectorUi, pageEditor, PAGE, section, select, wait } from "./inspectorFixture.tsx";
+import { header, inspector, inspectorUi, openAdvanced, pageEditor, PAGE, section, select, wait } from "./inspectorFixture.tsx";
 
 afterEach(() => {
   localStorage.clear();
@@ -81,16 +81,18 @@ describe("inspector: tabs", () => {
     const e = pageEditor();
     select(e, "h1");
     const r = inspector(e);
-    assert.deepEqual(tabIds(), ["component", "interactions", "layout", "design", "advanced"]);
+    assert.deepEqual(tabIds(), ["component", "interactions", "layout", "design"], "Advanced is a closed disclosure, no tab");
+    assert.equal(r.get("[data-inspector-advanced]").getAttribute("aria-expanded"), "false");
     assert.equal(r.get('[data-inspector-tab="component"]').getAttribute("data-tooltip-content"), "Text");
     assert.ok(r.all("[data-inspector-scroll] > div").some((d) => d.style.minHeight === "70vh"));
     r.unmount();
   });
 
-  it("host inspectorTabs limit the tabs for that type; a missing active tab falls back to the first", () => {
+  it("host inspectorTabs limit the tabs for that type; a missing active tab falls back to the first", async () => {
     const e = pageEditor(undefined, [inspectorConfig({ inspectorTabs: { text: ["design", "advanced"] } })]);
     select(e, "h1");
     const r = inspector(e);
+    await openAdvanced(e);
     assert.deepEqual(tabIds(), ["design", "advanced"]);
     assert.equal(r.get('[data-inspector-tab="design"]').getAttribute("aria-selected"), "true", "ui.inspectorTab = component is missing here");
     select(e, "section");
@@ -165,6 +167,7 @@ describe("inspector: tabs", () => {
     const e = pageEditor();
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     await r.click(header(r, "custom-css"));
     assert.equal(stored().Classes, true);
     select(e, "h1");
@@ -317,6 +320,7 @@ describe("inspector: pins and the Pinned dock", () => {
     const e = pageEditor();
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     assert.equal(section(r, "component")?.querySelector("[data-pin]") ?? null, null);
     assert.equal(section(r, "permissions")!.querySelector("[data-pin]"), null);
     await r.click(r.get('[data-pin="size"]'));

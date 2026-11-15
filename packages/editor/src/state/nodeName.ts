@@ -12,7 +12,7 @@ const elementDefOf = (h: NodeHandle): ElementDef | null =>
   h.alive && h.kind === "element" ? ((h as unknown as { element?: ElementDef }).element ?? null) : null;
 
 /** Liquid blocks by what they do (the inspector's panel titles). */
-const LIQUID_NAMES: Readonly<Record<string, string>> = { for: "Repeat", tablerow: "Repeat", if: "Condition", unless: "Condition", case: "Case", paginate: "Pagination", form: "Form", section: "Section", capture: "Saved text", raw: "Code as written", comment: "Note" };
+const LIQUID_NAMES: Readonly<Record<string, string>> = { for: "Repeat", tablerow: "Repeat", if: "Show only when", unless: "Show only when", case: "Choose one", paginate: "Pagination", form: "Form", section: "Section", capture: "Saved text", raw: "Code as written", comment: "Note" };
 
 /** `site-header` → "Site header". */
 export const humanize = (name: string) => {

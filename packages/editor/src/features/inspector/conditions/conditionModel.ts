@@ -59,7 +59,7 @@ export const TYPE_LABELS: Record<CondType, string> = {
   auth: "Signed-in visitor",
   item: "Current item",
   localStorage: "Saved in the visitor's browser",
-  state: "State",
+  state: "A value on the page",
 };
 
 export const TYPE_HELP: Record<CondType, string> = {
@@ -71,7 +71,7 @@ export const TYPE_HELP: Record<CondType, string> = {
   auth: "Signed in, signed out, or a customer field",
   item: "A field of the repeated row",
   localStorage: "A value saved in the visitor's browser",
-  state: "A live state key, e.g. cart:open",
+  state: "A value visitors change, e.g. cart:open",
 };
 
 export const OPS_BY_TYPE: Record<CondType, Op[]> = {

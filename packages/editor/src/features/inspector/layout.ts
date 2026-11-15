@@ -41,10 +41,10 @@ const INSPECTOR_TABS: ReadonlyArray<{ id: Tab; title: string; icon: InspectorIco
 /** Section order inside each tab (today's `sectionDefs.ts` sortOrder). */
 const ORDER: Partial<Record<Tab, readonly string[]>> = {
   component: ["component", "data-source"],
-  interactions: ["action", "handlers", "conditions", "stateBindings"],
-  layout: ["preset-items", "modifiers", "alignment", "size"],
+  interactions: ["action", "conditions"],
+  layout: ["preset-items", "alignment", "size"],
   design: ["typography", "background", "styles", "hover", "effects"],
-  advanced: ["properties", "custom-css", "ai-context", "import-export", "permissions"],
+  advanced: ["properties", "custom-css", "handlers", "stateBindings", "modifiers", "ai-context", "import-export", "permissions"],
 };
 
 export const SEARCH_ONLY_SECTIONS: ReadonlySet<string> = new Set(["image-settings"]);

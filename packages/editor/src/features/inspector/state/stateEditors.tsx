@@ -159,7 +159,7 @@ export function BindEditor({ handle }: { handle: NodeHandle }) {
   const debounce = (read("data-debounce") ?? "").replace(/ms$/, "");
   return (
     <div data-state-editor="bind" className="flex flex-col gap-1.5">
-      <ExpressionField id="bind-key" label="Key" placeholder="url:q" value={key} completions={keys} onCommit={(k) => (write("data-state-bind", k || null), k ? undefined : (write("data-bind-mode", null), write("data-debounce", null)))} />
+      <ExpressionField id="bind-key" label="Value name" placeholder="url:q" value={key} completions={keys} onCommit={(k) => (write("data-state-bind", k || null), k ? undefined : (write("data-bind-mode", null), write("data-debounce", null)))} />
       {key && (
         <>
           <ToolbarItemView type="radio" inputId="bind-mode" label="Writes" value={mode} onChange={(v) => write("data-bind-mode", v === "checked" ? "checked" : null)} options={[{ value: "value", label: "Value", hint: "The text or selected option" }, { value: "checked", label: "Checked", hint: "Its value while ticked (checkbox / radio facets)" }]} />
@@ -179,7 +179,7 @@ export function TextKeyEditor({ handle }: { handle: NodeHandle }) {
   const key = read("data-state-text") ?? "";
   return (
     <div data-state-editor="text" className="flex flex-col gap-1.5">
-      <ExpressionField id="state-text-key" label="Key" placeholder="cart:count" value={key} completions={keys} onCommit={(k) => write("data-state-text", k || null)} />
+      <ExpressionField id="state-text-key" label="Value name" placeholder="cart:count" value={key} completions={keys} onCommit={(k) => write("data-state-text", k || null)} />
       <PanelNote>The element's text becomes the key's value while the page runs. A key.field path reads into a JSON value (a matched variant's .formatted).</PanelNote>
     </div>
   );

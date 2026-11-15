@@ -41,6 +41,8 @@ interface InspectorTabsProps {
   tools?: ReactNode;
   /** Shown in the scroll instead of the panels. */
   replace?: ReactNode;
+  /** After the panels (the closed Advanced disclosure). */
+  after?: ReactNode;
 }
 
 const SCROLL_LOCK_MS = 400;
@@ -73,7 +75,7 @@ function TabButton({ tab, active, onClick, buttonRef }: { tab: InspectorTabView;
   );
 }
 
-export function InspectorTabs({ tabs, active, onActiveChange, tools, replace }: InspectorTabsProps) {
+export function InspectorTabs({ tabs, active, onActiveChange, tools, replace, after }: InspectorTabsProps) {
   const accordion = useAccordion();
   const scroller = useRef<HTMLDivElement>(null);
   const sections = useRef(new Map<string, HTMLElement>());
@@ -158,6 +160,7 @@ export function InspectorTabs({ tabs, active, onActiveChange, tools, replace }: 
             {t.content}
           </div>
         ))}
+        {replace ? null : after}
         <div className="shrink-0" style={{ minHeight: "70vh" }} aria-hidden />
       </AutoHideScrollbar>
     </div>

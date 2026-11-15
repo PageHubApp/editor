@@ -16,9 +16,9 @@ import { SectionSettingsPanel } from "./SectionSettings";
 
 const PANELS: Readonly<Record<string, { title: string; Panel: ComponentType<BlockPanelProps> }>> = {
   for: { title: "Repeat", Panel: ForPanel },
-  if: { title: "Condition", Panel: ConditionPanel },
-  unless: { title: "Condition", Panel: ConditionPanel },
-  case: { title: "Case", Panel: CasePanel },
+  if: { title: "Show only when", Panel: ConditionPanel },
+  unless: { title: "Show only when", Panel: ConditionPanel },
+  case: { title: "Choose one", Panel: CasePanel },
   paginate: { title: "Pagination", Panel: PaginatePanel },
   form: { title: "Form", Panel: FormPanel },
   render: { title: "Component", Panel: RenderPanel },

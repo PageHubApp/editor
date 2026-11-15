@@ -39,7 +39,7 @@ export const interactionEntries: PropEntry[] = [
   rt("action.storage.remove", "button container", A, "Forget a localStorage value.", "`data-state-clear=\"local:key\"`", 'attr("data-state-clear", t.string())', { runtime: "state-clear", aliases: ["remove-local-storage"] }),
   rt("action.state.set", "button container", A, "Write a state value.", "`data-state-set=\"key:value\"`", 'attr("data-state-set", t.string())', { runtime: "state-set", aliases: ["set-state"] }),
   rt("action.state.toggle", "button container", A, "Flip a flag or alternate two values.", "`data-state-toggle=\"key\"` / `\"key:a|b\"`", 'attr("data-state-toggle", t.string())', { runtime: "state-toggle", aliases: ["toggle-state"] }),
-  rt("action.state.clear", "button container", A, "Clear a state key.", "`data-state-clear=\"key\"`", 'attr("data-state-clear", t.string())', { runtime: "state-clear", aliases: ["clear-state"] }),
+  rt("action.state.clear", "button container", A, "Clear a value.", "`data-state-clear=\"key\"`", 'attr("data-state-clear", t.string())', { runtime: "state-clear", aliases: ["clear-state"] }),
   rt("action.state.step", "button container", A, "Increment / decrement with min, max, wrap, interval.", "`data-state-step=\"key:+1\"` + `data-min` `data-max` `data-wrap` `data-every`", 'attr("data-state-step", t.string())', { runtime: "state-step", aliases: ["increment-state", "decrement-state", "action.state.step.min", "action.state.step.max", "action.state.step.wrap", "action.state.step.intervalMs"] }),
   rt("setStateKind", "button container", A, "Kind of value being set: visibility, selection, flag, value.", "kind is implied by how the key is read (`data-state-show` = visibility, radio = selection); stored in the key prefix `flag:` / `sel:`", 'attr("data-state-set", t.string())', { runtime: "state-set" }),
   rt("toggleStateKind", "button container", A, "Kind of value being toggled.", "same as `setStateKind`", 'attr("data-state-toggle", t.string())', { runtime: "state-toggle" }),
@@ -68,11 +68,11 @@ export const interactionEntries: PropEntry[] = [
 
   // ── State ──
   rt("stateBindings", "container", S, "State wiring of a container (visibility key, derived values, in-view key).", "the `data-state-*` attributes below", "-", { aliases: ["stateBindings:add", "containerStateWiring"] }),
-  rt("visibilityStateKey", "container", S, "Show the container while a state key is set (drawers, cart).", "`data-state-show=\"cart:open\"`", 'attr("data-state-show", t.string())', { runtime: "state-show" }),
+  rt("visibilityStateKey", "container", S, "Show the container while a value is set (drawers, cart).", "`data-state-show=\"cart:open\"`", 'attr("data-state-show", t.string())', { runtime: "state-show" }),
   rt("stateModifiers", "container button text", S, "Extra classes while a state value holds (active chip, current step).", "`data-state-class=\"key=value:bg-primary text-primary-content\"`", 'attr("data-state-class", t.string())', { runtime: "state-class" }),
   rt("computedStateBindings", "container", S, "Derived state, e.g. the variant that matches the picked options.", "`data-state-compute=\"variant-match\"` + `data-variants`, `data-axes`", 'attr("data-state-compute", t.string())', { runtime: "state-compute" }),
   rt("inViewState", "container", S, "Write the most-visible section into state (scroll rails).", "`data-state-in-view=\"deck:step=<slug>\"`", 'attr("data-state-in-view", t.string())', { runtime: "state-in-view" }),
-  rt("stateBinding", "form-control", S, "Two-way bind a field to a state key (filters, search).", "`data-state-bind=\"url:q\"` + `data-debounce=\"200ms\"` + `data-bind-mode=\"checked\"`; URL keys also work with a GET `<form data-autosubmit>`", 'attr("data-state-bind", t.string())', { runtime: "state-bind", aliases: ["stateBinding.key", "stateBinding.mode", "stateBinding.debounceMs"] }),
+  rt("stateBinding", "form-control", S, "Keep a field and a value in sync (filters, search).", "`data-state-bind=\"url:q\"` + `data-debounce=\"200ms\"` + `data-bind-mode=\"checked\"`; URL keys also work with a GET `<form data-autosubmit>`", 'attr("data-state-bind", t.string())', { runtime: "state-bind", aliases: ["stateBinding.key", "stateBinding.mode", "stateBinding.debounceMs"] }),
   rt("state.text", "text", S, "Show a state value as text (`{{state.key}}`).", "`<span data-state-text=\"key\">`", 'attr("data-state-text", t.string())', { runtime: "state-text" }),
 
   // ── Data source ──

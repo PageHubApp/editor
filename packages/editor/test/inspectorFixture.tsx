@@ -41,4 +41,6 @@ export const select = (e: TestEditor, sel: string) => act(() => e.select(e.get(s
 export const inspectorUi = (e: TestEditor) => e.state.field(inspectorField);
 export const section = (r: Rendered, id: string) => r.container.querySelector<HTMLElement>(`[data-section-id="${id}"]`);
 export const header = (r: Rendered, id: string) => section(r, id)!.querySelector<HTMLElement>('[role="button"]')!;
+/** Open the inspector's Advanced disclosure (closed by default). */
+export const openAdvanced = (e: TestEditor) => act(() => void e.run("ui.set", { inspectorAdvanced: true }));
 export const wait = (ms: number) => act(() => new Promise<void>((res) => setTimeout(res, ms)));

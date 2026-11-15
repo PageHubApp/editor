@@ -9,7 +9,7 @@ import { elementView } from "../src/features/inspector/useElementView.ts";
 import { inspectorRows } from "../src/features/inspector/rows/inspectorRows.ts";
 import { inspectorLayout } from "../src/features/inspector/layout.ts";
 import { rowEligible, sectionModel } from "../src/features/inspector/rowRules.ts";
-import { header, inspector, inspectorUi, pageEditor, section, select, wait } from "./inspectorFixture.tsx";
+import { header, inspector, inspectorUi, openAdvanced, pageEditor, section, select, wait } from "./inspectorFixture.tsx";
 
 afterEach(() => localStorage.clear());
 
@@ -46,10 +46,10 @@ describe("sections and rows for an element", () => {
     const ids = Object.fromEntries(inspectorLayout().map((t) => [t.id, t.sections.map((s) => s.title)]));
     assert.deepEqual(ids, {
       component: ["Component", "Data source"],
-      interactions: ["Action", "Handlers", "Conditions", "State"],
-      layout: ["Items", "Modifiers", "Layout", "Size"],
+      interactions: ["Action", "Show only when"],
+      layout: ["Items", "Layout", "Size"],
       design: ["Text", "Background", "Styles", "Hover", "Effects"],
-      advanced: ["Attributes", "Classes", "AI Context", "Import / Export", "Permissions"],
+      advanced: ["Attributes", "Classes", "Handlers", "Values", "Modifiers", "AI Context", "Import / Export", "Permissions"],
     });
   });
 
@@ -128,6 +128,7 @@ describe("Inspector rows rendered", () => {
     const e = pageEditor();
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     // Attributes has only non-default, valueless rows for this section → still empty
     const h = header(r, "properties");
     assert.equal(h.tabIndex, -1);
@@ -158,6 +159,7 @@ describe("Inspector rows rendered", () => {
     const e = pageEditor();
     select(e, "section");
     const r = inspector(e);
+    await openAdvanced(e);
     await r.click(header(r, "custom-css"));
     assert.ok(section(r, "custom-css")!.querySelector('[data-row="className"]'));
     assert.equal(section(r, "custom-css")!.querySelector('[data-add-property], [aria-label="Add property"]'), null);

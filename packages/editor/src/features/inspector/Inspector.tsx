@@ -17,7 +17,7 @@
  * - A Liquid block with a panel (`for`, `if`, `section` …) → that panel (`LiquidBlockPanel`);
  *   a typed one (`{% form %}`) keeps its element tabs below it.
  */
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type NodeHandle } from "@pagehub/engine";
 import { isRichTextLeaf } from "@pagehub/engine/kits";
 import { useEditorState, useInspectedHandle, useRunCommand } from "../../react/bindings";
@@ -74,8 +74,20 @@ function Dock({ tabs, handle, view }: { tabs: readonly InspectorTabDef[]; handle
   return <PinnedDock sections={sections} onUnpin={togglePin} />;
 }
 
+/** The Advanced disclosure: closed, it ends the stack and its tab is hidden; open, it heads the Advanced panel. */
+function AdvancedToggle({ open, onToggle }: { open: boolean; onToggle(): void }) {
+  return (
+    <button type="button" data-inspector-advanced="" aria-expanded={open} onClick={onToggle} className="border-base-300 text-base-content/60 hover:text-base-content flex w-full cursor-pointer items-center gap-1.5 border-t px-3 py-2.5 text-left text-xs font-medium">
+      <Icon name="chevron-right" className={`size-3 shrink-0 transition-transform ${open ? "rotate-90" : ""}`} />
+      <span>Advanced</span>
+      {!open && <span className="text-base-content/40 truncate font-normal">Attributes, classes, handlers, values</span>}
+    </button>
+  );
+}
+
 function Tabs({ handle, view }: { handle: NodeHandle; view: ElementView }) {
   const active = useUi((u) => u.inspectorTab);
+  const advancedOpen = useUi((u) => u.inspectorAdvanced);
   const run = useRunCommand();
   const query = useInspectorUi((i) => i.query);
   const searchOpen = useEditorState((s) => chromeOf(s).sidebarSearch);
@@ -92,7 +104,13 @@ function Tabs({ handle, view }: { handle: NodeHandle; view: ElementView }) {
     const keep = (id: string) => id === "component" || id.startsWith("component:") || allowed.includes(id);
     return all.map((t) => ({ ...t, sections: t.sections.filter((s) => keep(s.id)) })).filter((t) => t.sections.length > 0);
   }, [titles, tabIds, allowed]);
-  const tabs = layout.map((t) => {
+  const hasAdvanced = layout.some((t) => t.id === "advanced");
+  // something that jumps straight to the Advanced tab opens the disclosure
+  useEffect(() => {
+    if (active === "advanced" && hasAdvanced && !advancedOpen) run("ui.set", { inspectorAdvanced: true });
+  }, [active, hasAdvanced, advancedOpen, run]);
+  const toggleAdvanced = () => run("ui.set", advancedOpen ? { inspectorAdvanced: false, ...(active === "advanced" ? { inspectorTab: layout[0]?.id ?? "component" } : {}) } : { inspectorAdvanced: true });
+  const tabs = layout.filter((t) => t.id !== "advanced" || advancedOpen).map((t) => {
     // a text leaf gets the Sample / Format / Edit HTML controls on top of the Component tab,
     // and its "Edit HTML" section folds into them (its text / richText rows are those controls)
     const textTop = t.id === "component" && view.type === "text" && isRichTextLeaf(handle);
@@ -106,6 +124,7 @@ function Tabs({ handle, view }: { handle: NodeHandle; view: ElementView }) {
       sectionTitles: sections.map((s) => sectionModel(s.id, view).title),
       content: (
         <>
+          {t.id === "advanced" ? <AdvancedToggle open onToggle={toggleAdvanced} /> : null}
           {textTop ? <TextTopControls handle={handle} /> : null}
           {sections.map((s) => (
             <InspectorSectionHost key={s.id} id={s.id} handle={handle} view={view} />
@@ -125,6 +144,7 @@ function Tabs({ handle, view }: { handle: NodeHandle; view: ElementView }) {
           active={active}
           onActiveChange={(id) => run("ui.set", { inspectorTab: id })}
           replace={searching ? <SearchResults tabs={layout} handle={handle} view={view} query={query} /> : undefined}
+          after={hasAdvanced && !advancedOpen ? <AdvancedToggle open={false} onToggle={toggleAdvanced} /> : undefined}
           tools={
             <button type="button" data-inspector-search-button="" onClick={() => run("sidebar.search")} aria-label="Search settings" aria-pressed={searchOpen} {...tooltip("Search settings (⌘F)", "top")} data-tooltip-offset={10} className={`flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md transition-[color,transform] active:scale-90 ${searchOpen ? "text-base-content" : "text-base-content/50 hover:text-base-content"}`}>
               <Icon name="search" className="size-4" />

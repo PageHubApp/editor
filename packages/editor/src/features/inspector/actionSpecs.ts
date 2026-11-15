@@ -62,11 +62,11 @@ export const ACTION_SPECS: Record<string, ActionSpec> = {
   "agent-send": { label: "Send agent message", group: "System", attrs: [["data-chat-send", ""]], fields: [{ attr: "data-chat-send", label: "Field name", kind: "string" }] },
   "set-local-storage": { label: "Save in the visitor's browser", group: "Storage", attrs: [["data-state-set", "local:"]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "local:key:value" }] },
   "remove-local-storage": { label: "Remove from the visitor's browser", group: "Storage", attrs: [["data-state-clear", "local:"]], fields: [{ attr: "data-state-clear", label: "Remove", kind: "string", placeholder: "local:key" }] },
-  "set-state": { label: "Set a value", group: "State", attrs: [["data-state-set", ""]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "key:value" }], preview: true },
-  "toggle-state": { label: "Switch a value", group: "State", attrs: [["data-state-toggle", ""]], fields: [{ attr: "data-state-toggle", label: "Toggle", kind: "string", placeholder: "key or key:a|b" }], preview: true },
-  "clear-state": { label: "Clear a value", group: "State", attrs: [["data-state-clear", ""]], fields: [{ attr: "data-state-clear", label: "Clear", kind: "string", placeholder: "key" }], preview: true },
-  "increment-state": { label: "Add 1 to a value", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:+1" }], preview: true },
-  "decrement-state": { label: "Subtract 1 from a value", group: "State", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:-1" }], preview: true },
+  "set-state": { label: "Set a value", group: "Values", attrs: [["data-state-set", ""]], fields: [{ attr: "data-state-set", label: "Set", kind: "string", placeholder: "key:value" }], preview: true },
+  "toggle-state": { label: "Switch a value", group: "Values", attrs: [["data-state-toggle", ""]], fields: [{ attr: "data-state-toggle", label: "Toggle", kind: "string", placeholder: "key or key:a|b" }], preview: true },
+  "clear-state": { label: "Clear a value", group: "Values", attrs: [["data-state-clear", ""]], fields: [{ attr: "data-state-clear", label: "Clear", kind: "string", placeholder: "key" }], preview: true },
+  "increment-state": { label: "Add 1 to a value", group: "Values", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:+1" }], preview: true },
+  "decrement-state": { label: "Subtract 1 from a value", group: "Values", attrs: [["data-state-step", ""]], fields: [{ attr: "data-state-step", label: "Step", kind: "string", placeholder: "key:-1" }], preview: true },
 };
 
 /** The action types in picker order (keys of `ACTION_SPECS`). */

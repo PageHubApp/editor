@@ -20,8 +20,8 @@ const KEY_LABEL: Record<CondType, string> = {
   device: "Device",
   auth: "Field",
   item: "Field",
-  localStorage: "Key",
-  state: "Key",
+  localStorage: "Name",
+  state: "Value name",
 };
 
 const KEY_PLACEHOLDER: Partial<Record<CondType, string>> = {

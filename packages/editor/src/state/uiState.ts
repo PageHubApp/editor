@@ -37,9 +37,11 @@ export interface UiState {
   chipPopover: ChipPopover | null;
   /** Active inspector tab (follows the scroll). */
   inspectorTab: string;
+  /** The inspector's Advanced section is open (its tab shows only then). */
+  inspectorAdvanced: boolean;
 }
 
-export const DEFAULT_UI: UiState = { view: "desktop", dark: false, multiScope: [], density: "auto", chipPopover: null, inspectorTab: "component" };
+export const DEFAULT_UI: UiState = { view: "desktop", dark: false, multiScope: [], density: "auto", chipPopover: null, inspectorTab: "component", inspectorAdvanced: false };
 
 export const setUi = StateEffect.define<Partial<UiState>>("ui.set");
 
