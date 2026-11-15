@@ -7,6 +7,7 @@
  */
 import { useEditorStore } from "../../react/bindings";
 import { Icon } from "../../primitives/icons";
+import { useConfirm } from "../../primitives/ConfirmDialog";
 import { saveSession, useSaveSession } from "./saveSession";
 
 const ACTION = "shrink-0 rounded-md px-2 py-1 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-500/20 dark:text-amber-100 dark:hover:bg-amber-400/15";
@@ -14,7 +15,8 @@ const ACTION = "shrink-0 rounded-md px-2 py-1 text-xs font-medium text-amber-900
 export function SaveBanner() {
   const editor = useEditorStore();
   const { banner } = useSaveSession(editor);
-  if (!banner) return <div data-slot="SaveBanner" hidden />;
+  const { ask, dialog } = useConfirm();
+  if (!banner) return <div data-slot="SaveBanner" hidden>{dialog}</div>;
   const session = saveSession(editor);
   const message =
     banner.kind === "conflict"
@@ -37,7 +39,10 @@ export function SaveBanner() {
       )}
       {banner.kind === "conflict" && (
         <>
-          <button type="button" data-conflict-reload="" className={ACTION} onClick={() => void session.resolve("reload")}>
+          <button type="button" data-conflict-reload="" className={ACTION} onClick={async () => {
+              const ok = await ask({ title: "Use the other version?", message: "Your recent edits on this page will be lost.", confirmText: "Use other version", cancelText: "Keep mine", variant: "danger" });
+              if (ok) void session.resolve("reload");
+            }}>
             Use the other version
           </button>
           <button type="button" data-conflict-keep="" className={ACTION} onClick={() => void session.resolve("override")}>
@@ -45,14 +50,17 @@ export function SaveBanner() {
           </button>
         </>
       )}
-      <button
-        type="button"
-        className="shrink-0 rounded-md p-1 text-amber-800 transition-colors hover:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-400/15"
-        onClick={session.dismiss}
-        aria-label="Dismiss notice"
-      >
-        <Icon name="x" className="size-4" />
-      </button>
+      {banner.kind !== "conflict" && (
+        <button
+          type="button"
+          className="shrink-0 rounded-md p-1 text-amber-800 transition-colors hover:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-400/15"
+          onClick={session.dismiss}
+          aria-label="Dismiss notice"
+        >
+          <Icon name="x" className="size-4" />
+        </button>
+      )}
+      {dialog}
     </div>
   );
 }

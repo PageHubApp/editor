@@ -84,9 +84,40 @@ describe("save status and banner (1.6, 3.6)", () => {
     g.memory.external("index.liquid", "<p>Theirs</p>\n");
     edit(g, "Mine");
     await act(async () => void (await g.save()));
+    assert.equal(r2.all('[data-save-banner="conflict"] [aria-label="Dismiss notice"]').length, 0, "no dismiss X while a conflict is open");
     await r2.click(r2.get("[data-conflict-reload]"));
+    assert.ok(document.querySelector('[role="alertdialog"]'), "asks before discarding");
+    assert.match(document.body.textContent!, /Use the other version\?/);
+    await r2.click(document.querySelector('[data-confirm="cancel"]')!);
+    await act(async () => void (await new Promise((res) => setTimeout(res, 10))));
+    assert.match(g.text(), /Mine/, "Keep mine leaves the edits alone");
+    await r2.click(r2.get("[data-conflict-reload]"));
+    await r2.click(document.querySelector('[data-confirm="ok"]')!);
     await act(async () => void (await new Promise((res) => setTimeout(res, 10))));
     assert.equal(g.text(), "<p>Theirs</p>\n");
+    r2.unmount();
+  });
+
+  it("status words: pending while edits wait, then Saving…, Saved, and a Try again button when it failed", async () => {
+    const e = fixtureEditor();
+    const r = render(<Editor editor={e} />);
+    const text = () => status().querySelector("[data-save-text]")!.textContent!.trim();
+    assert.equal(text(), "All saved");
+    edit(e);
+    assert.equal(status().getAttribute("data-save-status"), "pending");
+    assert.equal(text(), "Unsaved changes");
+    await act(async () => void (await e.save()));
+    assert.equal(text(), "Saved");
+    r.unmount();
+    const f = fixtureEditor();
+    (f.memory as { writeBatch: unknown }).writeBatch = async () => {
+      throw new Error("boom");
+    };
+    const r2 = render(<Editor editor={f} />);
+    edit(f);
+    await act(async () => void (await f.save().catch(() => {})));
+    assert.match(text(), /^Not saved · Try again$/);
+    assert.ok(status().querySelector("button[data-save-retry]"));
     r2.unmount();
   });
 
