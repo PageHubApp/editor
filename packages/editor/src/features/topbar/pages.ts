@@ -67,3 +67,19 @@ export function pageInfo(path: Path, root: string, entries?: readonly PageEntry[
 
 /** Search appears from this many pages. */
 export const PAGE_SEARCH_MIN = 8;
+
+/** A page a link can point at: its file, route and name. */
+export interface LinkablePage {
+  path: Path;
+  route: string;
+  name: string;
+}
+
+/** The pages a link can point at, Home first, by name; detail pages (`:param` routes) are left out. */
+export function linkablePages(files: Iterable<Path>, entries?: readonly PageEntry[]): LinkablePage[] {
+  const all = [...files];
+  const root = pagesRoot(all);
+  return listPageFiles(all)
+    .map((path) => ({ path, ...pageInfo(path, root, entries) }))
+    .filter((p) => !p.route.includes(":"));
+}

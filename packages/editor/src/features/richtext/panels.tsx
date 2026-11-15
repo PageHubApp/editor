@@ -1,17 +1,18 @@
 /**
- * The inline toolbar's panels (actions are TipTap marks and editor commands). Link: Page
- * (default) or URL; Enter or Insert / Update applies,
+ * The inline toolbar's panels (actions are TipTap marks and editor commands). Link: the shared
+ * `LinkPicker` (Page, web address, email, phone; new tab); Enter or Insert / Update applies,
  * with an empty selection it inserts the link text first; Remove for an existing link. More:
  * strike, superscript, subscript, clear formatting, Insert variable, insert output, delete
  * element. Colours: theme tokens; Clear unsets. (Font is `FontPanel`, Insert variable `VariablePanel`.)
  */
-import { useState, type KeyboardEvent } from "react";
+import { useState } from "react";
 import { isSafeExpression } from "@pagehub/engine";
 import { COLOR_TOKENS, NODE } from "./schema";
 import type { RichTextSession } from "./session";
 import { Icon } from "../../primitives/icons";
 import { TOOL_BUTTON, ToolButton, keepFocus } from "./toolbarParts";
-import { listPageFiles, pageRoute, pagesRoot } from "../topbar/pages";
+import { LinkPicker } from "../links/LinkPicker";
+import { relForNewTab } from "../links/linkValue";
 
 interface PanelProps {
   session: RichTextSession;
@@ -19,29 +20,19 @@ interface PanelProps {
 }
 
 const INPUT = "border-base-300 bg-base-100 text-base-content rounded-md border px-2 py-1 text-sm focus:outline-none";
-const TAB = "rounded-md px-2 py-1 text-xs font-medium";
-
-/** The site's pages as link targets (`index.liquid` → `/`, `about.liquid` → `/about`; under `pages/` for a hosted site). */
-function pageLinks(files: Iterable<string>): { path: string; href: string }[] {
-  const all = [...files];
-  const root = pagesRoot(all);
-  return listPageFiles(all).map((path) => ({ path, href: pageRoute(path, root) }));
-}
 
 export function LinkPanel({ session, onClose }: PanelProps) {
   const ed = session.editor;
-  const existing = ed.getAttributes("link") as { href?: string | null; target?: string | null };
-  const pages = pageLinks(session.store.state.files.keys());
-  const isPage = !existing.href || pages.some((p) => p.href === existing.href);
-  const [mode, setMode] = useState<"page" | "url">(isPage ? "page" : "url");
-  const [href, setHref] = useState(existing.href ?? (mode === "page" ? (pages[0]?.href ?? "/") : ""));
+  const existing = ed.getAttributes("link") as { href?: string | null; target?: string | null; rel?: string | null };
+  const [href, setHref] = useState(existing.href ?? "");
   const [blank, setBlank] = useState(existing.target === "_blank");
 
   const apply = () => {
-    if (!href.trim()) return;
-    const attrs = { href: href.trim(), target: blank ? "_blank" : null, rel: null, src: null };
+    const value = href.trim();
+    if (!value) return;
+    const attrs = { href: value, target: blank ? "_blank" : null, rel: relForNewTab(existing.rel, blank), src: null };
     const chain = ed.chain().focus();
-    if (ed.state.selection.empty && !ed.isActive("link")) chain.insertContent({ type: "text", text: href.trim(), marks: [{ type: "link", attrs }] }).run();
+    if (ed.state.selection.empty && !ed.isActive("link")) chain.insertContent({ type: "text", text: value, marks: [{ type: "link", attrs }] }).run();
     else chain.extendMarkRange("link").setMark("link", attrs).run();
     onClose();
   };
@@ -49,31 +40,10 @@ export function LinkPanel({ session, onClose }: PanelProps) {
     ed.chain().focus().extendMarkRange("link").unsetMark("link").run();
     onClose();
   };
-  const onKey = (e: KeyboardEvent) => void (e.key === "Enter" && (e.preventDefault(), apply()));
 
   return (
-    <div data-rt-panel="link" className="flex w-72 flex-col gap-2 p-2">
-      <div className="flex gap-1">
-        {(["page", "url"] as const).map((m) => (
-          <button key={m} type="button" aria-pressed={mode === m} className={`${TAB} ${mode === m ? "bg-base-200 text-base-content" : "text-base-content/60"}`} onClick={() => setMode(m)}>
-            {m === "page" ? "Page" : "URL"}
-          </button>
-        ))}
-      </div>
-      {mode === "page" ? (
-        <div role="listbox" aria-label="Page" className="flex max-h-40 flex-col overflow-y-auto">
-          {pages.map((p) => (
-            <button key={p.path} type="button" role="option" aria-selected={href === p.href} className={`${TAB} text-left ${href === p.href ? "bg-base-200" : ""}`} onClick={() => setHref(p.href)}>
-              {p.href}
-            </button>
-          ))}
-        </div>
-      ) : (
-        <input aria-label="URL" className={INPUT} placeholder="https://" value={href} onChange={(e) => setHref(e.target.value)} onKeyDown={onKey} autoFocus />
-      )}
-      <label className="text-base-content/60 flex items-center gap-2 text-xs">
-        <input type="checkbox" checked={blank} onChange={(e) => setBlank(e.target.checked)} /> Open in a new tab
-      </label>
+    <div data-rt-panel="link" className="flex w-80 flex-col gap-2 p-2">
+      <LinkPicker idPrefix="rt-link" href={href} newTab={blank} onChange={setHref} onNewTabChange={setBlank} onSubmit={apply} />
       <div className="flex justify-end gap-1">
         {existing.href && (
           <button type="button" className={`${TOOL_BUTTON} text-error`} onMouseDown={keepFocus} onClick={remove}>
@@ -83,7 +53,7 @@ export function LinkPanel({ session, onClose }: PanelProps) {
         <button type="button" className={TOOL_BUTTON} onMouseDown={keepFocus} onClick={onClose}>
           Close
         </button>
-        <button type="button" className={`${TOOL_BUTTON} bg-primary text-primary-content hover:bg-primary/90`} onMouseDown={keepFocus} onClick={apply}>
+        <button type="button" disabled={!href.trim()} className={`${TOOL_BUTTON} bg-primary text-primary-content hover:bg-primary/90 disabled:opacity-50`} onMouseDown={keepFocus} onClick={apply}>
           {existing.href ? "Update" : "Insert"}
         </button>
       </div>

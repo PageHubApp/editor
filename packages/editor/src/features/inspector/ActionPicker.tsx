@@ -63,8 +63,8 @@ export const ActionPicker = forwardRef<ActionPickerHandle, { handle: NodeHandle;
       />
       <AnchoredPopover open={!!fields?.length} onOpenChange={(o) => !o && setDetail(null)} anchor={anchor as RefObject<HTMLElement | null>} placement="bottom-end" immediate>
         {fields?.length ? (
-          <div className="bg-base-100 border-base-300 w-64 rounded-xl border p-3 shadow-xl">
-            <ActionDetail handle={handle} fields={fields} />
+          <div className="bg-base-100 border-base-300 w-72 rounded-xl border p-3 shadow-xl">
+            <ActionDetail handle={handle} type={detail!} />
           </div>
         ) : (
           <span />

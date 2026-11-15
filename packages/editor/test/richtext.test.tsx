@@ -167,8 +167,9 @@ test("keys / txt: mod+K opens the Link panel (selecting the whole link); a click
   mod("k", h1);
   assert.equal(richTextOf(e.state).panel, "link");
   assert.deepEqual([ed.state.selection.from, ed.state.selection.to], [6, 14], "the whole link is selected");
-  await r.click(r.all('[data-rt-panel="link"] button').find((b) => b.textContent === "URL")!);
-  await r.type(r.get('input[aria-label="URL"]'), "https://example.com");
+  assert.equal(r.get('[data-rt-panel="link"] [role="tab"][aria-selected="true"]').textContent, "Website", "/old is no page of the site: it opens as a web address");
+  assert.equal(r.get<HTMLInputElement>("#input-rt-link-web").value, "/old");
+  await r.type(r.get("#input-rt-link-web"), "example.com");
   await r.click(r.all('[data-rt-panel="link"] button').find((b) => b.textContent === "Update")!);
   assert.equal(richTextOf(e.state).panel, null);
   assert.equal(ed.getAttributes("link").href, "https://example.com");
@@ -180,13 +181,17 @@ test("keys / txt: mod+K opens the Link panel (selecting the whole link); a click
   assert.match(e.text(), /<h1 class="text-xl">Hello old link<\/h1>/);
 });
 
-test("txt: Link panel with no selection inserts the link text; Page is the default tab listing the site's pages", async () => {
+test("txt: Link panel with no selection inserts the link text; Page is the default tab listing the site's pages by name", async () => {
   const { e, r, doc } = await mount();
   const h1 = await editH1(doc);
   mod("k", h1);
+  assert.ok(r.get("[data-rt-panel=\"link\"] [data-link-picker]"), "the shared link picker");
   const options = r.all('[data-rt-panel="link"] [role="option"]').map((o) => o.textContent);
-  assert.deepEqual(options, ["/"]);
-  await r.click(r.all('[data-rt-panel="link"] button').find((b) => b.textContent === "Insert")!);
+  assert.deepEqual(options, ["Home/"]);
+  const insert = () => r.all('[data-rt-panel="link"] button').find((b) => b.textContent === "Insert")!;
+  assert.equal(insert().hasAttribute("disabled"), true, "nothing chosen yet");
+  await r.click(r.get('[data-rt-panel="link"] [data-link-page="/"]'));
+  await r.click(insert());
   await act(async () => void e.select(e.get("main")));
   assert.match(e.text(), /old link<\/a><a href="\/">\/<\/a><\/h1>/);
 });

@@ -38,6 +38,8 @@ interface ActionSpec {
   fields: readonly ActionField[];
   /** Its effect is something the canvas can show or hide, so the card carries the view-only "Open on canvas" toggle. */
   preview?: true;
+  /** Edited with the shared link picker (`LinkPicker`) instead of one input per field; `fields` still lists what it writes. */
+  linkPicker?: true;
 }
 
 const CART_FIELD: ActionField = { attr: "data-cart", label: "Cart", kind: "enum", options: ["add", "open", "checkout"], optionLabels: { add: "Add to cart", open: "Open cart", checkout: "Check out" } };
@@ -47,7 +49,7 @@ const REL_FIELD: ActionField = { attr: "rel", label: "Link relationship (advance
 
 /** Action type id → its label, category and source form. Order = the picker's order. */
 export const ACTION_SPECS: Record<string, ActionSpec> = {
-  link: { label: "Link", group: "", attrs: [["href", ""]], fields: [{ attr: "href", label: "Link", kind: "string", placeholder: "Page, web address, email or phone" }, TARGET_FIELD, REL_FIELD] },
+  link: { label: "Link", group: "", attrs: [["href", ""]], fields: [{ attr: "href", label: "Link", kind: "string" }, TARGET_FIELD, REL_FIELD], linkPicker: true },
   "open-modal": { label: "Open popup", group: "Open", attrs: [["command", "show-modal"]], fields: [{ attr: "commandfor", label: "Popup", kind: "string", placeholder: "Popup name" }, { attr: "command", label: "Command", kind: "enum", options: ["show-modal", "close"], optionLabels: { "show-modal": "Open", close: "Close" } }], preview: true },
   "show-hide": { label: "Show / Hide", group: "Open", attrs: [["command", "toggle-popover"]], fields: [{ attr: "commandfor", label: "Target", kind: "string", placeholder: "element id" }, { attr: "command", label: "Direction", kind: "enum", options: ["toggle-popover", "show-popover", "hide-popover"], optionLabels: { "toggle-popover": "Toggle", "show-popover": "Show", "hide-popover": "Hide" } }, { attr: "data-state-on", label: "Trigger", kind: "enum", options: ["click", "hover", "load"], optionLabels: { click: "Click", hover: "Hover", load: "Page load" } }], preview: true },
   "add-to-cart": { label: "Add to cart", group: "Commerce", attrs: [["data-cart", "add"]], fields: [CART_FIELD] },

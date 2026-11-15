@@ -65,7 +65,7 @@ export function ActionsEditor({ handle }: { handle: NodeHandle }) {
             {gated ? (
               <p className="text-base-content/50 px-1 text-[10px]" data-action-gated="">Fires only when its condition below holds. Remove the condition to edit its options.</p>
             ) : spec.fields.length > 0 ? (
-              <ActionDetail handle={handle} fields={spec.fields} />
+              <ActionDetail handle={handle} type={type} />
             ) : (
               <p className="text-base-content/50 px-1 text-[10px]">No options — fires on click.</p>
             )}
