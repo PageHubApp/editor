@@ -146,4 +146,37 @@ describe("canvasHost", () => {
     const { r } = await mount({ previewUrl: (route) => `https://preview.test${route}` });
     assert.equal(r.get("[data-page-open]").getAttribute("href"), "https://preview.test/");
   });
+
+  it("no addPage / pageSettings: no Add page row, no settings buttons", async () => {
+    const { r } = await mount();
+    await r.click(r.get("[data-page-trigger]"));
+    assert.equal(r.all("[data-page-add], [data-page-settings], [data-page-row-settings]").length, 0);
+  });
+
+  it("pageSettings: the pill's gear and each row's gear open that page's settings", async () => {
+    const opened: string[] = [];
+    const { r } = await mount({ pageSettings: (p) => void opened.push(p) });
+    await r.click(r.get("[data-page-settings]"));
+    await r.click(r.get("[data-page-trigger]"));
+    await r.click(r.get('[data-page-row-settings="index.liquid"]'));
+    assert.deepEqual(opened, ["index.liquid", "index.liquid"]);
+    assert.equal(r.get("[data-page-trigger]").getAttribute("aria-expanded"), "false", "the list closes");
+  });
+
+  it("addPage: Add page → name → Create calls the host; a refusal shows under the field, success closes the list", async () => {
+    const names: string[] = [];
+    let refusal: string | null = "That's every page this plan includes.";
+    const { r } = await mount({ addPage: async (n) => (names.push(n), refusal) });
+    await r.click(r.get("[data-page-trigger]"));
+    await r.click(r.get("[data-page-add]"));
+    const create = () => r.all("[data-page-add-form] button").find((b) => b.textContent === "Create") as HTMLButtonElement;
+    assert.ok(create().disabled, "nothing to create without a name");
+    await r.type(r.get('input[aria-label="New page name"]'), "  About ");
+    await r.click(create());
+    assert.equal(r.get("[data-page-add-form] [role=alert]").textContent, refusal);
+    refusal = null;
+    await r.click(create());
+    assert.deepEqual(names, ["About", "About"]);
+    assert.equal(r.get("[data-page-trigger]").getAttribute("aria-expanded"), "false");
+  });
 });

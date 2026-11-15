@@ -5,7 +5,7 @@
  * keeps the remote font `<link>`s, no `runtimeUrl` boots no site runtime, no `previewUrl` hides "Open in new tab".
  */
 import { createContext, useContext } from "react";
-import type { EditorState } from "@pagehub/engine";
+import type { EditorState, Path } from "@pagehub/engine";
 import type { HostProviders } from "@pagehub/engine/render";
 import type { LocalFonts } from "@pagehub/engine/canvas";
 import type { PageEntry } from "../topbar/pages";
@@ -32,6 +32,13 @@ export interface CanvasHost {
    * A page without a record falls back to the route its file path implies.
    */
   pages?(): readonly PageEntry[];
+  /**
+   * Make a blank page named `name` and open it. Resolves null when it worked, else the message to show under
+   * the name field. Absent: the page selector has no "Add page".
+   */
+  addPage?(name: string): Promise<string | null>;
+  /** Open the host's settings for one page (title, description, address). Absent: no settings button. */
+  pageSettings?(path: Path): void;
   /** `image_url` / `file_url` / `icon` filter providers for the canvas renderer. Read lazily at each call. */
   host?: HostProviders;
   /**

@@ -4,7 +4,8 @@
  * the page's name, a chevron, then a round "open in a new tab" link. The trigger stretches to
  * fill the pill. The list is titled "Pages", gets a search field at 8+ pages ("No pages found"),
  * and shows each page's name and route. A deleted page falls back to the home page. A detail page also gets the
- * "Previewing: <entry>" switcher (`DetailPreviewPicker`).
+ * "Previewing: <entry>" switcher (`DetailPreviewPicker`). When the host supports them, each row and the pill have a
+ * page settings button (`canvasHost.pageSettings`) and the list ends with "Add page" (`canvasHost.addPage`).
  */
 import { useRef, useState } from "react";
 import type { Path } from "@pagehub/engine";
@@ -19,6 +20,7 @@ import { useDelayedFlag } from "../../primitives/useDelayedFlag";
 import { useRenderStatus } from "../canvas/renderStatus";
 import { PAGE_SEARCH_MIN, pageInfo, pagesRoot } from "./pages";
 import { DetailPreviewPicker } from "./DetailPreviewPicker";
+import { AddPageRow } from "./AddPageRow";
 
 const sameList = (a: readonly Path[], b: readonly Path[]) => a.length === b.length && a.every((p, i) => p === b[i]);
 
@@ -47,6 +49,9 @@ export function PageSelector() {
   const { route, name: currentName } = infoOf(current);
   const home = route === "/";
   const previewUrl = canvasHost?.previewUrl?.(route) ?? null;
+  const settings = canvasHost?.pageSettings;
+  const addPage = canvasHost?.addPage;
+  const PILL_BUTTON = "text-base-content/50 hover:bg-base-content/10 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded-full transition-colors";
   return (
     <div ref={root} data-slot="PageSelector" className="relative flex min-w-0 flex-1 items-center gap-1">
       <button
@@ -64,8 +69,13 @@ export function PageSelector() {
         <Icon name="chevron-down" className={`size-3.5 shrink-0 opacity-60 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       <DetailPreviewPicker />
+      {settings && (
+        <button type="button" data-page-settings="" className={PILL_BUTTON} aria-label="Page settings" onClick={() => settings(current)} {...tooltip("Page settings: title, description, address", "bottom")}>
+          <Icon name="settings" className="size-3.5" />
+        </button>
+      )}
       {previewUrl && (
-        <a data-page-open="" className="text-base-content/50 hover:bg-base-content/10 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded-full transition-colors" href={previewUrl} target="_blank" rel="noopener noreferrer" aria-label="Open page in a new tab" {...tooltip("Open page in a new tab", "bottom")}>
+        <a data-page-open="" className={PILL_BUTTON} href={previewUrl} target="_blank" rel="noopener noreferrer" aria-label="Open page in a new tab" {...tooltip("Open page in a new tab", "bottom")}>
           <Icon name="external-link" className="size-3.5" />
         </a>
       )}
@@ -91,11 +101,24 @@ export function PageSelector() {
                       <span className="text-base-content/60 truncate text-xs">{r}</span>
                     </div>
                   </button>
+                  {settings && (
+                    <button
+                      type="button"
+                      data-page-row-settings={p}
+                      aria-label={`${name} settings`}
+                      onClick={() => (settings(p), close())}
+                      className={`text-base-content/60 hover:bg-base-300 hover:text-base-content inline-flex size-6 shrink-0 items-center justify-center rounded transition ${selected ? "" : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"}`}
+                      {...tooltip("Page settings", "right")}
+                    >
+                      <Icon name="settings" className="size-3.5" />
+                    </button>
+                  )}
                 </div>
               );
             })}
             {!shown.length && query && <div className="text-base-content/60 px-3 py-4 text-center text-sm">No pages found</div>}
           </div>
+          {addPage && <AddPageRow addPage={addPage} onAdded={close} />}
         </div>
       </AnchoredPopover>
     </div>
