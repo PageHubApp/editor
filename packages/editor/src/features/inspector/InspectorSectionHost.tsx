@@ -10,14 +10,18 @@
  * Adding from "+": a row with a default writes it; every added row stays for the session in
  * click order; the section opens; adding exactly one popover row opens its popover on the next
  * frame (adding several opens none).
+ *
+ * The Component section's rows a type marks advanced (`isAdvancedRow`: an image's loading and fit settings) sit
+ * in an "Advanced" disclosure at its end, closed by default.
  */
-import { useRef } from "react";
+import { useState, useRef, type ReactNode } from "react";
 import type { NodeHandle } from "@pagehub/engine";
 import { Slot } from "../../components";
 import { useRunCommand } from "../../react/bindings";
 import { useUi } from "../../react/useUi";
 import { writeScopes } from "../../state/uiState";
-import type { RowDef } from "./rows/inspectorRows";
+import { isAdvancedRow, type RowDef } from "./rows/inspectorRows";
+import { Icon } from "../../primitives/icons";
 import { AddPropertyMenu, type AddPropertyMenuHandle } from "./AddPropertyMenu";
 import { SectionPinButton, usePins } from "./pins";
 import { sectionModel, type ElementView } from "./rowRules";
@@ -37,6 +41,21 @@ const INLINE_EDITOR_SECTIONS: Record<string, SectionEditorKind> = {
   action: "action",
   handlers: "handlers",
 };
+
+/** "Advanced": a closed-by-default disclosure for rarely needed rows. */
+function AdvancedRows({ children }: { children: ReactNode[] }) {
+  const [open, setOpen] = useState(false);
+  if (!children.length) return null;
+  return (
+    <div data-advanced-rows="" data-open={open ? "" : undefined} className="grid gap-3">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="text-base-content/60 hover:text-base-content flex items-center gap-1 justify-self-start text-xs">
+        <Icon name="chevron-right" className={`size-3 transition-transform ${open ? "rotate-90" : ""}`} />
+        Advanced
+      </button>
+      {open && children}
+    </div>
+  );
+}
 
 const PinnedNote = () => (
   <div data-pinned-note="" className="text-base-content/60 border-base-300/60 border-t border-dashed px-3 py-2 text-xs italic">
@@ -88,13 +107,14 @@ export function InspectorSectionHost({ id, handle, view, mode = "stack", only }:
 
   const visible = results ? (only ?? []) : model.visible;
   const mounted = results ? visible : [...visible, ...model.rows.filter((r) => r.popover && !visible.includes(r))];
-  const rows = mounted.map((r) => {
+  const rowOf = (r: RowDef) => {
     // A per-element Component control (Button Type, Button / Link Text) that the generic row
     // controls can't express renders through `ElementControlRow`; everything else is a PropertyRow.
     const Control = elementControlFor(r.id, handle);
     if (Control) return <ElementControlRow key={r.id} row={r} handle={handle} visible={visible.includes(r)} Control={Control} />;
     return <PropertyRow key={r.id} row={r} handle={handle} visible={visible.includes(r)} />;
-  });
+  };
+  const rows = mounted.map(rowOf);
   if (mode === "dock") return <>{rows}</>;
 
   // The element's own primary settings (Button Text/Icon/Type, an input's Type/Value, …) are the
@@ -103,9 +123,11 @@ export function InspectorSectionHost({ id, handle, view, mode = "stack", only }:
   // Render them bare (no header), mirroring ToolbarSection's body styling. Named component
   // sub-sections (`component:…`) and search results keep their accordion.
   if (id === "component" && !results) {
+    const advanced = (r: RowDef) => isAdvancedRow(view.type, r.id);
     return (
       <div data-slot="InspectorSection" data-section-id={id} className="border-base-300/60 bg-base-100 text-base-content grid items-end gap-3 border-b p-3">
-        {rows}
+        {mounted.filter((r) => !advanced(r)).map(rowOf)}
+        <AdvancedRows>{mounted.filter(advanced).map(rowOf)}</AdvancedRows>
       </div>
     );
   }

@@ -180,6 +180,7 @@ test("fields: an image in a repeated card switches between Each entry (a photo f
   assert.equal(mode(), "Same for all");
   assert.match(e.text(), /item\.cover/, "nothing is written until a picture is picked: the entries keep their photos");
   assert.equal(document.querySelector("[data-media-bound]"), null, "the picker starts empty");
+  assert.ok(document.querySelector("[data-media-card=empty]"), "Same for all shows the empty picture card");
 });
 
 test("fields: a new field image is written at the card size; no Each entry / Same for all outside a collection loop", async () => {

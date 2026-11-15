@@ -1,11 +1,13 @@
 /**
- * Picture controls, each one media picker (thumbnail + file name, Replace / Clear through the
- * `MediaManager` slot) with the raw value only behind "Edit as expression":
- * - an image's Source: `src` in the converter's forms (`mediaRef`) — a library file is written as
- *   the `image_url` filter on its id, a bound value (`item.image`) shows as a variable chip;
+ * Picture controls, each one media picker (through the `MediaManager` slot) with the raw value only behind
+ * "Use a web address":
+ * - an image's Source: a preview card (the picture, its name and size, Replace / Remove); `src` in the
+ *   converter's forms (`mediaRef`) — a library file is written as the `image_url` filter on its id, a bound
+ *   value (`item.image`) shows as a variable chip. Picking a library file onto an image with no `alt` copies
+ *   the file's alt from the library in the same write (one undo step); an alt already there is never touched;
  * - the Background image row: the arbitrary background-image url class (the converter writes the
  *   file's URL there, since a class can't hold Liquid) plus its size, position, repeat and
- *   attachment classes.
+ *   attachment classes (the compact chip).
  * - inside a list of a collection's entries, an image's Source switches between "Each entry" (one of
  *   the collection's photo fields, written `{{ item.photo | image_url: width: 800 }}`, the bound form)
  *   and "Same for all" (the picker).
@@ -17,7 +19,7 @@ import { useState, type ReactNode } from "react";
 import type { NodeHandle } from "@pagehub/engine";
 import { boundSrc, mediaSrc, parseMediaSrc, type MediaRef } from "../../media/mediaRef";
 import { classGroupsFacet, readClass } from "@pagehub/engine/kits";
-import { mediaFacet } from "@pagehub/engine/host";
+import { mediaFacet, type MediaItem } from "@pagehub/engine/host";
 import { useEditorState, useInspectedClass, useRunCommand } from "../../../react/bindings";
 import { useUi, uiScopeEq } from "../../../react/useUi";
 import { writeScopes } from "../../../state/uiState";
@@ -31,15 +33,25 @@ import { fieldLabel, imageFields, loopCollection, type LoopCollection } from "..
 
 const TW = ["tailwind"] as const;
 
-/** A picked media value (an id, or an expression / URL) → the URL to write. */
-function useResolveMedia() {
+const isLiteral = (v: string) => v.includes("{{") || /^(https?:|\/|data:)/.test(v);
+
+/** The library item of a picked media id; undefined for an expression / URL, or with no store. */
+export function useMediaItem() {
   const store = useEditorState((s) => s.facet(mediaFacet));
-  return async (v: string): Promise<string> => {
-    if (!v || v.includes("{{") || /^(https?:|\/|data:)/.test(v) || !store) return v;
-    const items = await Promise.resolve(store.list());
-    return items.find((i) => i.id === v)?.url ?? v;
+  return async (v: string): Promise<MediaItem | undefined> => {
+    if (!v || isLiteral(v) || !store) return undefined;
+    return (await Promise.resolve(store.list())).find((i) => i.id === v);
   };
 }
+
+/** A picked media value (an id, or an expression / URL) → the URL to write. */
+function useResolveMedia() {
+  const find = useMediaItem();
+  return async (v: string): Promise<string> => (await find(v))?.url ?? v;
+}
+
+/** A library alt as an attribute value: no Liquid delimiters, no double quote (the value is written inside `"…"`). */
+export const altValue = (alt: string | undefined) => alt?.replace(/[{}]/g, "").replace(/"/g, "'").trim() ?? "";
 
 /** The background-image url class ↔ its url (Tailwind arbitrary values carry no spaces). No literal example class in
  * comments here: the editor sheet scans this source, and a sample url would compile into a broken `url()` import. */
@@ -79,8 +91,8 @@ function ExpressionToggle({ id, value, onCommit }: { id: string; value: string; 
   return open ? (
     <ExpressionField id={id} label="Web address or data value" value={value} autoFocus onCommit={(v) => (onCommit(v), setOpen(false))} />
   ) : (
-    <button type="button" onClick={() => setOpen(true)} className="text-base-content/55 hover:text-base-content self-end text-[11px]">
-      Use a web address or data value
+    <button type="button" data-expression-toggle="" onClick={() => setOpen(true)} className="text-base-content/55 hover:text-base-content self-start text-[11px]">
+      Use a web address
     </button>
   );
 }
@@ -94,26 +106,29 @@ function pickerValue(ref: MediaRef): string {
 }
 
 export function ImageSrcControl({ handle }: { handle: NodeHandle }) {
-  const { read, write } = useBoundAttrs(handle);
+  const { read, write, writeAll } = useBoundAttrs(handle);
+  const find = useMediaItem();
   const src = read("src") ?? "";
   const ref = parseMediaSrc(src);
   const host = useHostCollections();
   const file = useEditorState((s) => s.files.get(handle.path) ?? "");
   const loop = host ? loopCollection(handle, host.list, file) : null;
   const args = ref.kind === "media" || ref.kind === "bound" ? ref.args : "";
-  // A pick is a library id (written in the converter's `image_url` form), a dynamic `{{ path }}`, or a URL.
-  const pick = (v: string) => {
+  // A pick is a library id (written in the converter's `image_url` form, with the library's alt when the
+  // element has none), a dynamic `{{ path }}`, or a URL.
+  const pick = async (v: string) => {
     if (!v) return write("src", null);
     const bare = /^\{\{\s*([A-Za-z_][\w.-]*)\s*\}\}$/.exec(v);
     if (bare) return write("src", boundSrc(bare[1]!, args));
-    if (v.includes("{{") || /^(https?:|\/|data:)/.test(v)) return write("src", v);
-    return write("src", mediaSrc(v, args));
+    if (isLiteral(v)) return write("src", v);
+    const alt = (read("alt") ?? "").trim() ? "" : altValue((await find(v))?.alt);
+    return writeAll(alt ? { src: mediaSrc(v, args), alt } : { src: mediaSrc(v, args) });
   };
   const picker = (value: string, label = "Source") => (
-    <MediaInput label={label} value={value} boundLabel={ref.kind === "bound" && value ? (fieldLabel(loop, `{{ ${ref.path} }}`) ?? undefined) : undefined} onChange={pick} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
+    <MediaInput variant="card" label={label} value={value} boundLabel={ref.kind === "bound" && value ? (fieldLabel(loop, `{{ ${ref.path} }}`) ?? undefined) : undefined} onChange={(v) => void pick(v)} siteLogo={{ light: "{{ company.logo }}", dark: "{{ company.logoDark }}" }} />
   );
   return (
-    <div data-image-src-control="" className="flex flex-col gap-1">
+    <div data-image-src-control="" className="flex flex-col gap-1.5">
       {imageFields(loop).length ? <LoopImageSource loop={loop!} ref_={ref} src={src} picker={picker} onField={(path) => write("src", boundSrc(path, args || FIELD_ARGS))} /> : picker(pickerValue(ref))}
       <ExpressionToggle id="image-src-expression" value={src} onCommit={(v) => write("src", v || null)} />
     </div>

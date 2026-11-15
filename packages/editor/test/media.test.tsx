@@ -2,11 +2,14 @@ import "./setup.ts";
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { act } from "react";
-import { htmlKit } from "@pagehub/engine/kits";
+import { htmlKit, liquidKit } from "@pagehub/engine/kits";
 import { createTestEditor, type TestEditor } from "@pagehub/engine/testing";
 import { mediaFacet, memoryMediaStore, type MediaItem } from "@pagehub/engine/host";
 import { MediaInput } from "../src/features/media/MediaInput.tsx";
 import { MediaManager } from "../src/features/media/MediaManager.tsx";
+import { ImageSrcControl } from "../src/features/inspector/controls/MediaControls.tsx";
+import { RowControl } from "../src/features/inspector/PropertyRow.tsx";
+import { inspectorRows } from "../src/features/inspector/rows/inspectorRows.ts";
 import { editorKit } from "../src/index.ts";
 import { attachKeymap } from "../src/features/keyboard/domKeymap.ts";
 import { filterMedia, formatFileSize, sortMedia } from "../src/features/media/mediaHelpers.ts";
@@ -25,8 +28,8 @@ afterEach(() => {
   globalThis.localStorage?.clear();
 });
 
-function rig(ui: (e: TestEditor) => React.ReactNode, store = memoryMediaStore({ items: SEED, folders: [{ id: "f1", name: "Hero", parent: null }] })) {
-  const e = createTestEditor({ files: { "index.liquid": "<p>x</p>\n" }, extensions: [htmlKit(), editorKit(), mediaFacet.of(store)] });
+function rig(ui: (e: TestEditor) => React.ReactNode, store = memoryMediaStore({ items: SEED, folders: [{ id: "f1", name: "Hero", parent: null }] }), page = "<p>x</p>\n") {
+  const e = createTestEditor({ files: { "index.liquid": page }, extensions: [htmlKit(), liquidKit(), editorKit(), mediaFacet.of(store)] });
   detachers.push(attachKeymap(e, { platform: "other" }));
   const r = render(withSlots(e, { MediaManager }, ui(e)));
   live.push(r);
@@ -244,5 +247,89 @@ describe("MediaInput", () => {
     assert.equal(r.get("img").getAttribute("src"), "u://m1");
     await r.click(r.get("button[aria-label='Clear media']"));
     assert.deepEqual(out, [""]);
+  });
+});
+
+const button = (r: ReturnType<typeof render>, text: string) => r.all("button").find((b) => b.textContent?.trim() === text)!;
+const pickFromLibrary = async (r: ReturnType<typeof render>, id: string) => {
+  await ready();
+  await r.click(card(r, id));
+  await r.click(button(r, "Select"));
+  await ready();
+};
+
+describe("MediaInput card", () => {
+  it("shows the picture, its file name and size; Replace and the picture open the picker; Remove clears", async () => {
+    const out: string[] = [];
+    const store = memoryMediaStore({ items: [item("m1", "hero.png", { width: 1200, height: 800 }), item("m2", "plain.png")] });
+    const { r } = rig(() => <MediaInput variant="card" value="m1" onChange={(v) => out.push(v)} />, store);
+    await ready();
+    assert.equal(r.get("[data-media-card] img").getAttribute("src"), "u://m1");
+    assert.equal(r.get("[data-media-card-name]").textContent, "hero.png");
+    assert.match(r.get("[data-media-card]").textContent ?? "", /1200 × 800 px/);
+    await r.click(button(r, "Replace"));
+    await pickFromLibrary(r, "m2");
+    assert.deepEqual(out, ["m2"]);
+    await r.click(r.get("button[aria-label='Change image']"));
+    await ready();
+    assert.ok(r.all("[role=dialog]").length, "the picture opens the picker");
+    await r.click(button(r, "Remove"));
+    assert.equal(out.at(-1), "");
+  });
+  it("empty: a 'Choose an image' box that opens the picker, the same height as the card", async () => {
+    const out: string[] = [];
+    const { r } = rig(() => <MediaInput variant="card" value="" onChange={(v) => out.push(v)} />);
+    const empty = r.get("[data-media-card=empty]");
+    assert.match(empty.textContent ?? "", /Choose an image/);
+    assert.match(empty.className, /h-\[196px\]/);
+    await r.click(empty);
+    await pickFromLibrary(r, "m5");
+    assert.deepEqual(out, ["m5"]);
+  });
+});
+
+describe("image Source and Description", () => {
+  const LIB = () => memoryMediaStore({ items: [item("m1", "door.png", { alt: "A red door" }), item("m2", "bare.png")] });
+  const imgRig = (page: string) => rig((e) => <ImageSrcControl handle={e.get("img")} />, LIB(), page);
+
+  it("picking a library image onto an empty alt copies the library's alt, in one undo step", async () => {
+    const before = `<img src="a.png" alt="">\n`;
+    const { e, r } = imgRig(before);
+    await r.click(button(r, "Replace"));
+    await pickFromLibrary(r, "m1");
+    assert.match(e.text(), /src="{{ 'm1' \| image_url }}"/);
+    assert.match(e.text(), /alt="A red door"/);
+    assert.ok(e.undo());
+    assert.equal(e.text(), before, "one undo restores both");
+  });
+  it("never overwrites an alt that is already there; a library file with no alt leaves alt alone", async () => {
+    const { e, r } = imgRig(`<img src="a.png" alt="My words">\n`);
+    await r.click(button(r, "Replace"));
+    await pickFromLibrary(r, "m1");
+    assert.match(e.text(), /alt="My words"/);
+    r.unmount();
+    live.splice(live.indexOf(r), 1);
+    const other = imgRig(`<img src="a.png">\n`);
+    await other.r.click(button(other.r, "Replace"));
+    await pickFromLibrary(other.r, "m2");
+    assert.match(other.e.text(), /src="{{ 'm2' \| image_url }}"/);
+    assert.doesNotMatch(other.e.text(), /alt=/);
+  });
+  it("'Use a web address' reveals the text field", async () => {
+    const { r } = imgRig(`<img src="a.png" alt="">\n`);
+    assert.equal(r.all("[data-image-src-control] input").length, 0);
+    await r.click(r.get("[data-expression-toggle]"));
+    assert.ok(r.all("[data-image-src-control] input, [data-image-src-control] [contenteditable]").length > 0);
+  });
+  it("Description: helper text, and a quiet warning only while it is empty", async () => {
+    const alt = inspectorRows().find((x) => x.id === "alt")!;
+    assert.equal(alt.label, "Description");
+    const { r } = rig((e) => <RowControl row={alt} handle={e.get("img")} />, LIB(), `<img src="a.png" alt="">\n`);
+    assert.match(r.container.textContent ?? "", /For screen readers and Google/);
+    assert.match(r.get("[data-bound-text-empty]").textContent ?? "", /Add a description so everyone can tell what this shows\./);
+    r.unmount();
+    live.splice(live.indexOf(r), 1);
+    const filled = rig((e) => <RowControl row={alt} handle={e.get("img")} />, LIB(), `<img src="a.png" alt="A door">\n`);
+    assert.equal(filled.r.all("[data-bound-text-empty]").length, 0);
   });
 });

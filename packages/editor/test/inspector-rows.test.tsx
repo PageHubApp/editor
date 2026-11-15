@@ -277,3 +277,31 @@ describe("'+' picker (AddPropertyMenu)", () => {
     empty.unmount();
   });
 });
+
+describe("image: Source and Description first, the rest under Advanced", () => {
+  const ADVANCED = ["fetchPriority", "loading", "sizes", "objectFit", "objectPosition"];
+  it("Advanced is closed by default and holds fetch priority, loading, sizes, object fit and object position", async () => {
+    const e = pageEditor();
+    select(e, "img");
+    const r = inspector(e);
+    const component = section(r, "component")!;
+    const rowIds = () => [...component.querySelectorAll<HTMLElement>("[data-row]")].map((n) => n.getAttribute("data-row"));
+    assert.ok(component.querySelector("[data-image-src-control]"), "the Source card");
+    assert.ok(rowIds().includes("alt"), "Description shows outside Advanced");
+    for (const id of ADVANCED) assert.ok(!rowIds().includes(id), `${id} is folded away`);
+    const toggle = component.querySelector<HTMLElement>("[data-advanced-rows] button[aria-expanded]")!;
+    assert.equal(toggle.getAttribute("aria-expanded"), "false");
+    assert.equal(toggle.textContent?.trim(), "Advanced");
+    await r.click(toggle);
+    const inside = [...component.querySelectorAll<HTMLElement>("[data-advanced-rows] [data-row]")].map((n) => n.getAttribute("data-row"));
+    assert.deepEqual(inside, ADVANCED);
+    r.unmount();
+  });
+  it("a video keeps its object fit rows unfolded (no Advanced)", async () => {
+    const e = pageEditor();
+    select(e, "video");
+    const r = inspector(e);
+    assert.equal(r.container.querySelector("[data-advanced-rows]"), null);
+    r.unmount();
+  });
+});

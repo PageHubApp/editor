@@ -3,9 +3,10 @@
  * variable chips (`Photo of [item.title]`), never raw Liquid. "Insert variable" appends a binding
  * from the element's completions — inside a list of a collection's entries, that collection's fields
  * come first by name ("Price · number") — and a field's chip reads as its name, with the
- * expression in its tooltip. A chip's X removes it. Each change is one undo step.
+ * expression in its tooltip. A chip's X removes it. Each change is one undo step. `help` shows
+ * under the field; `emptyNote` is a quiet warning while the attribute is empty.
  *
- *   <BoundTextControl handle={h} attr="alt" label="Alt text" />
+ *   <BoundTextControl handle={h} attr="alt" label="Description" help="For screen readers and Google" emptyNote="Add a description…" />
  */
 import type { NodeHandle } from "@pagehub/engine";
 import { Chip } from "../../../primitives/Chip";
@@ -17,9 +18,19 @@ import { useHostCollections } from "../../canvas/hostCollections";
 import { fieldItems, fieldLabel, loopCollection } from "../../liquid/collectionFields";
 import { NO_AUTOCOMPLETE, ToolbarItemView } from "../../toolbar/ToolbarItemView";
 import { useBoundAttrs } from "./useBoundAttrs";
+import { PanelNote } from "../../liquid/LiquidFields";
 import { appendVariable, joinBound, removeVariable, setText, splitBound, variablePath } from "./boundText";
 
-export function BoundTextControl({ handle, attr, label }: { handle: NodeHandle; attr: string; label: string }) {
+interface BoundTextControlProps {
+  handle: NodeHandle;
+  attr: string;
+  label: string;
+  help?: string;
+  /** Shown while the attribute is empty. */
+  emptyNote?: string;
+}
+
+export function BoundTextControl({ handle, attr, label, help, emptyNote }: BoundTextControlProps) {
   const { read, write } = useBoundAttrs(handle);
   const names = useCompletions(handle);
   const host = useHostCollections();
@@ -52,6 +63,13 @@ export function BoundTextControl({ handle, attr, label }: { handle: NodeHandle; 
           )}
         </div>
       </Chip>
+      {help && <PanelNote>{help}</PanelNote>}
+      {emptyNote && !value.trim() && (
+        <p data-bound-text-empty="" className="text-base-content/70 flex items-start gap-1 text-[11px] leading-snug">
+          <Icon name="alert-triangle" className="text-warning mt-px size-3 shrink-0" />
+          {emptyNote}
+        </p>
+      )}
       {(fields.length > 0 || others.length > 0) && (
         <ToolbarItemView key={value} type="select" inputId={`${attr}-insert-variable`} label="Insert" value="" placeholder={fields.length ? "Field…" : "Variable…"} onChange={(v) => v && commit(appendVariable(parts, v))}>
           {fields.length > 0 && (

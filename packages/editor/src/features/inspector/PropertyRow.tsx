@@ -82,7 +82,7 @@ export function RowControl({ row, handle }: { row: RowDef; handle: NodeHandle })
   const spec = controlSpecFor(row.id);
   if (row.id === "bgImage" && handle.kind === "element") return <BgImageControl />;
   if (row.id === "image.src" && handle.kind === "element") return <ImageSrcControl handle={handle} />;
-  if (row.id === "alt" && handle.kind === "element") return <BoundTextControl handle={handle} attr="alt" label={row.label} />;
+  if (row.id === "alt" && handle.kind === "element") return <BoundTextControl handle={handle} attr="alt" label={row.label} help="For screen readers and Google" emptyNote="Add a description so everyone can tell what this shows." />;
   if (row.id === "scrollEffect" && handle.kind === "element") return <ScrollEffectControl handle={handle} />;
   if (row.id === "permissions" && handle.kind === "element") return <PermissionsControl handle={handle} />;
   if (row.id === "aiContext" && handle.kind === "element") return <AiNoteControl handle={handle} />;

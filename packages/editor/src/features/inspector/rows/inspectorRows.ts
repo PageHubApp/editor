@@ -132,7 +132,7 @@ const PARTS: Readonly<Record<string, readonly string[]>> = {
 const LABELS: Readonly<Record<string, string>> = {
   color: "Color", background: "Background", bgImage: "Image", bgPattern: "Pattern", borderRadius: "Radius", className: "Classes",
   formName: "Name",
-  "image.src": "Source", alt: "Alt text",
+  "image.src": "Source", alt: "Description",
   "effects.transform": "Transform", "hover.background": "Background", "hover.textColor": "Text color", "hover.border": "Border",
   layoutPreset: "Layout", typographyPreset: "Text style", "preset-items": "Items", zIndex: "Stack order",
   "state.text": "State text", "details.open": "Open by default",
@@ -202,6 +202,17 @@ export function inspectorRows(): readonly RowDef[] {
 
 /** Section title, from the map's section table. */
 export const sectionTitle = (id: string): string => SECTIONS[id]?.[1] ?? id;
+
+/**
+ * Rows a component type folds into an "Advanced" disclosure at the end of its Component section (closed by
+ * default): settings a site owner rarely needs.
+ */
+const ADVANCED_ROWS: Readonly<Record<string, readonly string[]>> = {
+  image: ["fetchPriority", "loading", "sizes", "objectFit", "objectPosition"],
+};
+
+/** The row sits in the type's "Advanced" disclosure. */
+export const isAdvancedRow = (type: string | undefined, id: string): boolean => !!type && !!ADVANCED_ROWS[type]?.includes(id);
 
 /** Component-tab section title → the rows it holds (today's `mainTabs/*` panels). */
 const COMPONENT_SECTION_ROWS: Readonly<Record<string, readonly string[]>> = {

@@ -5,7 +5,9 @@ import { act } from "react";
 import { checkContentOnly } from "@pagehub/engine";
 import { htmlKit, liquidKit, tailwindKit } from "@pagehub/engine/kits";
 import { createTestEditor, type TestEditor } from "@pagehub/engine/testing";
+import { mediaFacet, memoryMediaStore } from "@pagehub/engine/host";
 import { Editor, editorKit } from "../src/index.ts";
+import { MediaManager } from "../src/features/media/MediaManager.tsx";
 import { countWrites, render } from "./harness.tsx";
 
 const PAGE = `<section class="intro">
@@ -23,8 +25,10 @@ const HERO = `<h1>{{ section.settings.headline }}</h1>
 `;
 const FILES = { "index.liquid": PAGE, "sections/hero.liquid": HERO };
 
+const LIBRARY = memoryMediaStore({ items: [{ id: "m1", name: "door.png", contentType: "image/png", size: 10, folder: null, url: "https://cdn.test/m1.png", createdAt: 1, alt: "A red door" }] });
+
 function client(): TestEditor {
-  return createTestEditor({ files: FILES, extensions: [htmlKit(), tailwindKit(), liquidKit(), editorKit()], role: "client" });
+  return createTestEditor({ files: FILES, extensions: [htmlKit(), tailwindKit(), liquidKit(), editorKit(), mediaFacet.of(LIBRARY)], role: "client" });
 }
 
 /** Every file's text passes the engine's content gate against its original. */
@@ -85,17 +89,29 @@ describe("content mode (client role)", () => {
     assert.equal(e.state.selection.primary?.tag, "a");
   });
 
-  it("editing an image's address and a link's href passes the content gate", async () => {
+  it("picking an image, its description and a link's href pass the content gate", async () => {
     const e = client();
     e.select(e.get("img"));
-    const r = render(<Editor editor={e} />);
-    await r.type(r.get("#input-content-src"), "b.jpg");
-    assert.match(e.text(), /src="b\.jpg"/);
+    const r = render(<Editor editor={e} components={{ MediaManager }} />);
+    assert.ok(r.get("[data-content-fields] [data-media-card]"), "the image card");
+    await r.click(r.all("button").find((b) => b.textContent?.trim() === "Replace")!);
+    await act(async () => void (await new Promise((res) => setTimeout(res, 20))));
+    await r.click(r.get("[data-media-id='m1']"));
+    await r.click(r.all("button").find((b) => b.textContent?.trim() === "Select")!);
+    await act(async () => void (await new Promise((res) => setTimeout(res, 20))));
+    assert.match(e.text(), /src="https:\/\/cdn\.test\/m1\.png"/, "a client's pick is the file's plain address (no Liquid)");
+    assert.match(e.text(), /alt="A"/, "an existing description is kept");
     await r.type(r.get("#input-content-alt"), "A photo");
     assert.match(e.text(), /alt="A photo"/);
     await act(async () => e.select(e.get("a")));
-    await r.type(r.get("#input-content-href"), "/sale");
+    assert.ok(r.get("[data-content-fields] [data-link-picker]"), "the shared link picker");
+    assert.equal(r.all("[data-link-new-tab]").length, 0, "only href passes the content gate: no new-tab choice");
+    assert.equal(r.get<HTMLInputElement>("#input-content-link-web").value, "/shop", "a path that is no page opens as a web address");
+    await r.type(r.get("#input-content-link-web"), "/sale");
     assert.match(e.text(), /href="\/sale"/);
+    await r.click(r.all('[data-link-picker] [role="tab"]').find((t) => t.textContent === "Page")!);
+    await r.click(r.get('[data-link-page="/"]'));
+    assert.match(e.text(), /href="\/"/);
     assertContentOnly(e);
     r.unmount();
   });

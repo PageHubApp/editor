@@ -2,8 +2,10 @@
  * Media row: a thumbnail of the picked file (or "Choose an image") that opens the `MediaManager`
  * slot in pick mode, with the extra sources "Site logo" (when the site has one) and "Dynamic"
  * (a Liquid expression such as `{{ product.image }}`). `value` is a media id or an expression.
+ * `variant="card"` shows the picture as a preview card (`MediaCard`) instead of the one-line chip.
  *
  *   <MediaInput label="Image" value={id} onChange={setId} siteLogo={{ light: "{{ company.logo }}" }} />
+ *   <MediaInput variant="card" value={id} onChange={setId} />
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { mediaFacet, type MediaKind } from "@pagehub/engine/host";
@@ -12,6 +14,7 @@ import { useEditorState } from "../../react/bindings";
 import type { MediaSource } from "./MediaManagerView";
 import { PopoverChip } from "../../primitives/Chip";
 import { tooltip } from "../../primitives/tooltip";
+import { MediaCard } from "./MediaCard";
 
 interface MediaInputProps {
   label?: string;
@@ -24,6 +27,16 @@ interface MediaInputProps {
   boundLabel?: string;
   /** Liquid expressions of the site logo (light, and for dark backgrounds). */
   siteLogo?: { light: string; dark?: string };
+  /** `chip` (default): one row with a thumbnail; `card`: the picture as a preview card with Replace / Remove. */
+  variant?: "chip" | "card";
+}
+
+interface PickedItem {
+  url: string;
+  name: string;
+  alt?: string;
+  width?: number;
+  height?: number;
 }
 
 const isExpression = (v: string) => v.includes("{{");
@@ -39,13 +52,13 @@ function DynamicSource({ pick }: { pick(v: string): void }) {
   );
 }
 
-export function MediaInput({ label, labelWidth, adornment, value, onChange, kindFilter = "image", siteLogo, boundLabel }: MediaInputProps) {
+export function MediaInput({ label, labelWidth, adornment, value, onChange, kindFilter = "image", siteLogo, boundLabel, variant = "chip" }: MediaInputProps) {
   const [open, setOpen] = useState(false);
   // No MediaManager injected → there's nowhere to pick from, so the trigger stays inert (the
   // popover `Slot` renders nothing on its own, this just keeps the button from looking live).
   const hasManager = !!useSlot("MediaManager");
   const store = useEditorState((s) => s.facet(mediaFacet));
-  const [item, setItem] = useState<{ url: string; name: string } | null>(null);
+  const [item, setItem] = useState<PickedItem | null>(null);
   useEffect(() => {
     if (!value || isExpression(value)) return void setItem(null);
     if (/^(https?:|\/|data:)/.test(value)) return void setItem({ url: value, name: value.split("/").pop()?.split("?")[0] || value });
@@ -53,7 +66,7 @@ export function MediaInput({ label, labelWidth, adornment, value, onChange, kind
     let live = true;
     void Promise.resolve(store.list()).then((items) => {
       const hit = items.find((i) => i.id === value);
-      if (live) setItem(hit ? { url: hit.url, name: hit.alt || hit.name } : null);
+      if (live) setItem(hit ? { url: hit.url, name: hit.name, ...(hit.alt ? { alt: hit.alt } : {}), ...(hit.width && hit.height ? { width: hit.width, height: hit.height } : {}) } : null);
     });
     return () => void (live = false);
   }, [store, value]);
@@ -83,30 +96,31 @@ export function MediaInput({ label, labelWidth, adornment, value, onChange, kind
     { id: "dynamic", label: "Dynamic", render: (pick) => <DynamicSource pick={pick} /> },
   ];
 
+  const boundChip = bound ? (
+    <span data-media-bound="" {...(boundLabel ? { "data-media-field": boundLabel, ...tooltip(`{{ ${bound} }}`, "top") } : {})} className={`bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[11px] ${boundLabel ? "" : "font-mono"}`}>
+      {boundLabel ?? bound}
+    </span>
+  ) : null;
+  const openPicker = () => void (hasManager && setOpen(true));
+
   return (
     <>
-      <PopoverChip
-        label={label}
-        labelWidth={labelWidth}
-        adornment={adornment}
-        open={open}
-        onTriggerClick={() => hasManager && setOpen(true)}
-        onClear={() => onChange("")}
-        triggerAriaLabel={value ? "Change media" : "Choose an image"}
-        clearAriaLabel="Clear media"
-        leading={url ? <img src={url} alt="" className="size-4 rounded-sm object-cover" /> : undefined}
-        summary={
-          !value ? (
-            "Choose an image"
-          ) : bound ? (
-            <span data-media-bound="" {...(boundLabel ? { "data-media-field": boundLabel, ...tooltip(`{{ ${bound} }}`, "top") } : {})} className={`bg-primary/10 text-primary rounded px-1.5 py-0.5 text-[11px] ${boundLabel ? "" : "font-mono"}`}>
-              {boundLabel ?? bound}
-            </span>
-          ) : (
-            (item?.name ?? value)
-          )
-        }
-      />
+      {variant === "card" ? (
+        <MediaCard value={value} url={url} name={item?.name} dims={item?.width ? `${item.width} × ${item.height} px` : undefined} bound={boundChip} onOpen={openPicker} onRemove={() => onChange("")} />
+      ) : (
+        <PopoverChip
+          label={label}
+          labelWidth={labelWidth}
+          adornment={adornment}
+          open={open}
+          onTriggerClick={openPicker}
+          onClear={() => onChange("")}
+          triggerAriaLabel={value ? "Change media" : "Choose an image"}
+          clearAriaLabel="Clear media"
+          leading={url ? <img src={url} alt="" className="size-4 rounded-sm object-cover" /> : undefined}
+          summary={!value ? "Choose an image" : (boundChip ?? item?.alt ?? item?.name ?? value)}
+        />
+      )}
       <Slot name="MediaManager" open={open} onClose={() => setOpen(false)} onPick={onChange} kindFilter={kindFilter} sources={sources} />
     </>
   );
