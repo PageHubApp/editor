@@ -72,6 +72,14 @@ test("drop rules: a page only at the top level, a section only into a page / hea
   drop(s, "element.move", { nodes: [get(s, "p")], to: { after: get(s, "p") } }, false);
 });
 
+test("drop rules: a section lands in an <article> directly inside <main> (a page's content wrapper), not in a card <article>", () => {
+  const s = open(`<main>\n  <article>\n    <section>1</section>\n    <div>\n      <article class="card"><p>c</p></article>\n    </div>\n  </article>\n</main>\n`);
+  assert.ok(s.run("element.insert", { snippet: "<section>2</section>", to: { after: get(s, "section") } }));
+  assert.match(text(s), /<section>1<\/section>\s*<section>2<\/section>/);
+  const t = open(`<main>\n  <article>\n    <section>1</section>\n    <div>\n      <article class="card"><p>c</p></article>\n    </div>\n  </article>\n</main>\n`);
+  drop(t, "element.insert", { snippet: "<section>2</section>", to: { append: get(t, "article", 1) } }, false);
+});
+
 test("drop rules: data-edit-lock drag / move-out / drop-in refuse; Liquid blocks with branches take no direct children", () => {
   const s = open(`<div data-edit-lock="move-out">\n  <p>A</p>\n</div>\n<div data-edit-lock="drop-in"></div>\n<p data-edit-lock="drag">D</p>\n<div id="ok"></div>\n{% if x %}<b>y</b>{% else %}<i>z</i>{% endif %}\n`);
   drop(s, "element.move", { nodes: [get(s, "p")], to: { append: get(s, "#ok") } }, false);

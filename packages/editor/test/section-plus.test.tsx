@@ -45,13 +45,18 @@ async function setup(e = editor()) {
 }
 
 describe("+ lines between sections", () => {
-  it("the sections are the page root's element children, without header / footer chrome; a wrapper counts as one", () => {
+  it("the sections are the page root's element children, without header / footer chrome; a lone <article> wrapper holds them", () => {
     const e = editor();
     const s = pageSections(pageRoot(e as never, "index.liquid")!);
     assert.equal(s.parent.tag, "main");
     assert.deepEqual(s.sections.map((h) => h.classes()[0]), ["a", "b", "c"]);
-    const w = editor(`<main>\n  <article>\n    <section>A</section>\n  </article>\n</main>\n`);
-    assert.deepEqual(pageSections(pageRoot(w as never, "index.liquid")!).sections.map((h) => h.tag), ["article"]);
+    const w = editor(`<main>\n  {% render 'header' %}\n  <article>\n    <section>A</section>\n    <section>B</section>\n  </article>\n</main>\n`);
+    const ws = pageSections(pageRoot(w as never, "index.liquid")!);
+    assert.equal(ws.parent.tag, "article");
+    assert.deepEqual(ws.sections.map((h) => h.text()), ["<section>A</section>", "<section>B</section>"]);
+    assert.ok(w.run("element.insert", { snippet: "<section>N</section>", to: { after: ws.sections[0] } }), "a section can be added between them");
+    const two = editor(`<main>\n  <article><section>A</section></article>\n  <div>x</div>\n</main>\n`);
+    assert.equal(pageSections(pageRoot(two as never, "index.liquid")!).parent.tag, "main", "an article beside other content is one section");
   });
 
   it("near a boundary: a line with a round + (tooltip, no title); away from one: nothing", async () => {

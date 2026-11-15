@@ -13,7 +13,7 @@ import type { EditorState } from "../../../state/state";
 import type { NodeHandle } from "../../../state/handles";
 import { EDIT_ATTRIBUTES } from "../../../attributes/editAttributes";
 import { VOID_ELEMENTS, locked } from "../nodes";
-import { RAW_ELEMENTS, isAncestorOrSelf, roleOf, type SectionRole } from "./layout";
+import { RAW_ELEMENTS, isAncestorOrSelf, isPageArticle, roleOf, type SectionRole } from "./layout";
 
 /** What is being dropped: an existing node, or the top-level tag of new markup. */
 export type Dragged = { handle: NodeHandle } | { tag: string; kind: "element" | "liquid-block" | "text" };
@@ -55,7 +55,7 @@ export function canDropInto(state: EditorState, parent: NodeHandle | null, dragg
     }
     const role = roleOfDragged(d);
     if (role === "page" && parent) return false;
-    if (role === "section" && parent && parentRole !== "page" && parentRole !== "header" && parentRole !== "footer") return false;
+    if (role === "section" && parent && parentRole !== "page" && parentRole !== "header" && parentRole !== "footer" && !isPageArticle(parent)) return false;
     if (!parent && kindOf(d) === "text") return false;
     if (inForm && tagOf(d) === "form") return false;
     const name = elementName(state, d);

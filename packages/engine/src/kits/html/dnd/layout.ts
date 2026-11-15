@@ -68,6 +68,11 @@ export function roleOf(h: NodeHandle | null | undefined): SectionRole | null {
   return h && h.kind === "element" ? (ROLE_TAGS[h.tag] ?? null) : null;
 }
 
+/** An `<article>` directly inside `<main>`: a page's content wrapper, which holds its sections (a card `<article>` doesn't). */
+export function isPageArticle(h: NodeHandle | null | undefined): boolean {
+  return !!h && h.kind === "element" && h.tag === "article" && roleOf(h.parent()) === "page";
+}
+
 /** Raw-text elements, and SVG (edited as a whole): nothing can be dropped into them. */
 export const RAW_ELEMENTS: ReadonlySet<string> = new Set(["script", "style", "textarea", "title", "template", "svg"]);
 
