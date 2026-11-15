@@ -21,6 +21,7 @@ import { Icon } from "../../primitives/icons";
 import { tooltip } from "../../primitives/tooltip";
 import { useDragGesture } from "../../primitives/useDragGesture";
 import { useCanvasFrame } from "./canvasContext";
+import { handleDragOf } from "./handleDrag";
 import { toRect } from "./frameDom";
 import { GAP_COOLDOWN_MS, PADDING_DWELL_MS, containerZone, edgeZone, gapAt, gapToken, gapsBetween, heightToken, paddingAfterDrag, paddingToken, projectDelta, rotateAngle, rotateDegrees, rotateToken, widthToken, type Gap, type Rect, type Side } from "./geometry";
 import { useKeepInView } from "./useKeepInView";
@@ -153,6 +154,7 @@ export function NodeTools() {
       drag.current = { zone, start, rect: r, parentWidth: el.parentElement?.getBoundingClientRect().width ?? 0, last: null };
       if (frame) frame.style.pointerEvents = "none";
       setDragging(true);
+      handleDragOf(store).set(true);
     },
     onMove: (e, m) => {
       const d = drag.current;
@@ -194,6 +196,7 @@ export function NodeTools() {
       drag.current = null;
       if (frame) frame.style.pointerEvents = "";
       setDragging(false);
+      handleDragOf(store).set(false);
       setReadout(null);
       setPillAt(null);
       if (el) for (const p of ["width", "height", "gap", "rotate", "padding-top", "padding-right", "padding-bottom", "padding-left"]) el.style.removeProperty(p);

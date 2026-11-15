@@ -1,7 +1,7 @@
 // Chips drawn over the selection; positions come from the canvas.
 /**
  * The default `CanvasOverlays` slot: chips drawn over the selection — the editable name chip
- * (media, embeds and form fields), "repeated ×N" on a `{% for %}` row (with "Edit <entry>" and "Add entry" for a
+ * (media, embeds and form fields) with its action buttons (`SelectionActions`), "repeated ×N" on a `{% for %}` row (with "Edit <entry>" and "Add entry" for a
  * collection's list), the include ring with "Edit <name>", the condition badge, the empty-list placeholder — a lint
  * dot on every element with issues, and the Alt-held distance lines.
  */
@@ -25,6 +25,7 @@ import { elementsFor, hostRect, toRect, visibleInFrame } from "./frameDom";
 import type { Rect } from "./geometry";
 import { IncludeInAiButton } from "./NodeToolExtras";
 import { MeasurementLines } from "./MeasurementLines";
+import { SelectionActions, useSelectionActionsShown } from "./SelectionActions";
 import { CLOSE_ON_CANVAS, OPEN_ON_CANVAS, useOverlayPreview } from "./overlayPreview";
 import { useKeepInView } from "./useKeepInView";
 import { useSelectionGeometry } from "./useSelectionGeometry";
@@ -123,6 +124,7 @@ function NameChip({ handle, rect, place = "top-end", clamp }: { handle: NodeHand
   }, [editing]);
   useEffect(() => () => clearTimeout(timer.current), []);
   const hasParent = useEditorState(() => handle.alive && crumbsOf(handle).length > 1);
+  const actions = useSelectionActionsShown();
   return (
     <span ref={keep} data-name-tag="" className={`${CHIP} inline-flex items-center gap-0.5`} style={{ ...at(rect, place, clamp), zoom: "var(--device-zoom-inverse)" }}>
       <span
@@ -159,7 +161,7 @@ function NameChip({ handle, rect, place = "top-end", clamp }: { handle: NodeHand
       </span>
       <DetailsPreviewToggle handle={handle} />
       <OverlayPreviewToggle handle={handle} />
-      <IncludeInAiButton className="hover:bg-base-200 flex size-4 items-center justify-center rounded disabled:opacity-40" iconClassName="size-3" />
+      {!actions && <IncludeInAiButton className="hover:bg-base-200 flex size-4 items-center justify-center rounded disabled:opacity-40" iconClassName="size-3" />}
       {hasParent && (
         <>
           <button type="button" data-select-parent="" aria-label="Select parent" className="hover:bg-base-200 flex size-4 items-center justify-center rounded" {...tooltip("Select parent (Esc)", "bottom")} onClick={() => run("element.selectParent")}>
@@ -168,6 +170,7 @@ function NameChip({ handle, rect, place = "top-end", clamp }: { handle: NodeHand
           <AncestorsMenu node={handle} className="hover:bg-base-200 flex size-4 items-center justify-center rounded" />
         </>
       )}
+      {actions && <SelectionActions />}
     </span>
   );
 }
