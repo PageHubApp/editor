@@ -117,15 +117,15 @@ describe("device header bar and scrollbar", () => {
 });
 
 describe("breakpoint markers", () => {
-  it("toggle shows 'MD · 768' lines; drag stays between neighbours and writes theme.css on release; double-click resets a custom one", async () => {
+  it("toggle shows 'Tablet · 768' lines; drag stays between neighbours and writes theme.css on release; double-click resets a custom one", async () => {
     const { r, e } = await mountCanvas();
     cleanup = r.unmount;
     actRun(e, "view.toggleMarkers");
-    assert.deepEqual(r.all("[data-marker]").map((m) => m.textContent), ["SM · 640", "MD · 768", "LG · 1024", "XL · 1280", "2XL · 1536"]);
+    assert.deepEqual(r.all("[data-marker]").map((m) => m.textContent), ["Large phone · 640", "Tablet · 768", "Laptop · 1024", "Desktop · 1280", "Wide screen · 1536"]);
     const md = r.get('[data-marker="md"]');
     await fireIn(md, "pointerdown", { button: 0, buttons: 1, clientX: 0 });
     await act(async () => void window.dispatchEvent(new PointerEvent("pointermove", { buttons: 1, clientX: 40 })));
-    assert.equal(r.get('[data-marker="md"]').textContent, "MD · 808", "live preview");
+    assert.equal(r.get('[data-marker="md"]').textContent, "Tablet · 808", "live preview");
     assert.equal(e.state.files.get("theme.css"), undefined, "nothing written mid-drag");
     await act(async () => void window.dispatchEvent(new PointerEvent("pointerup", { clientX: 40 })));
     assert.match(e.state.files.get("theme.css")!, /--ph-bp-md: 808px;/);

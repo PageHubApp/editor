@@ -11,7 +11,7 @@ import type { Breakpoint } from "@pagehub/engine/kits";
 import { useRunCommand } from "../../react/bindings";
 import { useDragGesture } from "../../primitives/useDragGesture";
 import { tooltip } from "../../primitives/tooltip";
-import { BREAKPOINT_ORDER, clampMarker } from "./viewportMath";
+import { BREAKPOINT_ORDER, SCREEN_NAME, clampMarker } from "./viewportMath";
 import { useBreakpointWidths } from "./useBreakpointWidths";
 
 export function BreakpointMarkers({ zoom }: { zoom: number }) {
@@ -39,7 +39,7 @@ export function BreakpointMarkers({ zoom }: { zoom: number }) {
         const isPending = pending?.bp === bp;
         const px = isPending ? pending.px : values[bp];
         const isCustom = custom[bp] !== undefined;
-        const name = bp.toUpperCase();
+        const name = SCREEN_NAME[bp];
         return (
           <div
             key={bp}

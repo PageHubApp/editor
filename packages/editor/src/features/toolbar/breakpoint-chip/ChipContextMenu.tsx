@@ -30,17 +30,17 @@ export function ChipContextMenuView({ at, active, enabled, source, onAction, onS
     </button>
   );
   return (
-    <MenuSurface at={at} id="chip-context-menu" ariaLabel="Breakpoint property actions" onClose={onClose} width={CHIP_MENU_SIZE.width} height={CHIP_MENU_SIZE.height}>
+    <MenuSurface at={at} id="chip-context-menu" ariaLabel="Screen size actions" onClose={onClose} width={CHIP_MENU_SIZE.width} height={CHIP_MENU_SIZE.height}>
       {item("reset", "trash", `Reset at ${CHIP_BP_LABEL[active]}`)}
-      {item("resetAll", "refresh", "Reset all breakpoints")}
+      {item("resetAll", "refresh", "Reset all screen sizes")}
       <MenuDivider />
-      {item("promote", "arrows-move", "Promote to base")}
-      {item("copyDown", "corner-down-left", "Copy down (smaller bps)")}
-      {item("copyUp", "corner-up-left", "Copy up (larger bps)")}
+      {item("promote", "arrows-move", "Use for all screen sizes")}
+      {item("copyDown", "corner-down-left", "Copy to smaller screens")}
+      {item("copyUp", "corner-up-left", "Copy to larger screens")}
       <MenuDivider />
       <button type="button" role="menuitem" className={MENU_ITEM} disabled={!source} onClick={() => (onShowSource(), onClose())}>
         <Icon name="eye" className="size-3.5 shrink-0 opacity-80" />
-        Show source ({source ? CHIP_BP_LABEL[source] : "—"})
+        Show where it's set ({source ? CHIP_BP_LABEL[source] : "—"})
       </button>
     </MenuSurface>
   );

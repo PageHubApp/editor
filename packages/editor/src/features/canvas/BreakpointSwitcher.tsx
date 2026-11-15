@@ -2,8 +2,8 @@
 /**
  * The default `BreakpointSwitcher` slot (top bar). The trigger shows the view (icon on desktop,
  * else the label) or the zoom % when zoom ≠ 100%. It opens on hover:
- * Responsive and Device toggles, the view chips (Mobile·390 … 2XL with px; clicking the active
- * chip goes back to desktop), and the zoom row.
+ * the view chips (Phone·390 … Wide screen with px; clicking the active
+ * chip goes back to the full window), the "Shrink to fit" and "Phone frame" toggles, and the zoom row.
  */
 import { useEffect, useRef, useState } from "react";
 import { useEditorState, useRunCommand } from "../../react/bindings";
@@ -13,7 +13,7 @@ import { useOverlay } from "../../primitives/overlayStack";
 import { tooltip } from "../../primitives/tooltip";
 import { ZOOM_MAX, ZOOM_MIN, ZOOM_PRESETS, chromeOf } from "../../shell/chromeState";
 import { canvasOf } from "./canvasState";
-import { viewChips } from "./viewportMath";
+import { SCREEN_SHORT, viewChips } from "./viewportMath";
 import { useBreakpointWidths } from "./useBreakpointWidths";
 
 /** Hover grace before the menu closes. */
@@ -88,15 +88,7 @@ export function BreakpointSwitcher() {
       </button>
       <AnchoredPopover open={open} onOpenChange={setOpen} anchor={trigger} placement="bottom-start" className="bg-base-100 border-base-300 w-64 rounded-xl border p-2 shadow-lg">
         <div role="menu" aria-label="Screen sizes" data-bp-menu="" onMouseEnter={enter} onMouseLeave={leave} className="flex flex-col gap-1">
-          <label className={TOGGLE}>
-            Responsive
-            <input type="checkbox" className="toggle toggle-xs" checked={responsive} onChange={() => run("canvas.set", { responsive: !responsive })} />
-          </label>
-          <label className={TOGGLE}>
-            Device
-            <input type="checkbox" className="toggle toggle-xs" checked={device} onChange={() => run("canvas.toggleDevice")} />
-          </label>
-          <div className="text-neutral-content mt-1 px-0.5 text-[10px] font-semibold tracking-wide uppercase">Screen sizes</div>
+          <div className="text-neutral-content px-0.5 text-[10px] font-semibold tracking-wide uppercase">Preview at</div>
           <div className="grid grid-cols-3 gap-1 py-1">
             {chips.map((c) => (
               <button
@@ -113,11 +105,19 @@ export function BreakpointSwitcher() {
               </button>
             ))}
           </div>
+          <label className={TOGGLE} {...tooltip("Narrow the canvas when the window is smaller than the screen size", "right")}>
+            Shrink to fit window
+            <input type="checkbox" className="toggle toggle-xs" checked={responsive} onChange={() => run("canvas.set", { responsive: !responsive })} />
+          </label>
+          <label className={TOGGLE}>
+            Show in a phone frame
+            <input type="checkbox" className="toggle toggle-xs" checked={device} onChange={() => run("canvas.toggleDevice")} />
+          </label>
           {!device && (
             <div data-side-by-side="" className="border-base-300 mt-1 flex flex-col gap-1 border-t pt-2 text-xs">
               <div className="flex items-baseline gap-1.5 px-0.5">
-                <span className="text-neutral-content text-[10px] font-semibold tracking-wide whitespace-nowrap uppercase">Side by side</span>
-                <span className="text-neutral-content text-[10px] whitespace-nowrap">read-only</span>
+                <span className="text-neutral-content text-[10px] font-semibold tracking-wide whitespace-nowrap uppercase">Also show</span>
+                <span className="text-neutral-content text-[10px] whitespace-nowrap">side by side, view only</span>
               </div>
               <div className="grid grid-cols-6 gap-1 pb-1">
                 {chips.map((c) => (
@@ -126,10 +126,11 @@ export function BreakpointSwitcher() {
                     type="button"
                     aria-pressed={mirror === c.view}
                     data-mirror-chip={c.view}
+                    {...tooltip(c.label, "bottom")}
                     className={`rounded-md border px-1 py-0.5 text-center text-[11px] font-medium transition ${mirror === c.view ? "border-primary bg-primary/10 text-primary" : "border-base-300 text-base-content hover:bg-base-200"}`}
                     onClick={() => run("canvas.set", { mirror: mirror === c.view ? null : c.view })}
                   >
-                    {c.label === "Mobile" ? "M" : c.label}
+                    {SCREEN_SHORT[c.view as keyof typeof SCREEN_SHORT]}
                   </button>
                 ))}
               </div>

@@ -99,7 +99,7 @@ describe("override chip placement", () => {
   it("a section header takes the chip as an action: a ghost when clean, the dot once any property overrides", () => {
     const clean = fixtureEditor(`<section class="gap-2"></section>\n`);
     let r = render(withEditor(clean, <AccordionProvider><ToolbarSection title="Gap" actions={<BreakpointChip prop="gap" label="Gap" ghost />}><span /></ToolbarSection></AccordionProvider>));
-    assert.equal(r.get("[data-ph-bp-chip]").getAttribute("data-tooltip-content"), "Click to add a responsive override");
+    assert.equal(r.get("[data-ph-bp-chip]").getAttribute("data-tooltip-content"), "Set a different value for some screen sizes");
     r.unmount();
     const over = fixtureEditor(`<section class="gap-2 md:gap-4"></section>\n`);
     r = render(withEditor(over, <AccordionProvider><ToolbarSection title="Gap" actions={<BreakpointChip prop="gap" label="Gap" ghost />}><span /></ToolbarSection></AccordionProvider>));
@@ -124,7 +124,7 @@ describe("dark variant toggle", () => {
 });
 
 describe("chip menu", () => {
-  const menu = () => document.body.querySelector<HTMLElement>('[role="menu"][aria-label="Breakpoint property actions"]');
+  const menu = () => document.body.querySelector<HTMLElement>('[role="menu"][aria-label="Screen size actions"]');
   const openMenu = async (r: ReturnType<typeof render>, x = 30, y = 40) => {
     await r.fire(r.get("[data-ph-bp-chip]"), "contextmenu", { clientX: x, clientY: y });
   };

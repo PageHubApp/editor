@@ -4,15 +4,16 @@
  * `hover:` tokens (inventory: "Chip commands write with dark off").
  */
 import { type ClassGroup } from "@pagehub/engine";
+import { SCREEN_NAME, SCREEN_SHORT } from "../../canvas/viewportMath";
 import { BREAKPOINTS, scopePrefix, tokenAt, type Breakpoint, type View } from "@pagehub/engine/kits";
 
 export const CHIP_BP_ORDER = ["mobile", ...BREAKPOINTS] as const;
 export type ChipBp = (typeof CHIP_BP_ORDER)[number];
 
-/** Letter beside the dot (Webflow style). */
-export const CHIP_BP_LETTER: Record<ChipBp, string> = { mobile: "b", sm: "s", md: "m", lg: "l", xl: "x", "2xl": "2" };
-/** Label in tooltips and popover cells. */
-export const CHIP_BP_LABEL: Record<ChipBp, string> = { mobile: "base", sm: "sm", md: "md", lg: "lg", xl: "xl", "2xl": "2xl" };
+/** Letter beside the dot: the screen size's short name. */
+export const CHIP_BP_LETTER: Readonly<Record<ChipBp, string>> = SCREEN_SHORT;
+/** Label in tooltips and popover cells: the screen size's name. */
+export const CHIP_BP_LABEL: Readonly<Record<ChipBp, string>> = SCREEN_NAME;
 
 export interface BpValue {
   bp: ChipBp;

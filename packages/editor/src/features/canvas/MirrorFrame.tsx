@@ -41,7 +41,7 @@ export function MirrorFrame({ view, main }: { view: View; main: Document | null 
   return (
     <aside data-mirror={view} aria-label={`${chip.label} mirror`} className="border-base-300 flex min-h-0 shrink-0 flex-col border-l" style={{ width: chip.px / 2 }}>
       <div className="bg-base-200 flex h-6 items-center justify-between px-2 text-[10px] font-semibold uppercase">
-        <span>{chip.label} mirror · read-only</span>
+        <span>{chip.label} · view only</span>
         <button type="button" aria-label="Close mirror" onClick={() => run("canvas.set", { mirror: null })}>
           <Icon name="x" className="size-3" />
         </button>

@@ -152,10 +152,10 @@ describe("BreakpointChip (reads the class attribute)", () => {
     const e = fixtureEditor();
     const r = chip(e);
     const b = r.get("[data-ph-bp-chip]");
-    assert.equal(b.getAttribute("data-tooltip-content"), "base: p-4 · md: p-8 · lg: p-10");
+    assert.equal(b.getAttribute("data-tooltip-content"), "Phone: p-4 · Tablet: p-8 · Laptop: p-10");
     const [dot, letter, badge] = [...b.children] as HTMLElement[];
     assert.ok(dot!.className.includes("bg-amber-500"));
-    assert.equal(letter!.textContent, "l");
+    assert.equal(letter!.textContent, "L");
     assert.equal(badge!.textContent, "2");
     r.unmount();
   });
@@ -174,7 +174,7 @@ describe("BreakpointChip (reads the class attribute)", () => {
     assert.equal(r.all("[data-ph-bp-chip]").length, 0);
     r.unmount();
     r = chip(e, "gap", true);
-    assert.equal(r.get("[data-ph-bp-chip]").getAttribute("data-tooltip-content"), "Click to add a responsive override");
+    assert.equal(r.get("[data-ph-bp-chip]").getAttribute("data-tooltip-content"), "Set a different value for some screen sizes");
     r.unmount();
   });
 
@@ -264,7 +264,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     const r = await open(e);
     const cells = r.all("[data-bp-cell]");
     assert.deepEqual(cells.map((c) => c.textContent), ["4", "—", "8", "10", "—", "—"]);
-    assert.equal(cells[2]!.getAttribute("data-tooltip-content"), "md: p-8");
+    assert.equal(cells[2]!.getAttribute("data-tooltip-content"), "Tablet: p-8");
     assert.ok(cells[2]!.getAttribute("data-tooltip-id"), "cell tooltips render (the SDK cells had no tooltip id)");
     await r.click(cells[2]!);
     assert.equal(ui(e).view, "md");
@@ -277,7 +277,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     await r.click(r.get('[data-bp-cell="lg"]'), { altKey: true });
     await r.click(r.get('[data-bp-cell="mobile"]'), { altKey: true });
     assert.deepEqual(ui(e).multiScope, ["lg"]);
-    assert.ok(r.get("[data-ph-popover]").textContent!.includes("Editing 1 breakpoint together"));
+    assert.ok(r.get("[data-ph-popover]").textContent!.includes("Editing 1 screen size together"));
     await r.click(r.all("[data-ph-popover] button").find((b) => b.textContent === "clear")!);
     assert.deepEqual(ui(e).multiScope, []);
     r.unmount();
@@ -289,8 +289,8 @@ describe("BreakpointChip popover and right-click menu", () => {
     const writes = countWrites(e);
     const r = render(withEditor(e, <BreakpointChip prop="padding" label="Padding" />));
     await menu(r);
-    assert.ok(item(r, "Reset at md"));
-    await r.click(item(r, "Reset all breakpoints"));
+    assert.ok(item(r, "Reset at Tablet"));
+    await r.click(item(r, "Reset all screen sizes"));
     assert.equal(sectionClass(e), "flex gap-2");
     assert.equal(writes.n, 1);
     assert.equal(r.all('[role="menu"]').length, 0, "closes after an action");
@@ -302,7 +302,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     setUi(e, { view: "md" });
     let r = render(withEditor(e, <BreakpointChip prop="padding" label="Padding" />));
     await menu(r);
-    await r.click(item(r, "Promote to base"));
+    await r.click(item(r, "Use for all screen sizes"));
     assert.equal(sectionClass(e), "flex p-8 gap-2");
     r.unmount();
 
@@ -311,7 +311,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     const writes = countWrites(e);
     r = render(withEditor(e, <BreakpointChip prop="padding" label="Padding" />));
     await menu(r);
-    await r.click(item(r, "Copy up"));
+    await r.click(item(r, "Copy to larger"));
     const cls = sectionClass(e)!.split(" ");
     for (const t of ["p-4", "md:p-8", "lg:p-8", "xl:p-8", "2xl:p-8"]) assert.ok(cls.includes(t), t);
     assert.equal(writes.n, 1);
@@ -321,7 +321,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     setUi(e, { view: "sm" });
     r = render(withEditor(e, <BreakpointChip prop="padding" label="Padding" />));
     await menu(r);
-    for (const t of ["Reset at sm", "Promote to base", "Copy down", "Copy up"]) assert.ok(item(r, t).disabled, t);
+    for (const t of ["Reset at Large phone", "Use for all screen sizes", "Copy to smaller", "Copy to larger"]) assert.ok(item(r, t).disabled, t);
     assert.ok(!item(r, "Reset all").disabled);
     r.unmount();
   });
@@ -331,7 +331,7 @@ describe("BreakpointChip popover and right-click menu", () => {
     setUi(e, { view: "sm" });
     const r = render(withEditor(e, <BreakpointChip prop="padding" label="Padding" />));
     await menu(r);
-    await r.click(item(r, "Show source (base)"));
+    await r.click(item(r, "Show where it's set (Phone)"));
     assert.ok(r.get('[data-bp-cell="mobile"]').className.includes("animate-pulse"));
     await menu(r);
     const detach = attachKeymap(e, { platform: "other" }); // Esc reaches the overlay stack through the keymap

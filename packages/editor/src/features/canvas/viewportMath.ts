@@ -14,9 +14,13 @@ interface ViewChip {
   label: string;
   px: number;
 }
+/** What a site owner calls each screen size (the `mobile` view is the base layer). */
+export const SCREEN_NAME: Readonly<Record<"mobile" | Breakpoint, string>> = { mobile: "Phone", sm: "Large phone", md: "Tablet", lg: "Laptop", xl: "Desktop", "2xl": "Wide screen" };
+/** The same names in one or two letters, for tight spots (the inspector's size badge). */
+export const SCREEN_SHORT: Readonly<Record<"mobile" | Breakpoint, string>> = { mobile: "P", sm: "P+", md: "T", lg: "L", xl: "D", "2xl": "W" };
 /** Switcher chips, in order, at the site's breakpoint widths. */
 export function viewChips(bp: BreakpointWidths = BREAKPOINT_PX): ViewChip[] {
-  return [{ view: "mobile", label: "Mobile", px: MOBILE_PX }, ...BREAKPOINT_ORDER.map((b) => ({ view: b as View, label: b === "2xl" ? "2XL" : b.toUpperCase(), px: bp[b] }))];
+  return [{ view: "mobile", label: SCREEN_NAME.mobile, px: MOBILE_PX }, ...BREAKPOINT_ORDER.map((b) => ({ view: b as View, label: SCREEN_NAME[b], px: bp[b] }))];
 }
 export const VIEW_CHIPS: readonly ViewChip[] = viewChips();
 
@@ -182,7 +186,7 @@ export interface ScopeBand {
   color: string;
   /** Text colour with the best contrast on `color`. */
   text: string;
-  /** What is being edited: "Editing Base", "Editing SM", "Editing MD + LG". */
+  /** What is being edited: "Editing all screen sizes", "Editing Tablet and wider", "Editing Tablet + Laptop". */
   head: string;
   /** What that means for the next change. */
   detail: string;
@@ -191,7 +195,7 @@ export interface ScopeBand {
   clearable: boolean;
 }
 
-const bpLabel = (bp: string) => (bp === "2xl" ? "2XL" : bp.toUpperCase());
+const bpLabel = (bp: Breakpoint) => SCREEN_NAME[bp];
 
 const luminance = (hex: string): number => {
   const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4));
@@ -215,20 +219,20 @@ export function scopeBand(view: View, multiScope: readonly Breakpoint[], bp: Rea
       text: textOn(color),
       head: `Editing ${summary}`,
       detail: "changes go to these sizes, whatever the canvas shows",
-      label: `Multi-scope editing — writes target ${summary}, not the canvas view. Overrides Base at those widths.`,
+      label: `Changes go to ${summary}, whatever size the canvas shows.`,
       clearable: true,
     };
   }
   if (view === "desktop" || view === "mobile") {
-    return { color: BAND_COLOR.base!, text: textOn(BAND_COLOR.base!), head: "Editing all screen sizes", detail: "changes apply everywhere", label: "Editing all screen sizes — changes apply everywhere. Override a size with S, M, L, XL, or 2XL.", clearable: false };
+    return { color: BAND_COLOR.base!, text: textOn(BAND_COLOR.base!), head: "Editing all screen sizes", detail: "changes apply everywhere", label: "Editing all screen sizes — changes apply everywhere. Pick a screen size to change only that size and wider.", clearable: false };
   }
   const size = `${bp[view]}px and up`;
   return {
     color: BAND_COLOR[view]!,
     text: textOn(BAND_COLOR[view]!),
-    head: `Editing ${bpLabel(view)} and wider`,
+    head: `Editing ${bpLabel(view as Breakpoint)} and wider`,
     detail: `${size} · changes apply on screens this wide and wider`,
-    label: `Editing ${bpLabel(view)} and wider — ${size}. Changes apply on screens this wide and wider.`,
+    label: `Editing ${bpLabel(view as Breakpoint)} and wider — ${size}. Changes apply on screens this wide and wider.`,
     clearable: false,
   };
 }

@@ -31,14 +31,14 @@ describe("viewport", () => {
     (window as any).happyDOM.setViewport({ width: 1024, height: 768 });
   });
 
-  it("switcher (opens on hover): Responsive and Device toggles, chips Mobile·390 / SM / MD / LG / XL / 2XL with px, Zoom row", async () => {
+  it("switcher (opens on hover): chips Phone·390 … Wide screen with px, Shrink to fit and phone frame toggles, Zoom row", async () => {
     const { r } = await mountCanvas();
     cleanup = r.unmount;
     await fireIn(r.get('[data-slot="BreakpointSwitcher"]'), "mouseover");
     const menu = r.get("[data-bp-menu]");
-    assert.deepEqual(r.all("[data-view-chip]").map((c) => c.textContent), ["Mobile390", "SM640", "MD768", "LG1024", "XL1280", "2XL1536"]);
-    assert.match(menu.textContent!, /Responsive/);
-    assert.match(menu.textContent!, /Device/);
+    assert.deepEqual(r.all("[data-view-chip]").map((c) => c.textContent), ["Phone390", "Large phone640", "Tablet768", "Laptop1024", "Desktop1280", "Wide screen1536"]);
+    assert.match(menu.textContent!, /Shrink to fit window/);
+    assert.match(menu.textContent!, /Show in a phone frame/);
     assert.ok(menu.querySelector("[data-zoom-control]"));
     await fireIn(r.get('[data-slot="BreakpointSwitcher"]'), "mouseout");
     assert.equal(r.get("[data-bp-trigger]").getAttribute("aria-expanded"), "true", "a grace period before closing");
@@ -52,7 +52,7 @@ describe("viewport", () => {
     const trigger = () => r.get("[data-bp-trigger]");
     assert.ok(trigger().querySelector("svg"));
     actRun(e, "canvas.view", { view: "md" });
-    assert.equal(trigger().textContent, "MD");
+    assert.equal(trigger().textContent, "Tablet");
     actRun(e, "canvas.zoomSet", { zoom: 0.5 });
     assert.equal(trigger().textContent, "50%");
   });
@@ -215,7 +215,7 @@ describe("viewport", () => {
   it("scope band (22px): Base slate 'Editing all screen sizes · changes apply everywhere'; breakpoints sky / emerald / violet / pink / rose; multi-scope amber with Clear", async () => {
     assert.deepEqual([scopeBand("desktop", []).head, scopeBand("desktop", []).detail], ["Editing all screen sizes", "changes apply everywhere"]);
     assert.equal(scopeBand("desktop", []).color, "#64748b");
-    assert.deepEqual([scopeBand("md", []).head, scopeBand("md", []).detail], ["Editing MD and wider", "768px and up · changes apply on screens this wide and wider"]);
+    assert.deepEqual([scopeBand("md", []).head, scopeBand("md", []).detail], ["Editing Tablet and wider", "768px and up · changes apply on screens this wide and wider"]);
     assert.deepEqual(["sm", "md", "lg", "xl", "2xl"].map((v) => scopeBand(v as any, []).color), ["#0ea5e9", "#10b981", "#8b5cf6", "#ec4899", "#f43f5e"]);
     assert.equal(scopeBand("desktop", ["md", "lg"]).color, "#f59e0b");
     assert.equal(scopeBand("desktop", ["md"]).color, "#10b981");
@@ -223,7 +223,7 @@ describe("viewport", () => {
     cleanup = r.unmount;
     assert.match(r.get("[data-scope-band]").className, /h-\[22px\]/);
     actRun(e, "ui.set", { multiScope: ["md", "lg"] });
-    assert.match(r.get("[data-scope-band]").textContent!, /Editing MD \+ LG/);
+    assert.match(r.get("[data-scope-band]").textContent!, /Editing Tablet \+ Laptop/);
     await r.click(r.get("[data-scope-band] button"));
     assert.equal(r.get("[data-scope-band]").textContent, "Editing all screen sizeschanges apply everywhere");
     for (const v of ["sm", "md", "lg", "xl", "2xl", "desktop"] as const) {
@@ -476,13 +476,13 @@ describe("breadcrumb", () => {
 });
 
 describe("side-by-side mirror", () => {
-  it("read-only second render at a chosen width, header 'XL mirror · read-only'; re-renders 60ms after edits; hidden in device mode", async () => {
+  it("read-only second render at a chosen width, header 'Desktop · view only'; re-renders 60ms after edits; hidden in device mode", async () => {
     const { r, e } = await mountCanvas();
     cleanup = r.unmount;
     await fireIn(r.get('[data-slot="BreakpointSwitcher"]'), "mouseover");
     await r.click(r.get('[data-mirror-chip="xl"]'));
     assert.equal(canvasOf(e.state).mirror, "xl");
-    assert.match(r.get("[data-mirror]").textContent!, /XL mirror · read-only/);
+    assert.match(r.get("[data-mirror]").textContent!, /Desktop · view only/);
     await wait(120);
     const mirror = r.get("[data-mirror-frame]") as HTMLIFrameElement;
     assert.equal(mirror.contentDocument!.querySelectorAll("li.row").length, 3);

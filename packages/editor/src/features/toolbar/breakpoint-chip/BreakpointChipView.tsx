@@ -41,7 +41,7 @@ export function BreakpointChipView({ explicit, activeBp, density, label, ghost =
   const atActive = activeBp !== null && activeBp !== "mobile" && overrides.some((o) => o.bp === activeBp);
   const letter = count === 0 ? CHIP_BP_LETTER[activeBp ?? "mobile"] : CHIP_BP_LETTER[highestOverride(explicit) ?? "md"];
   const dotClass = isGhost ? "border-base-content/50 border bg-transparent" : hollow ? "border border-base-content/40 bg-transparent opacity-30" : atActive ? "bg-primary" : "bg-amber-500";
-  const tooltip = isGhost ? "Click to add a responsive override" : !hasAnyValue ? `${label}: no value` : explicit.map((e) => `${CHIP_BP_LABEL[e.bp]}: ${e.value}`).join(" · ");
+  const tooltip = isGhost ? "Set a different value for some screen sizes" : !hasAnyValue ? `${label}: no value` : explicit.map((e) => `${CHIP_BP_LABEL[e.bp]}: ${e.value}`).join(" · ");
 
   const stop = (e: MouseEvent) => (e.preventDefault(), e.stopPropagation());
   return (
@@ -56,7 +56,7 @@ export function BreakpointChipView({ explicit, activeBp, density, label, ghost =
       data-tooltip-offset={6}
       data-ph-bp-chip=""
       data-ph-prop-key={label}
-      aria-label={`Breakpoint overrides for ${label}`}
+      aria-label={`Screen sizes for ${label}`}
       aria-expanded={open}
       className={`relative inline-flex h-3.5 min-w-[14px] cursor-pointer items-center justify-center gap-0.5 rounded-[3px] px-[3px] transition-[colors,opacity] duration-150 ${
         open ? "bg-base-200" : "hover:bg-base-200"

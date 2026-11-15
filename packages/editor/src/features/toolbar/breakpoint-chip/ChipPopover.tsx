@@ -38,12 +38,12 @@ export function ChipPopoverView({ open, anchor, title, explicit, activeBp, multi
     >
       <div data-ph-chip-popover="" className="flex items-center justify-between gap-2 px-1 pb-1">
         <span className="text-base-content text-[11px] font-semibold">{title}</span>
-        <span className="text-base-content/60 text-[9px]">alt-click = multi</span>
+        <span className="text-base-content/60 text-[9px]">Alt-click to pick several</span>
       </div>
       {multi.length > 0 && (
         <div className="bg-primary/10 text-primary mb-1 flex items-center justify-between gap-2 rounded px-2 py-1 text-[10px]">
           <span>
-            Editing {multi.length} breakpoint{multi.length === 1 ? "" : "s"} together
+            Editing {multi.length} screen size{multi.length === 1 ? "" : "s"} together
           </span>
           <button type="button" onClick={onClearMulti} className="hover:underline">
             clear
@@ -74,7 +74,7 @@ export function ChipPopoverView({ open, anchor, title, explicit, activeBp, multi
           );
         })}
       </div>
-      <div className="text-base-content/60 mt-2 px-1 text-[9px] leading-snug">Click a cell → switch canvas view. Alt-click → toggle multi-scope writes.</div>
+      <div className="text-base-content/60 mt-2 px-1 text-[9px] leading-snug">Click a size to preview it. Alt-click to change several sizes at once.</div>
     </AnchoredPopover>
   );
 }
