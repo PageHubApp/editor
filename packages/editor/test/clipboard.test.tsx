@@ -108,7 +108,7 @@ describe("copy / duplicate / delete rules on the page", () => {
     }
   });
 
-  it("Duplicate copies first (the clipboard now holds the duplicated node), so Paste adds another", () => {
+  it("Duplicate leaves the clipboard alone: Paste still adds what was copied before", () => {
     mount();
     e.select(e.get("p"));
     press("ctrl+c");
@@ -117,8 +117,8 @@ describe("copy / duplicate / delete rules on the page", () => {
     assert.equal(e.find("index.liquid", "h1").length, 2);
     e.select(e.get("p"));
     assert.equal(press("ctrl+v"), true);
-    assert.equal(e.find("index.liquid", "h1").length, 3, "the pasted node is the duplicated <h1>");
-    assert.equal(e.find("index.liquid", "p").length, 1);
+    assert.equal(e.find("index.liquid", "h1").length, 2, "Duplicate didn't replace the copy");
+    assert.equal(e.find("index.liquid", "p").length, 2, "the pasted node is the copied <p>");
   });
 
   it("the clipboard outlives an editor: a second editor mounted afterwards pastes what the first copied", () => {

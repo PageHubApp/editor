@@ -46,7 +46,7 @@ test("delete: removing an element that renders a partial leaves the partial file
   assert.equal(e.state.files.get("snippets/card.liquid"), "<p>Card</p>\n", "the partial file is untouched");
 });
 
-test("duplicate: copies (overwriting the clipboard) and pastes the copy as the next sibling, selected, without edit ids", () => {
+test("duplicate: leaves the clipboard alone and inserts the copy as the next sibling, selected, without edit ids", () => {
   const e = ed();
   e.select(e.get("p"));
   e.run("element.copy");
@@ -57,9 +57,8 @@ test("duplicate: copies (overwriting the clipboard) and pastes the copy as the n
   assert.ok(!/data-edit-id="x1y2z3"[\s\S]*data-edit-id="x1y2z3"/.test(e.text()), "ids are not copied");
   e.select(e.get("p"));
   e.run("element.paste");
-  assert.equal(e.find(P, "h2").length, 3, "the duplicate overwrote the clipboard: paste adds another <h2>");
-  assert.equal(e.find(P, "p").length, 1, "the earlier <p> copy is gone from the clipboard");
-  assert.ok(e.text().includes('<p class="c">One</p>\n    <h2>A</h2>'));
+  assert.equal(e.find(P, "h2").length, 2, "the duplicate didn't touch the clipboard");
+  assert.equal(e.find(P, "p").length, 2, "the earlier <p> copy still pastes");
 });
 
 test("duplicate is one undo step", () => {

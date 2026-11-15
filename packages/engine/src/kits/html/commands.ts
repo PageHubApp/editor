@@ -197,14 +197,11 @@ export const addContainer = addEmpty("element.addContainer", "Add container", "d
 export const duplicate = defineCommand({
   id: "element.duplicate",
   title: "Duplicate",
-  /** Copies first (overwriting the clipboard, as today), then pastes the copy as the next sibling. */
+  /** Inserts a copy as the next sibling. The clipboard is left alone, so a copy made earlier still pastes. */
   run(ctx) {
     const h = copyable(ctx);
     if (!h) return false;
-    const text = withoutEditIds(snippetOf(ctx.state, h));
-    const ok = insertSnippet(ctx, { after: h }, text);
-    if (ok && ctx.dispatch) ctx.state.facet(clipboardFacet).write(text);
-    return ok;
+    return insertSnippet(ctx, { after: h }, withoutEditIds(snippetOf(ctx.state, h)));
   },
 });
 
