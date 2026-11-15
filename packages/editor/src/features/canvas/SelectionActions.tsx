@@ -32,14 +32,24 @@ const ACTIONS: ReadonlyArray<{ command: string; label: string; icon: IconName }>
 ];
 const DELETE = "element.remove";
 
-/** True when the action group belongs on the tag (see the file comment for when it doesn't). */
-export function useSelectionActionsShown(): boolean {
+/**
+ * True while the canvas is plainly being designed: not in preview, not in content mode (client /
+ * viewer), no drag or handle drag running, no text being edited inline. Canvas edit chrome (the
+ * selection actions, the "+" lines between sections) shows only then.
+ */
+export function useCanvasEditChromeShown(): boolean {
   const store = useEditorStore();
-  const calm = useEditorState((s: EditorState) => !chromeOf(s).preview && s.selection.handles.length <= 1 && !richTextOf(s).editing);
+  const calm = useEditorState((s: EditorState) => !chromeOf(s).preview && !richTextOf(s).editing);
   const dragging = useDragSession();
   const handleDrag = useHandleDragging();
   const role = (store as { role?: string }).role;
   return calm && !dragging && !handleDrag && role !== "client" && role !== "viewer";
+}
+
+/** True when the action group belongs on the tag (see the file comment for when it doesn't). */
+export function useSelectionActionsShown(): boolean {
+  const single = useEditorState((s: EditorState) => s.selection.handles.length <= 1);
+  return useCanvasEditChromeShown() && single;
 }
 
 export function SelectionActions() {

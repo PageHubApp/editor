@@ -2,7 +2,7 @@
 /**
  * The default `CanvasOverlays` slot: chips drawn over the selection — the editable name chip
  * (media, embeds and form fields) with its action buttons (`SelectionActions`), "repeated ×N" on a `{% for %}` row (with "Edit <entry>" and "Add entry" for a
- * collection's list), the include ring with "Edit <name>", the condition badge, the empty-list placeholder — a lint
+ * collection's list), the include ring with "Edit <name>", the condition badge, the empty-list placeholder, the "+" lines between sections — a lint
  * dot on every element with issues, and the Alt-held distance lines.
  */
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -25,6 +25,7 @@ import { elementsFor, hostRect, toRect, visibleInFrame } from "./frameDom";
 import type { Rect } from "./geometry";
 import { IncludeInAiButton } from "./NodeToolExtras";
 import { MeasurementLines } from "./MeasurementLines";
+import { SectionPlusLines } from "./SectionPlusLines";
 import { SelectionActions, useSelectionActionsShown } from "./SelectionActions";
 import { CLOSE_ON_CANVAS, OPEN_ON_CANVAS, useOverlayPreview } from "./overlayPreview";
 import { useKeepInView } from "./useKeepInView";
@@ -321,6 +322,7 @@ export function CanvasOverlays() {
         )
       )}
       {g && !g.include && g.elements.length <= 1 && <ConditionBadge handle={g.handle} rect={g.rect} />}
+      <SectionPlusLines />
       <EmptyListLayer />
       <LintDots />
       <MeasurementLines />
