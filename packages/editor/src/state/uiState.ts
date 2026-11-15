@@ -16,6 +16,7 @@ import { richTextKit } from "../features/richtext/richTextState";
 import { layersKit } from "../features/layers/layersKit";
 import { addPanelKit } from "../features/add/addPanelState";
 import { boardKit } from "../features/board/boardState";
+import { noticesKit } from "../features/notices/noticeState";
 
 export type IndicatorDensity = "auto" | "always" | "off";
 
@@ -83,7 +84,7 @@ let kit: Extension | undefined;
 
 /** The extension `<Editor>` needs in the core's configuration. */
 export function editorKit(): Extension {
-  return (kit ??= [uiField, uiSet, classLayers, CHROME_KIT, inspectorKit(), canvasKit(), livePreviewKit(), richTextKit(), layersKit(), addPanelKit(), boardKit(), overlayDismissTop, Prec.high(contributes({ keybindings: [{ command: "overlay.dismissTop", key: "escape" }] }))]);
+  return (kit ??= [uiField, uiSet, classLayers, CHROME_KIT, inspectorKit(), canvasKit(), livePreviewKit(), richTextKit(), layersKit(), addPanelKit(), boardKit(), noticesKit(), overlayDismissTop, Prec.high(contributes({ keybindings: [{ command: "overlay.dismissTop", key: "escape" }] }))]);
 }
 
 /**

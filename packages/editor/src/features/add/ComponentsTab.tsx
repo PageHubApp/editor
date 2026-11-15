@@ -62,7 +62,7 @@ function Tile({ tile }: { tile: ToolTile }) {
   const store = useEditorStore();
   const { onPointerDown, pressed } = useInsertDrag(tile.insert, tile.label);
   return (
-    <div {...insertHint(tile.description)} role="button" tabIndex={0} aria-label={tile.label} data-tile={tile.key} data-pressed={pressed ? "" : undefined} onPointerDown={onPointerDown} onDoubleClick={() => insertComponent(store, tile.insert)} onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && insertComponent(store, tile.insert)} className="flex h-full w-full min-w-0 cursor-grab active:cursor-grabbing">
+    <div {...insertHint(tile.description)} role="button" tabIndex={0} aria-label={tile.label} data-tile={tile.key} data-pressed={pressed ? "" : undefined} onPointerDown={onPointerDown} onDoubleClick={() => insertComponent(store, tile.insert, tile.label)} onKeyDown={(e) => e.key === "Enter" && e.target === e.currentTarget && insertComponent(store, tile.insert, tile.label)} className="flex h-full w-full min-w-0 cursor-grab active:cursor-grabbing">
       <TileFace icon={tile.icon} label={tile.label} pressed={pressed} />
     </div>
   );

@@ -3,11 +3,10 @@
  * category rail (All, My blocks when there are saved ones, then the host's categories) with the
  * search at its foot, and a grid of block previews at 0.2. A click inserts the block — at the
  * pending above / below position if one was given, else the end of the page — closes the
- * dialog, and 100ms later scrolls the canvas smoothly to the new block. "Custom" marks the
+ * dialog, and the insert scrolls the canvas smoothly to the new block. "Custom" marks the
  * author's own blocks.
  */
 import { useMemo, useState } from "react";
-import { editSrcOf } from "@pagehub/engine/canvas";
 import { useEditorState, useEditorStore, useRunCommand } from "../../react/bindings";
 import { addPanelOf } from "./addPanelState";
 import { type BlockItem } from "@pagehub/engine/host";
@@ -15,12 +14,10 @@ import { insertBlockLazy } from "./insertTarget";
 import { InlineError } from "../../primitives/InlineError";
 import { Skeleton, SkeletonRegion } from "../../primitives/Skeleton";
 import { blockCategories, filterBlocks, useBlocks } from "./useBlocks";
-import { elementsFor } from "../canvas/frameDom";
 import { Modal } from "../../primitives/Modal";
 import { LazyBlockPreview } from "./BlockCards";
 import { SearchInput } from "./panelParts";
 
-const SCROLL_TO_NEW_MS = 100;
 const RAIL = "flex w-full cursor-pointer items-center justify-between rounded-md px-3 py-2 text-left text-sm transition-colors";
 
 export function SectionDialog() {
@@ -38,11 +35,6 @@ export function SectionDialog() {
   const pick = async (block: BlockItem) => {
     if (!(await insertBlockLazy(store, source, block))) return;
     run("insert.sectionDialogClose");
-    setTimeout(() => {
-      const h = store.state.selection.primary;
-      const doc = document.querySelector<HTMLIFrameElement>("[data-canvas-frame]")?.contentDocument;
-      if (doc && h?.alive && h.kind === "element") elementsFor(doc, editSrcOf(h))[0]?.scrollIntoView?.({ block: "start", behavior: "smooth" });
-    }, SCROLL_TO_NEW_MS);
   };
 
   return (

@@ -488,10 +488,10 @@ describe("side-by-side mirror", () => {
     assert.equal(mirror.contentDocument!.querySelectorAll("li.row").length, 3);
     await fireIn(mirror.contentDocument!.querySelector("h1")!, "mousedown");
     assert.equal(e.state.selection.primary, null, "read-only: clicks select nothing");
+    const t0 = Date.now(); // before the edit: under load the edit itself can take longer than the delay
     actRun(e, "attr.set", { name: "alt", value: "Z", at: e.get("img") });
     const mirrorAlt = () => (r.get("[data-mirror-frame]") as HTMLIFrameElement).contentDocument!.querySelector("img")?.getAttribute("alt");
     assert.notEqual(mirrorAlt(), "Z", "not yet: the mirror waits out its delay");
-    const t0 = Date.now();
     await until(() => mirrorAlt() === "Z", "the mirror to re-render");
     assert.ok(Date.now() - t0 >= 50, "re-rendered after the ~60ms delay, not at once");
     actRun(e, "canvas.toggleDevice");

@@ -40,7 +40,7 @@ function repeatedCard(root: NodeHandle): NodeHandle | null {
 
 /** Insert the bound grid for `c` and select its card. */
 export function insertCollectionList(store: Store, c: CollectionInfo): boolean {
-  if (!insertComponent(store, { snippet: collectionListMarkup(c) })) return false;
+  if (!insertComponent(store, { snippet: collectionListMarkup(c) }, "the list")) return false;
   const root = store.state.selection.primary;
   const card = root?.alive ? repeatedCard(root) : null;
   if (card) store.select(card);

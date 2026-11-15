@@ -30,6 +30,7 @@ import { CanvasHostContext, type CanvasHost } from "./features/canvas/canvasHost
 import { EditorSkeleton } from "./shell/EditorSkeleton";
 import { ErrorBoundary } from "./primitives/ErrorBoundary";
 import { CanvasStyleBridge } from "./features/theme/CanvasStyleBridge";
+import { NoticeHost } from "./features/notices/NoticeHost";
 import { ChromeThemeProvider, useChromeTheme, type ChromeTheme } from "./react/useChromeTheme";
 
 export interface EditorProps extends Partial<Omit<OpenOptions, "storage">> {
@@ -128,8 +129,9 @@ function EditorView({ editor, components, className = "", theme, platform, activ
                       the drawer runs under them; the drawer then docks at the inboard edge. */}
                   <div className="relative flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden" style={rightDockOffset ? { paddingRight: rightDockOffset } : undefined}>
                     <Slot name="Sidebar" />
-                    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+                    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
                       <CanvasColumn />
+                      <NoticeHost />
                     </div>
                     <RightDrawer />
                   </div>

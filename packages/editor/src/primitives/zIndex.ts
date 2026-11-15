@@ -2,6 +2,8 @@
  * The chrome's stacking ladder. Every overlay picks one of these; nothing hard-codes a z-index.
  * Only the rungs in use are listed; add new ones here so mixed surfaces keep their order.
  */
+/** The canvas notice ("Added Hero · Undo"): over the canvas and its overlays, under every popover. */
+export const Z_NOTICE = 50;
 /** AnchoredPopover default (selects, pickers, searchable menus, the chip popover). */
 export const Z_ANCHORED = 60;
 /** Centered / drawer / sheet modals. */
