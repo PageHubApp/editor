@@ -16,13 +16,21 @@ import { canvasOf, canvasPage } from "../canvas/canvasState";
 import { addPanelOf } from "./addPanelState";
 import { type BlockItem, type BlockSource } from "@pagehub/engine/host";
 import { resolveBlock } from "./blockDetail";
-import { showNotice } from "../notices/noticeState";
+import { showAction, showNotice, UNDO_ACTION } from "../notices/noticeState";
 import { revealNode } from "../notices/revealNode";
 
-/** After an insert: scroll the new element into view, or say why nothing was added. */
+/**
+ * After an insert: scroll the new element into view and name it by what was picked ("Added Booking CTA split", where
+ * the insert's own notice only knows the tag), or say why nothing was added.
+ */
 function settle(store: Store, ok: boolean, name: string, reason = "It can't go there."): boolean {
-  if (ok) revealNode(store);
-  else showNotice(store, { tone: "error", message: `Couldn't add ${name}. ${reason}` });
+  if (!ok) {
+    showNotice(store, { tone: "error", message: `Couldn't add ${name}. ${reason}` });
+    return ok;
+  }
+  revealNode(store);
+  const h = store.state.selection.primary;
+  if (name !== "this" && h?.alive) showNotice(store, { message: `Added ${name}`, actions: [UNDO_ACTION, showAction(h)] });
   return ok;
 }
 

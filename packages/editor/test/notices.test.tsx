@@ -89,6 +89,16 @@ describe("notices: the primitive", () => {
     actRun(e, "element.remove");
     assert.equal(message(r), null);
   });
+
+  it("the save's own stamping and the stored copy coming back reformatted keep it", () => {
+    const e = editor();
+    const r = mount(e);
+    act(() => void showNotice(e, { message: "Hi" }));
+    const p = e.get("p");
+    act(() => void e.dispatch((tr) => tr.setAttr(p, "data-edit-id", "abc").annotate({ origin: "plugin", system: true, history: false })));
+    act(() => void e.dispatch((tr) => tr.setAttr(e.get("p"), "class", "x").annotate({ origin: "remote", history: false })));
+    assert.equal(message(r), "Hi");
+  });
 });
 
 describe("notices: insert and delete", () => {
@@ -102,7 +112,7 @@ describe("notices: insert and delete", () => {
     assert.match(e.text(), /<section>faq<\/section>/);
     const added = e.state.selection.primary;
     assert.equal(added?.tag, "section");
-    assert.equal(message(r), "Added Section");
+    assert.equal(message(r), "Added FAQ one", "named by the block that was picked");
     assert.deepEqual(actions(r), ["Undo", "Show"]);
     await r.click(r.get('[data-notice-action="Undo"]'));
     assert.equal(e.text(), PAGE);

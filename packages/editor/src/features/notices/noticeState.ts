@@ -45,7 +45,10 @@ export const noticeField = StateField.define<Notice | null>({
   update(value, tr) {
     const set = effectsOf(tr, setNotice);
     if (set.length) return set.at(-1)!;
-    return value && !tr.changes.empty ? null : value;
+    // only a person's next edit clears it: the save's own stamping (system) and the stored copy coming back
+    // reformatted (remote) keep the notice, and its Undo still undoes the step it announced
+    const userEdit = !tr.changes.empty && !tr.annotations.system && tr.annotations.origin !== "remote";
+    return value && userEdit ? null : value;
   },
 });
 
@@ -77,7 +80,7 @@ export function showNotice(store: Store, notice: NoticeInput): boolean {
 }
 
 export const UNDO_ACTION: NoticeAction = { label: "Undo", run: (store) => void store.undo() };
-const showAction = (h: NodeHandle): NoticeAction => ({ label: "Show", run: (store) => void (h.alive && revealNode(store, h)) });
+export const showAction = (h: NodeHandle): NoticeAction => ({ label: "Show", run: (store) => void (h.alive && revealNode(store, h)) });
 
 /** A command's own step (not an undo / redo replay, not a step appended by another hook). */
 const ranCommand = (tr: Transaction, id: string) => tr.annotations.command === id && !tr.annotations.undo && !tr.changes.empty && !effectsOf(tr, setNotice).length;
