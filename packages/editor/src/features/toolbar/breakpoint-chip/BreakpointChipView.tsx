@@ -10,6 +10,7 @@
  */
 import type { MouseEvent, Ref } from "react";
 import { TOOLTIP_ID } from "../../../primitives/tooltip";
+import { chipValueLabel } from "./chipValueLabel";
 import { CHIP_BP_LABEL, CHIP_BP_LETTER, highestOverride, type BpValue, type ChipBp } from "./overrides";
 
 interface BreakpointChipViewProps {
@@ -41,7 +42,7 @@ export function BreakpointChipView({ explicit, activeBp, density, label, ghost =
   const atActive = activeBp !== null && activeBp !== "mobile" && overrides.some((o) => o.bp === activeBp);
   const letter = count === 0 ? CHIP_BP_LETTER[activeBp ?? "mobile"] : CHIP_BP_LETTER[highestOverride(explicit) ?? "md"];
   const dotClass = isGhost ? "border-base-content/50 border bg-transparent" : hollow ? "border border-base-content/40 bg-transparent opacity-30" : atActive ? "bg-primary" : "bg-amber-500";
-  const tooltip = isGhost ? "Set a different value for some screen sizes" : !hasAnyValue ? `${label}: no value` : explicit.map((e) => `${CHIP_BP_LABEL[e.bp]}: ${e.value}`).join(" · ");
+  const tooltip = isGhost ? "Set a different value for some screen sizes" : !hasAnyValue ? `${label}: no value` : explicit.map((e) => `${CHIP_BP_LABEL[e.bp]}: ${chipValueLabel(e.value)}`).join(" · ");
 
   const stop = (e: MouseEvent) => (e.preventDefault(), e.stopPropagation());
   return (

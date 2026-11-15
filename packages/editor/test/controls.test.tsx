@@ -152,7 +152,7 @@ describe("BreakpointChip (reads the class attribute)", () => {
     const e = fixtureEditor();
     const r = chip(e);
     const b = r.get("[data-ph-bp-chip]");
-    assert.equal(b.getAttribute("data-tooltip-content"), "Phone: p-4 · Tablet: p-8 · Laptop: p-10");
+    assert.equal(b.getAttribute("data-tooltip-content"), "Phone: 16px · Tablet: 32px · Laptop: 40px");
     const [dot, letter, badge] = [...b.children] as HTMLElement[];
     assert.ok(dot!.className.includes("bg-amber-500"));
     assert.equal(letter!.textContent, "L");
@@ -263,8 +263,8 @@ describe("BreakpointChip popover and right-click menu", () => {
     const e = fixtureEditor();
     const r = await open(e);
     const cells = r.all("[data-bp-cell]");
-    assert.deepEqual(cells.map((c) => c.textContent), ["4", "—", "8", "10", "—", "—"]);
-    assert.equal(cells[2]!.getAttribute("data-tooltip-content"), "Tablet: p-8");
+    assert.deepEqual(cells.map((c) => c.textContent), ["16px", "—", "32px", "40px", "—", "—"]);
+    assert.equal(cells[2]!.getAttribute("data-tooltip-content"), "Tablet: 32px (p-8)");
     assert.ok(cells[2]!.getAttribute("data-tooltip-id"), "cell tooltips render (the SDK cells had no tooltip id)");
     await r.click(cells[2]!);
     assert.equal(ui(e).view, "md");

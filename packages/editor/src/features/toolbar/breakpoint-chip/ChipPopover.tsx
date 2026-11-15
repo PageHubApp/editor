@@ -9,6 +9,7 @@ import type { MouseEvent } from "react";
 import { AnchoredPopover } from "../../../primitives/AnchoredPopover";
 import { OVERLAY_ROOT_CLASS } from "../../../primitives/portal";
 import { tooltip } from "../../../primitives/tooltip";
+import { chipValueLabel } from "./chipValueLabel";
 import { CHIP_BP_LABEL, CHIP_BP_LETTER, CHIP_BP_ORDER, type BpValue, type ChipBp } from "./overrides";
 
 export const PULSE_MS = 1600;
@@ -66,10 +67,10 @@ export function ChipPopoverView({ open, anchor, title, explicit, activeBp, multi
               data-bp-cell={bp}
               onClick={(e: MouseEvent) => onCell(bp, e.altKey)}
               className={`bg-base-200 hover:bg-base-300 flex h-9 w-full flex-col items-center justify-center rounded transition-colors ${ring} ${pulse === bp ? "animate-pulse ring-2 ring-amber-400" : ""}`}
-              {...tooltip(`${CHIP_BP_LABEL[bp]}: ${value ?? "—"}`)}
+              {...tooltip(`${CHIP_BP_LABEL[bp]}: ${value !== null ? `${chipValueLabel(value)} (${value})` : "—"}`)}
               aria-label={`${CHIP_BP_LABEL[bp]} value`}
             >
-              <span className={`max-w-full truncate px-1 text-[10px] ${value !== null ? "text-base-content" : "text-base-content/40"}`}>{value !== null ? value.replace(/^[a-z]+-/, "") : "—"}</span>
+              <span className={`max-w-full truncate px-1 text-[10px] ${value !== null ? "text-base-content" : "text-base-content/40"}`}>{value !== null ? chipValueLabel(value) : "—"}</span>
             </button>
           );
         })}
