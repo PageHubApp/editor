@@ -428,9 +428,15 @@ export class Editor extends Store {
     if (!r || current === undefined || base === undefined) return; // added / deleted files: reload
     if (r.text === base) return; // our own write echoing back
     const versions = new Map([[path, r.version]]);
+    // Our own write stored reformatted (same version as the save returned) while we kept editing: nobody else
+    // wrote it, so local edits win. Rebase on the stored text; the next save writes ours over it.
+    const own = r.version === this.state.versions.get(path) && current !== base;
     let changes: ChangeSet;
     if (current === base) changes = ChangeSet.ofFile(path, diffSplices(current, r.text));
-    else {
+    else if (own) {
+      this.baseline.set(path, r.text);
+      return;
+    } else {
       const local = diffSplices(base, current);
       const remote = diffSplices(base, r.text);
       const overlap = remote.some((a) => local.some((b) => (a.from < b.to && b.from < a.to) || a.from === b.from));

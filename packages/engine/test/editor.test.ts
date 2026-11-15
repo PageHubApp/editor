@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createEditor } from "../src/editor/createEditor.ts";
 import { createTestEditor, CommandTester } from "../src/testing/index.ts";
 import { memoryStorage } from "../src/storage/memory.ts";
+import { defineStorage } from "../src/storage/defineStorage.ts";
 import { defineCommand } from "../src/commands/defineCommand.ts";
 import { historyField } from "../src/history/history.ts";
 import { SAMPLE } from "./helpers.ts";
@@ -90,6 +91,46 @@ test("editor: an overlapping remote edit is a conflict, never silent loss", asyn
   assert.equal(r.ok, false);
   assert.match(r.conflicts[0]!.theirs, /class="theirs"/);
   assert.match(storage.snapshot()[P]!, /class="theirs"/);
+  ed.destroy();
+});
+
+test("editor: our own save stored reformatted, edited again before it echoes back (undo right after an insert), is not a conflict", async () => {
+  const inner = memoryStorage({ [P]: PAGE });
+  const watchers = new Set<(path: string) => void>();
+  let release!: () => void;
+  const gate = new Promise<void>((r) => (release = r));
+  const format = (t: string) => t.replace("<aside>new</aside>", "<aside>\n    new\n  </aside>");
+  const storage = defineStorage({
+    id: "formatting",
+    list: () => inner.list(),
+    read: (path) => inner.read(path),
+    write: (path, text, o) => inner.write(path, format(text), o),
+    writeBatch: async (changes, o) => {
+      await gate;
+      const r = await inner.writeBatch!(changes.map((c) => ("text" in c ? { ...c, text: format(c.text) } : c)), o);
+      if (r.ok) setTimeout(() => changes.forEach((c) => watchers.forEach((w) => w(c.path))), 0);
+      return r;
+    },
+    watch: (fn) => (watchers.add(fn), () => void watchers.delete(fn)),
+  });
+  const ed = await createEditor({ storage });
+  ed.dispatch((tr) => tr.insert({ after: ed.find(P, "h1")[0]! }, "<aside>new</aside>"));
+  const saving = ed.save();
+  await new Promise((r) => setTimeout(r, 5)); // the write is under way
+  ed.undo();
+  release();
+  await saving;
+  let pulled = 0;
+  const read = storage.read;
+  storage.read = async (p) => (pulled++, read(p));
+  await new Promise((r) => setTimeout(r, 20)); // the echo is announced after the save returns
+  await ed.settled();
+  assert.equal(pulled, 1, "the stored copy was read back");
+  assert.equal(ed.conflicts.size, 0, "no conflict");
+  assert.doesNotMatch(ed.state.files.get(P)!, /aside/, "the undo stands");
+  assert.deepEqual(ed.dirty(), [P], "still to save");
+  assert.equal((await ed.save()).ok, true);
+  assert.doesNotMatch(inner.snapshot()[P]!, /aside/);
   ed.destroy();
 });
 
