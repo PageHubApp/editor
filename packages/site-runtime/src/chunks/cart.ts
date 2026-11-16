@@ -29,6 +29,8 @@ export interface CheckoutOptions {
   successUrl: string;
   cancelUrl: string;
   promotionCode?: string;
+  /** The payment gateway the buyer picked (`data-cart-gateway="paypal"`); unset = the site's first ready one. */
+  gateway?: string;
   /** The buyer's choices kept on the order (dates, guests, a note): a `data-cart-then="checkout"` form's other fields. */
   details?: Record<string, string>;
 }
@@ -212,7 +214,8 @@ function withVariant(item: Record<string, any>, template: string | null): Record
  *   (picked entries of a row: nights, slots); `data-cart-then="checkout"` goes straight to checkout, sending the
  *   form's other fields as the order's details. `data-cart-agreement="<dialog id>"` has the guest sign first.
  * - open: toggles the `cart:open` state key; the drawer panel and backdrop carry `data-state-show="cart:open"`.
- * - checkout: sends the lines to the adapter's checkout; `data-cart-success` / `data-cart-cancel` are the return paths.
+ * - checkout: sends the lines to the adapter's checkout; `data-cart-success` / `data-cart-cancel` are the return paths,
+ *   `data-cart-gateway="paypal"` pays with that gateway (a second "Pay with PayPal" button beside the card one).
  *   With a `[data-cart-pay]` element on the page (inside a `<dialog>`), a site that can take payment in the page shows
  *   the payment form there instead of sending the buyer to the payment provider's page.
  *
@@ -319,6 +322,7 @@ export function init(doc: Document, cfg: RuntimeConfig): () => void {
         successUrl: returnUrl(win, el.getAttribute("data-cart-success"), "success"),
         cancelUrl: returnUrl(win, el.getAttribute("data-cart-cancel"), "cancel"),
         promotionCode: (get("cart:promo") || "").trim() || undefined,
+        gateway: el.getAttribute("data-cart-gateway") || undefined,
         details,
       });
       if (typeof dest === "string") return win.location.assign(dest);

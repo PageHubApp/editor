@@ -36,6 +36,7 @@ export async function requestCheckout(
         successUrl: o.successUrl,
         cancelUrl: o.cancelUrl,
         promotionCode: o.promotionCode || undefined,
+        gateway: o.gateway,
         details: o.details,
         embedded: !!win.document.querySelector("[data-cart-pay]") || undefined,
       }),
